@@ -43,7 +43,8 @@ export const ProfileView: React.FC = () => {
     openCreateEvent,
     openEditEvent,
     openEventDetail,
-    setCurrentTab
+    setCurrentTab,
+    openOnboarding
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'preferences' | 'saved' | 'submitted'>('preferences');
@@ -170,6 +171,13 @@ export const ProfileView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={openOnboarding}
+              className="px-3.5 py-2 bg-[#2c261e] hover:bg-[#383127] text-amber-200 border border-amber-400/30 text-xs font-bold rounded-xs shadow flex items-center gap-1.5 transition-all"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Retake Quiz</span>
+            </button>
             <button
               onClick={openCreateEvent}
               className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs font-bold rounded-xs shadow flex items-center gap-1.5"

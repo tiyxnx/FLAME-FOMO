@@ -30,6 +30,7 @@ export const Header: React.FC = () => {
     markNotificationsAsRead,
     openEventDetail,
     events,
+    openOnboarding,
   } = useApp();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -249,6 +250,17 @@ export const Header: React.FC = () => {
                     >
                       <User className="w-3.5 h-3.5" />
                       <span>My Profile & Timetable</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        openOnboarding();
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded text-xs text-amber-200 hover:bg-[#342e26] hover:text-amber-100 flex items-center gap-2"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Retake Student Quiz</span>
                     </button>
 
                     <button

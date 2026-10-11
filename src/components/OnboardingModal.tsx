@@ -92,6 +92,10 @@ export const OnboardingModal: React.FC = () => {
       academic_timetable: timetable,
     });
 
+    if (user?.flame_email) {
+      localStorage.setItem(`flame_fomo_quiz_completed_${user.flame_email.toLowerCase()}`, 'true');
+    }
+
     try {
       confetti({
         particleCount: 80,

@@ -62,6 +62,7 @@ interface AppContextType {
 
   // User Actions
   loginAsGuest: () => void;
+  loginWithGoogle: () => Promise<void>;
   loginWithFlameEmail: (email: string, name?: string) => { success: boolean; error?: string };
   sendVerificationCode: (email: string) => Promise<{ success: boolean; developerBypass?: boolean; error?: string }>;
   verifyOtpCode: (email: string, code: string, name?: string) => Promise<{ success: boolean; error?: string }>;
@@ -174,10 +175,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           });
 
-        // Auto-detect when student clicks the confirmation link in their email
+        // Auto-detect when student completes Google OAuth or clicks confirmation link
         const handleSession = async (session: any) => {
           if (session?.user?.email) {
             const confirmedEmail = session.user.email.toLowerCase();
+            if (!confirmedEmail.endsWith('@flame.edu.in')) {
+              await supabase.auth.signOut();
+              setUser(null);
+              localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+              alert('Access restricted: Only official @flame.edu.in university accounts are permitted.');
+              return;
+            }
+
             try {
               const { data: existingProfile } = await supabase
                 .from('profiles')
@@ -189,8 +198,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 setUser(existingProfile as UserProfile);
                 localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(existingProfile));
                 setIsAuthModalOpen(false);
+
+                // Enforce initial quiz if student has not completed it
+                const quizDone = localStorage.getItem(`flame_fomo_quiz_completed_${confirmedEmail}`) === 'true';
+                if (!quizDone) {
+                  setIsOnboardingOpen(true);
+                }
               } else {
-                const defaultName = confirmedEmail.split('@')[0].replace('.', ' ').toUpperCase();
+                const defaultName =
+                  session.user.user_metadata?.full_name ||
+                  confirmedEmail.split('@')[0].replace('.', ' ').toUpperCase();
                 const newProfile: UserProfile = {
                   flame_email: confirmedEmail,
                   name: defaultName,
@@ -297,6 +314,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const loginAsGuest = () => {
     saveUserToStorage(null);
     closeAuthModal();
+  };
+
+  const loginWithGoogle = async () => {
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+            queryParams: {
+              hd: 'flame.edu.in',
+              prompt: 'select_account',
+            },
+          },
+        });
+        if (error) {
+          console.error('Google OAuth error:', error.message);
+          throw error;
+        }
+      } catch (e: any) {
+        console.error('Error initiating Google OAuth:', e);
+        throw e;
+      }
+    } else {
+      console.warn('Supabase not configured for OAuth');
+    }
   };
 
   const loginWithFlameEmail = (email: string, name = 'FLAME Scholar') => {
@@ -723,6 +766,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         externalRegEvent,
         closeExternalRegModal,
         loginAsGuest,
+        loginWithGoogle,
         loginWithFlameEmail,
         sendVerificationCode,
         verifyOtpCode,

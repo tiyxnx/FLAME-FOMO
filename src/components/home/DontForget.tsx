@@ -8,14 +8,48 @@ export const DontForget: React.FC<{ eventsProp?: import('@/types').EventItem[] }
   const { events: contextEvents, openEventDetail } = useApp();
   const events = eventsProp || contextEvents;
 
-  // Find the single most urgent registration deadline among upcoming events
-  const urgentEvent = events
-    .filter((e) => e.registration_deadline && e.status === 'Upcoming')
+  const [todayStr, setTodayStr] = React.useState('2026-10-11');
+  const [nowTimestamp, setNowTimestamp] = React.useState(Date.now());
+
+  React.useEffect(() => {
+    const now = new Date();
+    setTodayStr(now.toISOString().split('T')[0]);
+    setNowTimestamp(now.getTime());
+  }, []);
+
+  const parseDeadlineToTime = (deadlineStr?: string): number => {
+    if (!deadlineStr) return 0;
+    const isoLike = deadlineStr.includes('T') ? deadlineStr : deadlineStr.replace(' ', 'T');
+    const parsed = new Date(isoLike).getTime();
+    if (!isNaN(parsed)) return parsed;
+    const dateOnly = new Date(`${deadlineStr}T23:59:59`).getTime();
+    return isNaN(dateOnly) ? 0 : dateOnly;
+  };
+
+  // 1. Strictly exclude concluded events (event date must be today or future, status not Completed/Cancelled)
+  const activeUpcomingEvents = events.filter((e) => {
+    if (e.status === 'Completed' || e.status === 'Cancelled') return false;
+    if (e.date < todayStr) return false;
+    return true;
+  });
+
+  // 2. Find events with ACTIVE registration deadlines in the future or closing today
+  const eventsWithActiveDeadlines = activeUpcomingEvents
+    .filter((e) => {
+      if (!e.registration_deadline) return false;
+      const deadlineTime = parseDeadlineToTime(e.registration_deadline);
+      return deadlineTime >= nowTimestamp;
+    })
     .sort((a, b) => {
-      const dateA = new Date(a.registration_deadline!).getTime();
-      const dateB = new Date(b.registration_deadline!).getTime();
-      return dateA - dateB;
-    })[0];
+      const timeA = parseDeadlineToTime(a.registration_deadline);
+      const timeB = parseDeadlineToTime(b.registration_deadline);
+      return timeA - timeB;
+    });
+
+  // 3. Priority: event closing soonest. Fallback: upcoming event taking place soonest.
+  const urgentEvent =
+    eventsWithActiveDeadlines[0] ||
+    [...activeUpcomingEvents].sort((a, b) => a.date.localeCompare(b.date))[0];
 
   if (!urgentEvent) return null;
 
