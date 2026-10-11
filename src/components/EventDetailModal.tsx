@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { isEventCompletedOrDone } from '@/lib/constants';
 import { 
   X, 
   Calendar, 
@@ -29,9 +30,11 @@ export const EventDetailModal: React.FC = () => {
     user,
     savedEventIds,
     goingEventIds,
+    favouriteEventIds,
     favouriteCategories,
     toggleSaveEvent,
     toggleGoingEvent,
+    toggleFavouriteEvent,
     toggleFavouriteCategory,
     openAuthModal,
     openEditEvent,
@@ -47,9 +50,9 @@ export const EventDetailModal: React.FC = () => {
 
   const isSaved = savedEventIds.includes(event.id);
   const isGoing = goingEventIds.includes(event.id);
-  const isFav = favouriteCategories.includes(event.category);
+  const isFavourited = favouriteEventIds.includes(event.id);
   const isCancelled = event.status === 'Cancelled';
-  const isCompleted = event.status === 'Completed';
+  const isCompleted = isEventCompletedOrDone(event);
   
   const averageRating = (event.ratings?.length || 0) > 0 
     ? (event.ratings!.reduce((sum: number, r: any) => sum + r.score, 0) / event.ratings!.length).toFixed(1)
@@ -86,7 +89,7 @@ export const EventDetailModal: React.FC = () => {
     }
     if (type === 'going') toggleGoingEvent(event.id);
     if (type === 'save') toggleSaveEvent(event.id);
-    if (type === 'fav') toggleFavouriteCategory(event.category);
+    if (type === 'fav') toggleFavouriteEvent(event.id);
   };
 
   return (
@@ -362,36 +365,49 @@ export const EventDetailModal: React.FC = () => {
         {/* Action Controls Footer */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-neutral-300">
           <div className="flex items-center gap-2">
-            {/* Favourite Category */}
+            {/* Favourite Event - ALWAYS KEPT */}
             <button
               onClick={() => handleAction('fav')}
               className={`p-2.5 rounded-full border transition-colors ${
-                isFav
+                isFavourited
                   ? 'bg-amber-400 text-amber-950 border-amber-500'
                   : 'bg-white text-neutral-700 border-neutral-300 hover:text-amber-500'
               }`}
-              title="Subscribe to category"
+              title={isFavourited ? 'Remove from Favourites' : 'Favourite Event (Keep on Board)'}
             >
-              <Star className={`w-4 h-4 ${isFav ? 'fill-amber-950' : ''}`} />
+              <Star className={`w-4 h-4 ${isFavourited ? 'fill-amber-950' : ''}`} />
             </button>
 
-            {/* Save */}
-            <button
-              onClick={() => handleAction('save')}
-              className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-colors flex items-center gap-1.5 ${
-                isSaved
-                  ? 'bg-[#c93b2b] text-white border-red-700'
-                  : 'bg-white text-neutral-800 border-neutral-300 hover:bg-neutral-100'
-              }`}
-            >
-              <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
-              <span>{isSaved ? 'Saved to Bookmarks' : 'Save for Later'}</span>
-            </button>
+            {/* Save (Only on upcoming events, removed when ended) */}
+            {!isCompleted && (
+              <button
+                onClick={() => handleAction('save')}
+                className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-colors flex items-center gap-1.5 ${
+                  isSaved
+                    ? 'bg-[#c93b2b] text-white border-red-700'
+                    : 'bg-white text-neutral-800 border-neutral-300 hover:bg-neutral-100'
+                }`}
+              >
+                <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
+                <span>{isSaved ? 'Saved to Bookmarks' : 'Save for Later'}</span>
+              </button>
+            )}
+
+            {/* Feedback / Review Option for ended events */}
+            {isCompleted && (
+              <button
+                onClick={() => openEventFeedback(event)}
+                className="px-3.5 py-2 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 border border-amber-500 flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-amber-950" />
+                <span>Reviews &amp; Feedback</span>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Campus Map Shortcut */}
-            {isGoing && (
+            {/* Campus Map Shortcut (Only on upcoming events) */}
+            {isGoing && !isCompleted && (
               <button
                 onClick={() => {
                   closeEventDetail();
@@ -404,18 +420,20 @@ export const EventDetailModal: React.FC = () => {
               </button>
             )}
 
-            {/* I'm Going */}
-            <button
-              onClick={() => handleAction('going')}
-              className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md transition-transform active:scale-95 flex items-center gap-2 ${
-                isGoing
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  : 'bg-neutral-900 hover:bg-black text-amber-100'
-              }`}
-            >
-              <Check className="w-4 h-4" />
-              <span>{isGoing ? "You're Going!" : "I'm Going"}</span>
-            </button>
+            {/* I'm Going (Only on upcoming events, removed when ended) */}
+            {!isCompleted && (
+              <button
+                onClick={() => handleAction('going')}
+                className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md transition-transform active:scale-95 flex items-center gap-2 ${
+                  isGoing
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : 'bg-neutral-900 hover:bg-black text-amber-100'
+                }`}
+              >
+                <Check className="w-4 h-4" />
+                <span>{isGoing ? "You're Going!" : "I'm Going"}</span>
+              </button>
+            )}
           </div>
         </div>
 

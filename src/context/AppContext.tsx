@@ -31,6 +31,7 @@ interface AppContextType {
   events: EventItem[];
   savedEventIds: string[];
   goingEventIds: string[];
+  favouriteEventIds: string[];
   favouriteCategories: EventCategory[];
   notifications: NotificationItem[];
   unreadNotificationsCount: number;
@@ -91,6 +92,7 @@ interface AppContextType {
   // Event Actions
   toggleSaveEvent: (eventId: string) => void;
   toggleGoingEvent: (eventId: string, force?: boolean) => void;
+  toggleFavouriteEvent: (eventId: string) => void;
   toggleFavouriteCategory: (category: EventCategory) => void;
   createEvent: (eventData: Omit<EventItem, 'id' | 'created_at'>) => { success: boolean; error?: string };
   checkUserPostLimit: (email?: string) => EventPostRateLimitResult;
@@ -239,6 +241,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   academic_timetable: DEFAULT_TIMETABLE_SAMPLE,
                   saved_events: [],
                   going_events: [],
+                  favourite_events: [],
                   favourite_categories: ['Performances', 'Competitions'],
                   created_at: new Date().toISOString(),
                 };
@@ -484,6 +487,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       academic_timetable: DEFAULT_TIMETABLE_SAMPLE,
       saved_events: [],
       going_events: [],
+      favourite_events: [],
       favourite_categories: ['Performances', 'Competitions'],
       created_at: new Date().toISOString(),
     };
@@ -615,6 +619,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       academic_timetable: DEFAULT_TIMETABLE_SAMPLE,
       saved_events: [],
       going_events: [],
+      favourite_events: [],
       favourite_categories: ['Performances', 'Competitions'],
       created_at: new Date().toISOString(),
     };
@@ -768,6 +773,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setClashInfo(null);
   };
 
+  const toggleFavouriteEvent = (eventId: string) => {
+    if (!user) {
+      openAuthModal('Sign in with your FLAME email to favourite events and keep them on your discovery board.');
+      return;
+    }
+
+    const currentFavs = user.favourite_events || [];
+    const isAlreadyFav = currentFavs.includes(eventId);
+    const updatedFavs = isAlreadyFav
+      ? currentFavs.filter((id) => id !== eventId)
+      : [...currentFavs, eventId];
+
+    updateProfile({ favourite_events: updatedFavs });
+  };
+
   const toggleFavouriteCategory = (category: EventCategory) => {
     if (!user) {
       openAuthModal('Sign in with your FLAME email to save favourite categories.');
@@ -893,6 +913,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         events,
         savedEventIds: user?.saved_events || [],
         goingEventIds: user?.going_events || [],
+        favouriteEventIds: user?.favourite_events || [],
         favouriteCategories: user?.favourite_categories || [],
         notifications,
         unreadNotificationsCount,
@@ -936,6 +957,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateProfile,
         toggleSaveEvent,
         toggleGoingEvent,
+        toggleFavouriteEvent,
         toggleFavouriteCategory,
         createEvent,
         checkUserPostLimit,

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
-  const { events, savedEventIds, goingEventIds, setCurrentTab } = useApp();
+  const { events, savedEventIds, favouriteEventIds, goingEventIds, setCurrentTab } = useApp();
 
   const [selectedQuickCategory, setSelectedQuickCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,10 +38,10 @@ export const HomeView: React.FC = () => {
     );
   }, []);
 
-  // Filter featured cards with 2-day auto-expiry rule
+  // Filter featured cards with 2-day auto-expiry rule (or indefinitely if favourited)
   const displayedEvents = events.filter((evt) => {
-    // 2-day auto-expiry rule: remove from all events after 2 days unless favourited
-    if (!isEventActive(evt, savedEventIds, goingEventIds)) {
+    // 2-day auto-expiry rule: remove from discovery collage after 2 days unless favourited
+    if (!isEventActive(evt, favouriteEventIds)) {
       return false;
     }
 
@@ -65,9 +65,21 @@ export const HomeView: React.FC = () => {
     if (aCompleted && !bCompleted) return 1;
     if (!aCompleted && bCompleted) return -1;
     
+    // For upcoming events: Saved events show up BEFORE other events!
     if (!aCompleted && !bCompleted) {
+      const aSaved = savedEventIds.includes(a.id);
+      const bSaved = savedEventIds.includes(b.id);
+      if (aSaved && !bSaved) return -1;
+      if (!aSaved && bSaved) return 1;
       return a.date.localeCompare(b.date);
     }
+
+    // For completed events: Favourited events show up before other completed events
+    const aFav = favouriteEventIds.includes(a.id);
+    const bFav = favouriteEventIds.includes(b.id);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+
     return b.date.localeCompare(a.date);
   });
 

@@ -24,6 +24,7 @@ export const ExploreView: React.FC = () => {
     isAuthenticated, 
     savedEventIds, 
     goingEventIds, 
+    favouriteEventIds,
     openAuthModal 
   } = useApp();
 
@@ -50,7 +51,7 @@ export const ExploreView: React.FC = () => {
     return events.filter((evt) => {
       // 0. 2-Day Auto-Expiry Rule: Remove from all events after 2 days of happening unless favourited
       if (timeFilter !== 'Past') {
-        if (!isEventActive(evt, savedEventIds, goingEventIds)) {
+        if (!isEventActive(evt, favouriteEventIds)) {
           return false;
         }
       }
@@ -109,12 +110,24 @@ export const ExploreView: React.FC = () => {
       if (aCompleted && !bCompleted) return 1;
       if (!aCompleted && bCompleted) return -1;
       
+      // For upcoming events: Saved events show up BEFORE other events!
       if (!aCompleted && !bCompleted) {
+        const aSaved = savedEventIds.includes(a.id);
+        const bSaved = savedEventIds.includes(b.id);
+        if (aSaved && !bSaved) return -1;
+        if (!aSaved && bSaved) return 1;
         return a.date.localeCompare(b.date);
       }
+
+      // For completed events: Favourited events show up before other completed events
+      const aFav = favouriteEventIds.includes(a.id);
+      const bFav = favouriteEventIds.includes(b.id);
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
+
       return b.date.localeCompare(a.date);
     });
-  }, [events, searchQuery, selectedCategory, timeFilter, fitsMyScheduleOnly, isAuthenticated, user, todayStr, tomorrowStr]);
+  }, [events, searchQuery, selectedCategory, timeFilter, fitsMyScheduleOnly, isAuthenticated, user, todayStr, tomorrowStr, savedEventIds, favouriteEventIds]);
 
   const handleFitsScheduleToggle = () => {
     if (!isAuthenticated) {

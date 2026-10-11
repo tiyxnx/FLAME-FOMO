@@ -207,32 +207,64 @@ export const DEFAULT_TIMETABLE_SAMPLE: ClassScheduleItem[] = [
 // Clean slate for production: all events come dynamically from Supabase database
 export const INITIAL_SEED_EVENTS: EventItem[] = [];
 
+// ==============================================================================
+// POST-EVENT COMPLETION & TIMESTAMPS
+// ==============================================================================
+export const getEventEndTimestamp = (event: EventItem): number => {
+  const dateStr = event.date;
+  let endHour = 23;
+  let endMinute = 59;
+
+  if (event.time_end) {
+    const parts = event.time_end.split(':');
+    if (parts.length >= 2) {
+      endHour = parseInt(parts[0], 10) || 23;
+      endMinute = parseInt(parts[1], 10) || 59;
+    }
+  } else if (event.time_start_end && event.time_start_end.includes('-')) {
+    const endPart = event.time_start_end.split('-')[1]?.trim();
+    if (endPart) {
+      const match = endPart.match(/(\d{1,2}):(\d{2})/);
+      if (match) {
+        endHour = parseInt(match[1], 10) || 23;
+        endMinute = parseInt(match[2], 10) || 59;
+      }
+    }
+  }
+
+  const d = new Date(`${dateStr}T${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}:00`);
+  return isNaN(d.getTime()) ? new Date(dateStr).getTime() + (24 * 60 * 60 * 1000) : d.getTime();
+};
+
+export const isEventCompletedOrDone = (event: EventItem): boolean => {
+  if (event.status === 'Completed') return true;
+  return Date.now() >= getEventEndTimestamp(event);
+};
+
 /**
  * Evaluates whether an event remains active on the public discovery feeds.
- * Rule: Events that concluded more than 2 days ago are removed from the public feed,
- * UNLESS the user has favourited / saved them or marked "I'm Going".
+ * Rules:
+ * 1. If the user has FAVOURITED the event, it ALWAYS remains on their discovery board,
+ *    even after 48 hours of it ending.
+ * 2. If the user unfavourites it (or hasn't favourited it), it is removed from the discovery
+ *    board after 48 hours (2 days) post-completion.
  */
 export const isEventActive = (
   event: EventItem,
-  savedIds: string[] = [],
-  goingIds: string[] = []
+  favouriteEventIds: string[] = []
 ): boolean => {
-  // If the event is saved/favourited by the student or marked as going, always keep it!
-  if (savedIds.includes(event.id) || goingIds.includes(event.id)) {
+  // If the user favourited this event, it ALWAYS remains on their discovery board!
+  if (favouriteEventIds.includes(event.id)) {
     return true;
   }
 
   if (!event.date) return true;
 
-  // Assume the event day concludes at 23:59:59
-  const eventDateObj = new Date(`${event.date}T23:59:59`);
-  if (isNaN(eventDateObj.getTime())) return true;
+  const endMs = getEventEndTimestamp(event);
+  const twoDaysMs = 48 * 60 * 60 * 1000; // 48 hours (2 days) post-completion
+  const expirationTimestamp = endMs + twoDaysMs;
 
-  const now = new Date();
-  const twoDaysMs = 2 * 24 * 60 * 60 * 1000; // 2 days in ms
-  const expirationTimestamp = eventDateObj.getTime() + twoDaysMs;
-
-  return now.getTime() <= expirationTimestamp;
+  return Date.now() <= expirationTimestamp;
 };
 
 // ==============================================================================
@@ -339,36 +371,6 @@ export const checkEventPostRateLimit = (
 // ==============================================================================
 // POST-EVENT REVIEW ELIGIBILITY (2 DAYS POST-COMPLETION FOR "I'M GOING" ATTENDEES)
 // ==============================================================================
-export const getEventEndTimestamp = (event: EventItem): number => {
-  const dateStr = event.date;
-  let endHour = 23;
-  let endMinute = 59;
-
-  if (event.time_end) {
-    const parts = event.time_end.split(':');
-    if (parts.length >= 2) {
-      endHour = parseInt(parts[0], 10) || 23;
-      endMinute = parseInt(parts[1], 10) || 59;
-    }
-  } else if (event.time_start_end && event.time_start_end.includes('-')) {
-    const endPart = event.time_start_end.split('-')[1]?.trim();
-    if (endPart) {
-      const match = endPart.match(/(\d{1,2}):(\d{2})/);
-      if (match) {
-        endHour = parseInt(match[1], 10) || 23;
-        endMinute = parseInt(match[2], 10) || 59;
-      }
-    }
-  }
-
-  const d = new Date(`${dateStr}T${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}:00`);
-  return isNaN(d.getTime()) ? new Date(dateStr).getTime() + (24 * 60 * 60 * 1000) : d.getTime();
-};
-
-export const isEventCompletedOrDone = (event: EventItem): boolean => {
-  if (event.status === 'Completed') return true;
-  return Date.now() >= getEventEndTimestamp(event);
-};
 
 export interface EventReviewEligibilityResult {
   isDone: boolean;

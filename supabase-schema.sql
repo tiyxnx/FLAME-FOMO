@@ -15,9 +15,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   academic_timetable JSONB DEFAULT '[]'::jsonb,      -- Array of enrolled class objects for clash detection
   saved_events JSONB DEFAULT '[]'::jsonb,             -- Event IDs marked as Saved
   going_events JSONB DEFAULT '[]'::jsonb,             -- Event IDs marked as I'm Going
+  favourite_events JSONB DEFAULT '[]'::jsonb,         -- Event IDs marked as Favourite (Star)
   favourite_categories JSONB DEFAULT '[]'::jsonb,     -- Starred categories
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS favourite_events JSONB DEFAULT '[]'::jsonb;
 
 -- 2. Create the EVENTS table
 CREATE TABLE IF NOT EXISTS public.events (

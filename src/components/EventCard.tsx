@@ -28,9 +28,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     isAuthenticated,
     savedEventIds,
     goingEventIds,
+    favouriteEventIds,
     favouriteCategories,
     toggleSaveEvent,
     toggleGoingEvent,
+    toggleFavouriteEvent,
     toggleFavouriteCategory,
     openAuthModal,
     openEventDetail,
@@ -40,6 +42,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
 
   const isSaved = savedEventIds.includes(event.id);
   const isGoing = goingEventIds.includes(event.id);
+  const isFavourited = favouriteEventIds.includes(event.id);
   const isFavCategory = favouriteCategories.includes(event.category);
   const isCancelled = event.status === 'Cancelled';
   const isAdmin = Boolean(
@@ -141,7 +144,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     }
 
     if (actionType === 'favourite') {
-      toggleFavouriteCategory(event.category);
+      toggleFavouriteEvent(event.id);
     } else if (actionType === 'going') {
       toggleGoingEvent(event.id);
     } else if (actionType === 'save') {
@@ -234,44 +237,48 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
 
         {/* Hover/Tap Action Overlay */}
         <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-wrap items-center justify-center gap-1.5 p-2 z-20 backdrop-blur-xs">
-          {/* Favourite (Star Icon) */}
+          {/* Favourite (Star Icon) - KEPT ALWAYS */}
           <button
             onClick={(e) => handleActionClick(e, 'favourite')}
-            title={isFavCategory ? 'Unsubscribe from category' : 'Favourite Category'}
+            title={isFavourited ? 'Remove from Favourites' : 'Favourite Event (Keep on Board)'}
             className={`p-2 rounded-full transition-transform active:scale-90 shadow-md ${
-              isFavCategory
+              isFavourited
                 ? 'bg-amber-400 text-amber-950 ring-2 ring-amber-300'
                 : 'bg-white/90 text-neutral-800 hover:bg-white hover:text-amber-500'
             }`}
           >
-            <Star className={`w-3.5 h-3.5 ${isFavCategory ? 'fill-amber-950' : ''}`} />
+            <Star className={`w-3.5 h-3.5 ${isFavourited ? 'fill-amber-950' : ''}`} />
           </button>
 
-          {/* I'm Going (Pill) */}
-          <button
-            onClick={(e) => handleActionClick(e, 'going')}
-            className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
-              isGoing
-                ? 'bg-emerald-600 text-white ring-2 ring-emerald-300'
-                : 'bg-white/90 text-neutral-900 hover:bg-emerald-500 hover:text-white'
-            }`}
-          >
-            <Check className="w-3.5 h-3.5" />
-            <span>{isGoing ? "Going!" : "Going"}</span>
-          </button>
+          {/* I'm Going (Pill) - REMOVED WHEN EVENT HAS ENDED */}
+          {!isCompleted && (
+            <button
+              onClick={(e) => handleActionClick(e, 'going')}
+              className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
+                isGoing
+                  ? 'bg-emerald-600 text-white ring-2 ring-emerald-300'
+                  : 'bg-white/90 text-neutral-900 hover:bg-emerald-500 hover:text-white'
+              }`}
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>{isGoing ? "Going!" : "Going"}</span>
+            </button>
+          )}
 
-          {/* Save (Pill) */}
-          <button
-            onClick={(e) => handleActionClick(e, 'save')}
-            className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
-              isSaved
-                ? 'bg-[#c93b2b] text-white ring-2 ring-red-300'
-                : 'bg-white/90 text-neutral-900 hover:bg-[#c93b2b] hover:text-white'
-            }`}
-          >
-            <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
-            <span>{isSaved ? 'Saved' : 'Save'}</span>
-          </button>
+          {/* Save (Pill) - REMOVED WHEN EVENT HAS ENDED */}
+          {!isCompleted && (
+            <button
+              onClick={(e) => handleActionClick(e, 'save')}
+              className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
+                isSaved
+                  ? 'bg-[#c93b2b] text-white ring-2 ring-red-300'
+                  : 'bg-white/90 text-neutral-900 hover:bg-[#c93b2b] hover:text-white'
+              }`}
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
+              <span>{isSaved ? 'Saved' : 'Save'}</span>
+            </button>
+          )}
 
           {/* Feedback Option ONLY for events that are completed / done */}
           {isCompleted && (

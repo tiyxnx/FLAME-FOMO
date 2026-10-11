@@ -39,6 +39,7 @@ export interface UserProfile {
   academic_timetable: ClassScheduleItem[];
   saved_events: string[]; // Event IDs marked as "Save"
   going_events: string[]; // Event IDs marked as "I'm Going"
+  favourite_events?: string[]; // Event IDs marked as "Favourite" (Star)
   favourite_categories?: EventCategory[];
   created_at?: string;
 }
