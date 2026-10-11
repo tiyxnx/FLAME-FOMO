@@ -8,8 +8,8 @@ export const DontForget: React.FC<{ eventsProp?: import('@/types').EventItem[] }
   const { events: contextEvents, openEventDetail } = useApp();
   const events = eventsProp || contextEvents;
 
-  const [todayStr, setTodayStr] = React.useState('2026-10-11');
-  const [nowTimestamp, setNowTimestamp] = React.useState(Date.now());
+  const [todayStr, setTodayStr] = React.useState<string>('');
+  const [nowTimestamp, setNowTimestamp] = React.useState<number>(0);
 
   React.useEffect(() => {
     const now = new Date();
@@ -25,6 +25,8 @@ export const DontForget: React.FC<{ eventsProp?: import('@/types').EventItem[] }
     const dateOnly = new Date(`${deadlineStr}T23:59:59`).getTime();
     return isNaN(dateOnly) ? 0 : dateOnly;
   };
+
+  if (!todayStr || !nowTimestamp) return null;
 
   // 1. Strictly exclude concluded events (event date must be today or future, status not Completed/Cancelled)
   const activeUpcomingEvents = events.filter((e) => {
