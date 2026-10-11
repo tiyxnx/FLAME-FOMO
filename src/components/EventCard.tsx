@@ -13,7 +13,8 @@ import {
   AlertCircle,
   ExternalLink,
   Users,
-  Edit3
+  Edit3,
+  MessageSquare
 } from 'lucide-react';
 
 interface EventCardProps {
@@ -34,6 +35,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     openAuthModal,
     openEventDetail,
     openEditEvent,
+    openEventFeedback,
   } = useApp();
 
   const isSaved = savedEventIds.includes(event.id);
@@ -231,37 +233,37 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
         )}
 
         {/* Hover/Tap Action Overlay */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 p-2 z-20 backdrop-blur-xs">
+        <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-wrap items-center justify-center gap-1.5 p-2 z-20 backdrop-blur-xs">
           {/* Favourite (Star Icon) */}
           <button
             onClick={(e) => handleActionClick(e, 'favourite')}
             title={isFavCategory ? 'Unsubscribe from category' : 'Favourite Category'}
-            className={`p-2.5 rounded-full transition-transform active:scale-90 shadow-md ${
+            className={`p-2 rounded-full transition-transform active:scale-90 shadow-md ${
               isFavCategory
                 ? 'bg-amber-400 text-amber-950 ring-2 ring-amber-300'
                 : 'bg-white/90 text-neutral-800 hover:bg-white hover:text-amber-500'
             }`}
           >
-            <Star className={`w-4 h-4 ${isFavCategory ? 'fill-amber-950' : ''}`} />
+            <Star className={`w-3.5 h-3.5 ${isFavCategory ? 'fill-amber-950' : ''}`} />
           </button>
 
           {/* I'm Going (Pill) */}
           <button
             onClick={(e) => handleActionClick(e, 'going')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
               isGoing
                 ? 'bg-emerald-600 text-white ring-2 ring-emerald-300'
                 : 'bg-white/90 text-neutral-900 hover:bg-emerald-500 hover:text-white'
             }`}
           >
             <Check className="w-3.5 h-3.5" />
-            <span>{isGoing ? "I'm Going!" : "I'm Going"}</span>
+            <span>{isGoing ? "Going!" : "Going"}</span>
           </button>
 
           {/* Save (Pill) */}
           <button
             onClick={(e) => handleActionClick(e, 'save')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
+            className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 ${
               isSaved
                 ? 'bg-[#c93b2b] text-white ring-2 ring-red-300'
                 : 'bg-white/90 text-neutral-900 hover:bg-[#c93b2b] hover:text-white'
@@ -269,6 +271,19 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           >
             <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
             <span>{isSaved ? 'Saved' : 'Save'}</span>
+          </button>
+
+          {/* Feedback Option on Hover */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              openEventFeedback(event);
+            }}
+            title={isCompleted ? "Rate & Review Event" : "Leave Event Feedback"}
+            className="px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-amber-950 ring-2 ring-amber-200/80 cursor-pointer"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-amber-950" />
+            <span>{isCompleted ? 'Rate' : 'Feedback'}</span>
           </button>
 
           {/* Quick Edit (Only shown to event author or admin) */}
@@ -279,9 +294,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
                 openEditEvent(event);
               }}
               title="Edit Your Event"
-              className="p-2.5 rounded-full bg-amber-400 text-amber-950 hover:bg-amber-300 transition-transform active:scale-90 shadow-md"
+              className="p-2 rounded-full bg-amber-400 text-amber-950 hover:bg-amber-300 transition-transform active:scale-90 shadow-md"
             >
-              <Edit3 className="w-4 h-4" />
+              <Edit3 className="w-3.5 h-3.5" />
             </button>
           )}
         </div>

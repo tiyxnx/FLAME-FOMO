@@ -17,7 +17,8 @@ import {
   Edit3,
   Trash2,
   AlertTriangle,
-  Ticket
+  Ticket,
+  MessageSquare
 } from 'lucide-react';
 
 export const EventDetailModal: React.FC = () => {
@@ -34,6 +35,7 @@ export const EventDetailModal: React.FC = () => {
     toggleFavouriteCategory,
     openAuthModal,
     openEditEvent,
+    openEventFeedback,
     deleteEvent,
     setCurrentTab,
     updateEvent,
@@ -149,23 +151,25 @@ export const EventDetailModal: React.FC = () => {
           {event.event_name}
         </h2>
 
-        {/* Ratings block for Completed events */}
-        {isCompleted && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-sm flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-amber-900 text-sm">Event Completed</span>
-              <span className="text-amber-300">|</span>
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                <span className="text-sm font-bold text-amber-900">{averageRating || 'No ratings yet'}</span>
-                <span className="text-xs text-amber-700">({event.ratings?.length || 0} reviews)</span>
-              </div>
+        {/* Ratings & Feedback block */}
+        <div className="mb-4 p-3 bg-amber-50/80 border border-amber-200 rounded-sm flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-amber-900 text-xs sm:text-sm">
+              {isCompleted ? 'Event Completed' : 'Campus Event'}
+            </span>
+            <span className="text-amber-300">|</span>
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span className="text-xs sm:text-sm font-bold text-amber-900">{averageRating || 'No ratings yet'}</span>
+              <span className="text-xs text-amber-700">({event.ratings?.length || 0} reviews)</span>
             </div>
-            
-            {/* Let any authenticated user rate it */}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Let any authenticated user rate it quickly */}
             {isAuthenticated && (
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-amber-800 mr-1">Rate:</span>
+              <div className="flex items-center gap-0.5 mr-1">
+                <span className="text-xs font-bold text-amber-800 mr-1 hidden sm:inline">Quick Rate:</span>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -175,14 +179,24 @@ export const EventDetailModal: React.FC = () => {
                       updateEvent(event.id, { ratings: newRatings });
                     }}
                     className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
+                    title={`Rate ${star} Stars`}
                   >
-                    <Star className={`w-4 h-4 ${star <= userRating ? 'fill-amber-500 text-amber-500' : 'text-neutral-300 hover:text-amber-400'}`} />
+                    <Star className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${star <= userRating ? 'fill-amber-500 text-amber-500' : 'text-neutral-300 hover:text-amber-400'}`} />
                   </button>
                 ))}
               </div>
             )}
+
+            {/* Open Full Feedback & Reviews Modal */}
+            <button
+              onClick={() => openEventFeedback(event)}
+              className="px-2.5 py-1 rounded-xs bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold text-xs flex items-center gap-1 shadow-2xs transition-colors"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Feedback & Notes</span>
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Tentative Schedule Banner */}
         {isTentative && (

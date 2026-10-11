@@ -58,3 +58,21 @@ CREATE POLICY "Public delete events" ON public.events FOR DELETE USING (true);
 -- Events are created dynamically by students and club leads using the web application's
 -- "Create Event" (+) floating action button or directly managed in the Supabase Table Editor.
 
+-- 5. Student Feedback & Ratings System
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS ratings JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS feedback JSONB DEFAULT '[]'::jsonb;
+
+CREATE TABLE IF NOT EXISTS public.site_feedback (
+  id TEXT PRIMARY KEY,
+  user_email TEXT,
+  category TEXT NOT NULL,
+  rating INT,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.site_feedback ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read site_feedback" ON public.site_feedback FOR SELECT USING (true);
+CREATE POLICY "Public insert site_feedback" ON public.site_feedback FOR INSERT WITH CHECK (true);
+
+

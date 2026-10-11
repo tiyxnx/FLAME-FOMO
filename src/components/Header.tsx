@@ -14,7 +14,8 @@ import {
   LogOut, 
   Check, 
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  MessageSquare
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -31,6 +32,7 @@ export const Header: React.FC = () => {
     openEventDetail,
     events,
     openOnboarding,
+    openSiteFeedback,
   } = useApp();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -261,6 +263,17 @@ export const Header: React.FC = () => {
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       <span>Retake Student Quiz</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        openSiteFeedback();
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded text-xs text-[#d6cbaf] hover:bg-[#342e26] hover:text-white flex items-center gap-2"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Give Site Feedback</span>
                     </button>
 
                     <button

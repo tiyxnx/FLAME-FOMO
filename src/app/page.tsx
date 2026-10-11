@@ -19,6 +19,8 @@ import { ClashModal } from '@/components/ClashModal';
 import { ExternalRegModal } from '@/components/ExternalRegModal';
 import { InAppReminder } from '@/components/InAppReminder';
 import { FloatingPlanWidget } from '@/components/FloatingPlanWidget';
+import { EventFeedbackModal } from '@/components/EventFeedbackModal';
+import { SiteFeedbackWidget } from '@/components/SiteFeedbackWidget';
 
 export default function App() {
   const { currentTab, isAuthenticated, openAuthModal } = useApp();
@@ -41,11 +43,15 @@ export default function App() {
       {/* Persistent Floating Action Button for Event Creation (Hidden for Guests) */}
       <FloatingActionButton />
 
+      {/* Persistent Floating Feedback Widget (Site Suggestions & Bug Reports) */}
+      <SiteFeedbackWidget />
+
       {/* System Modals */}
       <AuthModal />
       <OnboardingModal />
       <CreateEventModal />
       <EventDetailModal />
+      <EventFeedbackModal />
       <ClashModal />
       <ExternalRegModal />
       <InAppReminder />

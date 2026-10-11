@@ -65,7 +65,27 @@ export interface EventItem {
   registration_fee?: string; // e.g. "Free" or "₹200" or "₹3,540"
   submitted_by?: string; // user email if UGC
   ratings?: { email: string; score: number }[]; // Array of ratings
+  feedback?: EventFeedbackItem[]; // Student reviews & feedback notes
   created_at?: string;
+}
+
+export interface EventFeedbackItem {
+  id: string;
+  email: string;
+  name?: string;
+  score: number;
+  comment?: string;
+  tag?: string;
+  createdAt: string;
+}
+
+export interface SiteFeedbackSubmission {
+  id: string;
+  user_email?: string;
+  category: 'suggestion' | 'bug' | 'missing_event' | 'love';
+  rating: number;
+  message: string;
+  created_at: string;
 }
 
 export interface NotificationItem {

@@ -6,7 +6,9 @@ import {
   EventItem, 
   EventCategory, 
   NotificationItem, 
-  ClassScheduleItem 
+  ClassScheduleItem,
+  EventFeedbackItem,
+  SiteFeedbackSubmission
 } from '@/types';
 import { 
   INITIAL_SEED_EVENTS, 
@@ -60,6 +62,19 @@ interface AppContextType {
   externalRegEvent: EventItem | null;
   closeExternalRegModal: () => void;
 
+  // Event Feedback Modal
+  isEventFeedbackModalOpen: boolean;
+  selectedEventForFeedback: EventItem | null;
+  openEventFeedback: (event: EventItem) => void;
+  closeEventFeedback: () => void;
+  submitEventFeedback: (eventId: string, feedbackData: { score: number; comment?: string; tag?: string }) => void;
+
+  // Site Feedback Widget & Modal
+  isSiteFeedbackOpen: boolean;
+  openSiteFeedback: () => void;
+  closeSiteFeedback: () => void;
+  submitSiteFeedback: (submission: Omit<SiteFeedbackSubmission, 'id' | 'created_at'>) => Promise<boolean>;
+
   // User Actions
   loginAsGuest: () => void;
   loginWithGoogle: () => Promise<void>;
@@ -99,6 +114,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedEventForDetail, setSelectedEventForDetail] = useState<EventItem | null>(null);
   const [clashInfo, setClashInfo] = useState<ClashInfo | null>(null);
   const [externalRegEvent, setExternalRegEvent] = useState<EventItem | null>(null);
+  const [isEventFeedbackModalOpen, setIsEventFeedbackModalOpen] = useState(false);
+  const [selectedEventForFeedback, setSelectedEventForFeedback] = useState<EventItem | null>(null);
+  const [isSiteFeedbackOpen, setIsSiteFeedbackOpen] = useState(false);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
@@ -310,6 +328,89 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const closeEventDetail = () => setSelectedEventForDetail(null);
 
   const closeExternalRegModal = () => setExternalRegEvent(null);
+
+  const openEventFeedback = (event: EventItem) => {
+    setSelectedEventForFeedback(event);
+    setIsEventFeedbackModalOpen(true);
+  };
+
+  const closeEventFeedback = () => {
+    setIsEventFeedbackModalOpen(false);
+    setSelectedEventForFeedback(null);
+  };
+
+  const submitEventFeedback = (
+    eventId: string,
+    feedbackData: { score: number; comment?: string; tag?: string }
+  ) => {
+    const targetEvent = events.find((e) => e.id === eventId);
+    if (!targetEvent) return;
+
+    const email = user?.flame_email || 'student@flame.edu.in';
+    const authorName = user?.name || (email.split('@')[0] || 'FLAME Student');
+
+    const currentRatings = targetEvent.ratings || [];
+    const updatedRatings = [
+      ...currentRatings.filter((r) => r.email !== email),
+      { email, score: feedbackData.score },
+    ];
+
+    const currentFeedback = targetEvent.feedback || [];
+    const newEntry: EventFeedbackItem = {
+      id: `efb-${Date.now()}`,
+      email,
+      name: authorName,
+      score: feedbackData.score,
+      comment: feedbackData.comment,
+      tag: feedbackData.tag,
+      createdAt: new Date().toISOString(),
+    };
+    const updatedFeedback = [newEntry, ...currentFeedback];
+
+    updateEvent(eventId, {
+      ratings: updatedRatings,
+      feedback: updatedFeedback,
+    });
+  };
+
+  const openSiteFeedback = () => setIsSiteFeedbackOpen(true);
+  const closeSiteFeedback = () => setIsSiteFeedbackOpen(false);
+
+  const submitSiteFeedback = async (
+    submission: Omit<SiteFeedbackSubmission, 'id' | 'created_at'>
+  ): Promise<boolean> => {
+    const newEntry: SiteFeedbackSubmission = {
+      ...submission,
+      id: `sfb-${Date.now()}`,
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      const stored = localStorage.getItem('flame_fomo_site_feedback');
+      const list = stored ? JSON.parse(stored) : [];
+      list.unshift(newEntry);
+      localStorage.setItem('flame_fomo_site_feedback', JSON.stringify(list));
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('site_feedback').insert([{
+          id: newEntry.id,
+          user_email: newEntry.user_email || user?.flame_email || 'guest@flame.edu.in',
+          category: newEntry.category,
+          rating: newEntry.rating,
+          message: newEntry.message,
+          created_at: newEntry.created_at,
+        }]);
+      } catch (err) {
+        console.warn('Supabase site_feedback insert:', err);
+      }
+    }
+
+    return true;
+  };
 
   const loginAsGuest = () => {
     saveUserToStorage(null);
@@ -765,6 +866,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         resolveClash,
         externalRegEvent,
         closeExternalRegModal,
+        isEventFeedbackModalOpen,
+        selectedEventForFeedback,
+        openEventFeedback,
+        closeEventFeedback,
+        submitEventFeedback,
+        isSiteFeedbackOpen,
+        openSiteFeedback,
+        closeSiteFeedback,
+        submitSiteFeedback,
         loginAsGuest,
         loginWithGoogle,
         loginWithFlameEmail,
