@@ -273,18 +273,20 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
             <span>{isSaved ? 'Saved' : 'Save'}</span>
           </button>
 
-          {/* Feedback Option on Hover */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              openEventFeedback(event);
-            }}
-            title={isCompleted ? "Rate & Review Event" : "Leave Event Feedback"}
-            className="px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-amber-950 ring-2 ring-amber-200/80 cursor-pointer"
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-amber-950" />
-            <span>{isCompleted ? 'Rate' : 'Feedback'}</span>
-          </button>
+          {/* Feedback Option ONLY for events that are completed / done */}
+          {isCompleted && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openEventFeedback(event);
+              }}
+              title="Rate & Review Completed Event (Verified Attendees)"
+              className="px-2.5 py-1.5 rounded-full text-xs font-bold transition-transform active:scale-90 shadow-md flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 text-amber-950 ring-2 ring-amber-200/80 cursor-pointer"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-amber-950" />
+              <span>Rate Event</span>
+            </button>
+          )}
 
           {/* Quick Edit (Only shown to event author or admin) */}
           {canEdit && (

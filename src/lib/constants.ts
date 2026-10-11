@@ -234,3 +234,211 @@ export const isEventActive = (
 
   return now.getTime() <= expirationTimestamp;
 };
+
+// ==============================================================================
+// RATE LIMITING & EXEMPTIONS
+// ==============================================================================
+export const ADMIN_EXEMPT_EMAILS = [
+  'tiyanashah21@gmail.com',
+  'tiyana.shah@flame.edu.in',
+];
+
+export const isExemptFromEventPostRateLimit = (email?: string): boolean => {
+  if (!email) return false;
+  const normalized = email.toLowerCase().trim();
+  if (normalized.includes('tiyana')) return true;
+  return ADMIN_EXEMPT_EMAILS.some((admin) => admin.toLowerCase() === normalized);
+};
+
+export const EVENT_POST_RATE_LIMIT = 2; // Maximum 2 events per hour for non-exempt accounts
+export const EVENT_POST_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+export interface EventPostRateLimitResult {
+  allowed: boolean;
+  count: number;
+  minutesLeft: number;
+  reason?: string;
+  isExempt: boolean;
+}
+
+export const checkEventPostRateLimit = (
+  userEmail: string | undefined,
+  events: EventItem[] = []
+): EventPostRateLimitResult => {
+  if (!userEmail) {
+    return { 
+      allowed: false, 
+      count: 0, 
+      minutesLeft: 0, 
+      reason: 'Please sign in with your FLAME email to post events.',
+      isExempt: false 
+    };
+  }
+
+  const normalizedEmail = userEmail.toLowerCase().trim();
+  if (isExemptFromEventPostRateLimit(normalizedEmail)) {
+    return { allowed: true, count: 0, minutesLeft: 0, isExempt: true };
+  }
+
+  const now = Date.now();
+  const windowStart = now - EVENT_POST_WINDOW_MS;
+
+  // 1. Gather timestamps from live events posted by this user
+  const recentEvents = events.filter((e) => {
+    if (!e.submitted_by) return false;
+    if (e.submitted_by.toLowerCase().trim() !== normalizedEmail) return false;
+    if (!e.created_at) return false;
+    const createdMs = new Date(e.created_at).getTime();
+    return !isNaN(createdMs) && createdMs > windowStart;
+  });
+
+  // 2. Gather timestamps from local audit storage
+  let localTimestamps: number[] = [];
+  try {
+    if (typeof window !== 'undefined') {
+      const raw = localStorage.getItem(`flame_fomo_post_history_${normalizedEmail}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          localTimestamps = parsed.filter((t) => typeof t === 'number' && t > windowStart);
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore storage parse errors
+  }
+
+  // Combine unique timestamps
+  const allTimestamps = Array.from(new Set([
+    ...recentEvents.map((e) => new Date(e.created_at!).getTime()),
+    ...localTimestamps,
+  ])).sort((a, b) => a - b);
+
+  const count = allTimestamps.length;
+
+  if (count >= EVENT_POST_RATE_LIMIT) {
+    const oldestInWindow = allTimestamps[0];
+    const msLeft = (oldestInWindow + EVENT_POST_WINDOW_MS) - now;
+    const minutesLeft = Math.max(1, Math.ceil(msLeft / (60 * 1000)));
+    return {
+      allowed: false,
+      count,
+      minutesLeft,
+      reason: `Hourly posting limit reached: You can post up to 2 events per hour. Please wait ${minutesLeft} minute(s) before posting again.`,
+      isExempt: false,
+    };
+  }
+
+  return { allowed: true, count, minutesLeft: 0, isExempt: false };
+};
+
+// ==============================================================================
+// POST-EVENT REVIEW ELIGIBILITY (2 DAYS POST-COMPLETION FOR "I'M GOING" ATTENDEES)
+// ==============================================================================
+export const getEventEndTimestamp = (event: EventItem): number => {
+  const dateStr = event.date;
+  let endHour = 23;
+  let endMinute = 59;
+
+  if (event.time_end) {
+    const parts = event.time_end.split(':');
+    if (parts.length >= 2) {
+      endHour = parseInt(parts[0], 10) || 23;
+      endMinute = parseInt(parts[1], 10) || 59;
+    }
+  } else if (event.time_start_end && event.time_start_end.includes('-')) {
+    const endPart = event.time_start_end.split('-')[1]?.trim();
+    if (endPart) {
+      const match = endPart.match(/(\d{1,2}):(\d{2})/);
+      if (match) {
+        endHour = parseInt(match[1], 10) || 23;
+        endMinute = parseInt(match[2], 10) || 59;
+      }
+    }
+  }
+
+  const d = new Date(`${dateStr}T${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}:00`);
+  return isNaN(d.getTime()) ? new Date(dateStr).getTime() + (24 * 60 * 60 * 1000) : d.getTime();
+};
+
+export const isEventCompletedOrDone = (event: EventItem): boolean => {
+  if (event.status === 'Completed') return true;
+  return Date.now() >= getEventEndTimestamp(event);
+};
+
+export interface EventReviewEligibilityResult {
+  isDone: boolean;
+  isWithin48h: boolean;
+  isUserGoing: boolean;
+  canReview: boolean;
+  reason?: string;
+  hoursLeft?: number;
+}
+
+export const checkEventReviewEligibility = (
+  event: EventItem,
+  user: { flame_email?: string; going_events?: string[] } | null
+): EventReviewEligibilityResult => {
+  const isDone = isEventCompletedOrDone(event);
+  const endMs = getEventEndTimestamp(event);
+  const twoDaysMs = 48 * 60 * 60 * 1000;
+  const now = Date.now();
+  const isWithin48h = isDone && now <= endMs + twoDaysMs;
+  const isUserGoing = Boolean(user && user.going_events && user.going_events.includes(event.id));
+
+  const msLeft = (endMs + twoDaysMs) - now;
+  const hoursLeft = Math.max(0, Math.ceil(msLeft / (60 * 60 * 1000)));
+
+  if (!isDone) {
+    return {
+      isDone: false,
+      isWithin48h: false,
+      isUserGoing,
+      canReview: false,
+      reason: 'Reviews are only open after the event has taken place.',
+      hoursLeft: 0,
+    };
+  }
+
+  if (!isWithin48h) {
+    return {
+      isDone: true,
+      isWithin48h: false,
+      isUserGoing,
+      canReview: false,
+      reason: 'The 48-hour review window has closed. Reviews are accepted within 2 days of event completion.',
+      hoursLeft: 0,
+    };
+  }
+
+  if (!user || !user.flame_email) {
+    return {
+      isDone: true,
+      isWithin48h: true,
+      isUserGoing: false,
+      canReview: false,
+      reason: 'Please sign in with your FLAME email to verify your event attendance.',
+      hoursLeft,
+    };
+  }
+
+  if (!isUserGoing) {
+    return {
+      isDone: true,
+      isWithin48h: true,
+      isUserGoing: false,
+      canReview: false,
+      reason: "Verified attendees only: You can only review events you marked as \"I'm Going\".",
+      hoursLeft,
+    };
+  }
+
+  return {
+    isDone: true,
+    isWithin48h: true,
+    isUserGoing: true,
+    canReview: true,
+    hoursLeft,
+  };
+};
+

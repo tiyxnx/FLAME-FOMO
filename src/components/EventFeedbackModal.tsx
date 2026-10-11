@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
+import { checkEventReviewEligibility } from '@/lib/constants';
 import { 
   X, 
   Star, 
   MessageSquare, 
-  Sparkles, 
   CheckCircle2, 
   Tag, 
   Calendar, 
-  MapPin, 
-  User as UserIcon,
-  Send
+  Lock,
+  Clock,
+  Send,
+  EyeOff,
+  UserCheck
 } from 'lucide-react';
 
 const FEEDBACK_TAGS = [
@@ -49,53 +51,54 @@ export const EventFeedbackModal: React.FC = () => {
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [comment, setComment] = useState<string>('');
-  const [guestName, setGuestName] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     if (isEventFeedbackModalOpen && selectedEventForFeedback) {
-      // Pre-fill user existing rating if already rated
-      const existingUserRating = selectedEventForFeedback.ratings?.find(
-        (r) => r.email === user?.flame_email
-      )?.score;
-      if (existingUserRating) {
-        setRating(existingUserRating);
-      } else {
-        setRating(5);
-      }
+      setRating(5);
       setSelectedTag('');
       setComment('');
       setIsSubmitted(false);
+      setErrorMessage('');
     }
   }, [isEventFeedbackModalOpen, selectedEventForFeedback, user]);
 
   if (!isEventFeedbackModalOpen || !selectedEventForFeedback) return null;
 
   const event = selectedEventForFeedback;
-  const isCompleted = event.status === 'Completed';
   
+  // Calculate verified attendee eligibility & 48h post-event window
+  const eligibility = checkEventReviewEligibility(event, user);
+
   const averageRating = (event.ratings?.length || 0) > 0
     ? (event.ratings!.reduce((sum: number, r: any) => sum + r.score, 0) / event.ratings!.length).toFixed(1)
     : null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
 
     if (!rating) {
-      alert('Please select a star rating between 1 and 5.');
+      setErrorMessage('Please select a star rating between 1 and 5.');
       return;
     }
 
-    submitEventFeedback(event.id, {
+    const res = submitEventFeedback(event.id, {
       score: rating,
       comment: comment.trim(),
       tag: selectedTag || undefined,
     });
 
+    if (res && !res.success) {
+      setErrorMessage(res.error || 'Failed to submit review.');
+      return;
+    }
+
     setIsSubmitted(true);
     setTimeout(() => {
       closeEventFeedback();
-    }, 1200);
+    }, 1500);
   };
 
   return (
@@ -104,10 +107,10 @@ export const EventFeedbackModal: React.FC = () => {
       <div className="absolute inset-0" onClick={closeEventFeedback} />
 
       {/* Scrapbook Kraft Paper Card */}
-      <div className="relative w-full max-w-lg bg-[#fbf8ee] border-2 border-[#d3ba6e] text-neutral-900 rounded-sm shadow-2xl z-10 overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-lg bg-[#fbf8ee] border-2 border-[#d3ba6e] text-neutral-900 rounded-sm shadow-2xl z-10 overflow-hidden max-h-[92vh] flex flex-col">
         {/* Washi Tape Header Accent */}
         <div 
-          className="absolute -top-3 left-1/2 -translate-x-1/2 w-36 h-6 bg-[#f3da90]/90 shadow-xs backdrop-blur-2xs rotate-[0.5deg] z-20 pointer-events-none"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 w-40 h-6 bg-[#f3da90]/90 shadow-xs backdrop-blur-2xs rotate-[0.5deg] z-20 pointer-events-none"
           style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
         />
 
@@ -119,10 +122,13 @@ export const EventFeedbackModal: React.FC = () => {
             </span>
             <div>
               <span className="text-[10px] font-mono uppercase tracking-widest text-amber-800 font-bold">
-                Student Feedback & Ratings
+                Post-Event Reviews
               </span>
-              <h3 className="font-editorial text-lg font-bold text-neutral-900 leading-tight">
-                {isCompleted ? 'Rate & Review Event' : 'Event Feedback'}
+              <h3 className="font-editorial text-lg font-bold text-neutral-900 leading-tight flex items-center gap-1.5">
+                <span>Attendee Review & Ratings</span>
+                <span className="text-[10px] font-sans font-bold px-1.5 py-0.2 bg-neutral-900 text-amber-200 rounded-xs uppercase">
+                  Anonymous
+                </span>
               </h3>
             </div>
           </div>
@@ -155,8 +161,11 @@ export const EventFeedbackModal: React.FC = () => {
                 <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-2xs bg-amber-200/80 text-amber-950 uppercase">
                   {event.category}
                 </span>
+                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-2xs bg-neutral-800 text-neutral-200 uppercase">
+                  Concluded
+                </span>
                 {averageRating && (
-                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-700">
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-700 ml-auto">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     {averageRating} ({event.ratings?.length} reviews)
                   </span>
@@ -166,30 +175,49 @@ export const EventFeedbackModal: React.FC = () => {
                 {event.event_name}
               </h4>
               <p className="text-[11px] text-neutral-600 truncate mt-0.5">
-                Organized by {event.organizer} • {event.date}
+                Organized by {event.organizer} • Concluded on {event.date}
               </p>
             </div>
           </div>
 
+          {/* Submission Success State */}
           {isSubmitted ? (
             <div className="p-6 bg-emerald-50 border border-emerald-300 rounded-sm text-center space-y-2 animate-in zoom-in-95 duration-200">
               <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <h4 className="font-editorial text-lg font-bold text-emerald-950">
-                Feedback Pinned! 📌
+                Anonymous Review Pinned! 📌
               </h4>
               <p className="text-xs text-emerald-800">
-                Thank you for contributing to campus life! Your rating has been recorded for {event.event_name}.
+                Thank you! Your feedback has been posted anonymously under <strong>&quot;Anonymous Flameite&quot;</strong>.
               </p>
             </div>
-          ) : (
+          ) : eligibility.canReview ? (
+            /* ELIGIBLE: Verified attendee within 48h post-event */
             <form onSubmit={handleSubmit} className="space-y-4">
               
+              {/* Anonymous Banner */}
+              <div className="p-2.5 bg-neutral-900 text-amber-100 rounded-xs border border-neutral-700 flex items-center gap-2 text-xs">
+                <EyeOff className="w-4 h-4 text-amber-400 shrink-0" />
+                <div className="text-[11px] leading-tight">
+                  <span className="font-bold text-amber-300">100% Anonymous Review: </span>
+                  Your name and email will be hidden. Fellow students and organizers will only see: <em>&quot;Anonymous Flameite&quot;</em>.
+                </div>
+              </div>
+
+              {/* Time Remaining in 48-Hour Review Window */}
+              {eligibility.hoursLeft !== undefined && (
+                <div className="flex items-center gap-1.5 text-[11px] font-mono text-amber-800 bg-amber-100/70 px-2.5 py-1 rounded-2xs border border-amber-300">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Review window closes in: <strong>{eligibility.hoursLeft} hour(s)</strong></span>
+                </div>
+              )}
+
               {/* Star Rating Section */}
               <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-sm text-center">
                 <label className="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5">
-                  How was your experience?
+                  How was your experience attending?
                 </label>
                 
                 <div className="flex items-center justify-center gap-1.5 my-2">
@@ -251,35 +279,22 @@ export const EventFeedbackModal: React.FC = () => {
               {/* Comment / Review Box */}
               <div>
                 <label className="block text-xs font-bold text-neutral-800 mb-1">
-                  Leave a note or tip for organizers & students:
+                  Share anonymous thoughts, tips, or feedback for the organizers:
                 </label>
                 <textarea
                   rows={3}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="e.g. Loved the energy! Make sure to grab seats 10 mins early next time..."
+                  placeholder="e.g. Loved the music and crowd vibes! Sound started 15 mins late but overall worth attending..."
                   className="w-full p-2.5 bg-white border border-[#d3ba6e] rounded-sm text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 resize-none font-sans shadow-inner"
                 />
               </div>
 
-              {/* Identity Note */}
-              <div className="p-2 bg-neutral-100/80 rounded-xs border border-neutral-200 flex items-center justify-between text-[11px] text-neutral-600">
-                <div className="flex items-center gap-1.5 truncate">
-                  <UserIcon className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                  <span className="truncate">
-                    Posting as: <strong className="text-neutral-800">{user?.name || user?.flame_email || 'FLAME Student (Anonymous)'}</strong>
-                  </span>
+              {errorMessage && (
+                <div className="p-2 bg-red-100 text-red-900 text-xs rounded border border-red-300">
+                  {errorMessage}
                 </div>
-                {!isAuthenticated && (
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('Sign in with your FLAME email to verify your feedback.')}
-                    className="text-amber-800 font-bold hover:underline shrink-0 ml-2"
-                  >
-                    Sign In
-                  </button>
-                )}
-              </div>
+              )}
 
               {/* Submit Button */}
               <button
@@ -287,24 +302,63 @@ export const EventFeedbackModal: React.FC = () => {
                 className="w-full py-2.5 px-4 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 rounded-sm font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-98"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>Pin Feedback 📌</span>
+                <span>Submit Anonymous Review 🕵️</span>
               </button>
             </form>
+          ) : (
+            /* INELIGIBLE NOTICES */
+            <div className="p-4 bg-amber-50/90 border-2 border-dashed border-amber-300 rounded-sm space-y-3">
+              <div className="flex items-start gap-2.5">
+                <Lock className="w-5 h-5 text-amber-800 shrink-0 mt-0.5" />
+                <div>
+                  <h5 className="font-editorial text-sm font-bold text-amber-950">
+                    Review Submission Restricted
+                  </h5>
+                  <p className="text-xs text-amber-900 mt-1 leading-relaxed">
+                    {eligibility.reason}
+                  </p>
+                </div>
+              </div>
+
+              {!isAuthenticated && (
+                <div className="pt-2 border-t border-amber-200">
+                  <button
+                    onClick={() => openAuthModal("Sign in to verify if you clicked 'I'm Going' for this event.")}
+                    className="w-full py-2 bg-[#c93b2b] text-amber-100 rounded text-xs font-bold hover:bg-[#b02e20] transition-colors"
+                  >
+                    Sign In with FLAME Email
+                  </button>
+                </div>
+              )}
+
+              <div className="p-2.5 bg-white/70 rounded-xs text-[11px] text-neutral-600 space-y-1">
+                <p className="font-bold text-neutral-800">Why these rules?</p>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  <li>Only attendees who marked <strong>&quot;I&apos;m Going&quot;</strong> can review to prevent fake reviews.</li>
+                  <li>Reviews must be submitted within <strong>2 days (48h)</strong> of event conclusion while memories are fresh.</li>
+                  <li>All reviews are posted <strong>completely anonymously</strong> to protect student privacy.</li>
+                </ul>
+              </div>
+            </div>
           )}
 
-          {/* Past Student Reviews & Feedback Feed */}
+          {/* Past Anonymous Student Reviews Feed */}
           {event.feedback && event.feedback.length > 0 && (
             <div className="pt-4 border-t border-[#e2d6b5] space-y-2">
-              <h5 className="font-editorial text-xs font-bold uppercase tracking-wider text-amber-900">
-                Community Reviews ({event.feedback.length})
+              <h5 className="font-editorial text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center justify-between">
+                <span>Verified Attendee Reviews ({event.feedback.length})</span>
+                <span className="text-[10px] text-amber-700 font-mono">100% Anonymous</span>
               </h5>
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {event.feedback.map((fb) => (
                   <div key={fb.id} className="p-2.5 bg-white border border-[#e5dcbf] rounded-xs shadow-2xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-bold text-neutral-900">{fb.name || 'Student'}</span>
-                        <div className="flex items-center">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-neutral-900 flex items-center gap-1">
+                          <EyeOff className="w-3 h-3 text-neutral-500" />
+                          <span>Anonymous Flameite</span>
+                        </span>
+                        <div className="flex items-center ml-1">
                           {[1, 2, 3, 4, 5].map((s) => (
                             <Star
                               key={s}

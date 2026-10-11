@@ -12,7 +12,10 @@ import {
 } from '@/types';
 import { 
   INITIAL_SEED_EVENTS, 
-  DEFAULT_TIMETABLE_SAMPLE 
+  DEFAULT_TIMETABLE_SAMPLE,
+  checkEventPostRateLimit,
+  checkEventReviewEligibility,
+  EventPostRateLimitResult
 } from '@/lib/constants';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -67,7 +70,7 @@ interface AppContextType {
   selectedEventForFeedback: EventItem | null;
   openEventFeedback: (event: EventItem) => void;
   closeEventFeedback: () => void;
-  submitEventFeedback: (eventId: string, feedbackData: { score: number; comment?: string; tag?: string }) => void;
+  submitEventFeedback: (eventId: string, feedbackData: { score: number; comment?: string; tag?: string }) => { success: boolean; error?: string };
 
   // Site Feedback Widget & Modal
   isSiteFeedbackOpen: boolean;
@@ -88,7 +91,8 @@ interface AppContextType {
   toggleSaveEvent: (eventId: string) => void;
   toggleGoingEvent: (eventId: string, force?: boolean) => void;
   toggleFavouriteCategory: (category: EventCategory) => void;
-  createEvent: (eventData: Omit<EventItem, 'id' | 'created_at'>) => void;
+  createEvent: (eventData: Omit<EventItem, 'id' | 'created_at'>) => { success: boolean; error?: string };
+  checkUserPostLimit: (email?: string) => EventPostRateLimitResult;
   updateEvent: (eventId: string, eventData: Partial<EventItem>) => void;
   deleteEvent: (eventId: string) => void;
   markNotificationsAsRead: () => void;
@@ -342,24 +346,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const submitEventFeedback = (
     eventId: string,
     feedbackData: { score: number; comment?: string; tag?: string }
-  ) => {
+  ): { success: boolean; error?: string } => {
     const targetEvent = events.find((e) => e.id === eventId);
-    if (!targetEvent) return;
+    if (!targetEvent) return { success: false, error: 'Event not found.' };
 
-    const email = user?.flame_email || 'student@flame.edu.in';
-    const authorName = user?.name || (email.split('@')[0] || 'FLAME Student');
+    // Enforce: Only verified attendees who clicked "I'm Going" can review, within 2 days (48h) post-completion
+    const eligibility = checkEventReviewEligibility(targetEvent, user);
+    if (!eligibility.canReview) {
+      return { success: false, error: eligibility.reason };
+    }
+
+    // Always store as anonymous to guarantee privacy!
+    const authorName = 'Anonymous Flameite';
+    const emailKey = user?.flame_email || 'anonymous@flame.edu.in';
 
     const currentRatings = targetEvent.ratings || [];
     const updatedRatings = [
-      ...currentRatings.filter((r) => r.email !== email),
-      { email, score: feedbackData.score },
+      ...currentRatings.filter((r) => r.email !== emailKey),
+      { email: emailKey, score: feedbackData.score },
     ];
 
     const currentFeedback = targetEvent.feedback || [];
     const newEntry: EventFeedbackItem = {
       id: `efb-${Date.now()}`,
-      email,
-      name: authorName,
+      email: 'anonymous@flame.edu.in', // Masked email
+      name: authorName,                 // Strictly anonymous
       score: feedbackData.score,
       comment: feedbackData.comment,
       tag: feedbackData.tag,
@@ -371,6 +382,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ratings: updatedRatings,
       feedback: updatedFeedback,
     });
+
+    return { success: true };
   };
 
   const openSiteFeedback = () => setIsSiteFeedbackOpen(true);
@@ -759,16 +772,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     updateProfile({ favourite_categories: updatedFavs });
   };
 
-  const createEvent = (eventData: Omit<EventItem, 'id' | 'created_at'>) => {
-    const newId = `evt-${Date.now()}`;
+  const checkUserPostLimit = (email?: string): EventPostRateLimitResult => {
+    const targetEmail = email || user?.flame_email;
+    return checkEventPostRateLimit(targetEmail, events);
+  };
+
+  const createEvent = (
+    eventData: Omit<EventItem, 'id' | 'created_at'>
+  ): { success: boolean; error?: string } => {
+    const userEmail = user?.flame_email || 'guest@flame.edu.in';
+    
+    // Check rate limit: All emails except admin/gmail are limited to 2 events per hour
+    const rateLimit = checkEventPostRateLimit(userEmail, events);
+    if (!rateLimit.allowed) {
+      return { success: false, error: rateLimit.reason };
+    }
+
+    const nowMs = Date.now();
+    const newId = `evt-${nowMs}`;
     const newEvent: EventItem = {
       ...eventData,
       id: newId,
-      created_at: new Date().toISOString(),
-      submitted_by: user?.flame_email || 'guest@flame.edu.in',
+      created_at: new Date(nowMs).toISOString(),
+      submitted_by: userEmail,
     };
     const updated = [newEvent, ...events];
     saveEventsToStorage(updated);
+
+    // Save timestamp to local audit history for instant enforcement
+    try {
+      const normalized = userEmail.toLowerCase().trim();
+      const raw = localStorage.getItem(`flame_fomo_post_history_${normalized}`);
+      const history: number[] = raw ? JSON.parse(raw) : [];
+      history.push(nowMs);
+      localStorage.setItem(`flame_fomo_post_history_${normalized}`, JSON.stringify(history));
+    } catch (e) {}
 
     if (isSupabaseConfigured()) {
       let finalEligibility = newEvent.requirements_eligibility || '';
@@ -782,6 +820,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (error) console.error('Supabase createEvent error:', error);
       });
     }
+
+    return { success: true };
   };
 
   const updateEvent = (eventId: string, eventData: Partial<EventItem>) => {
@@ -886,6 +926,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleGoingEvent,
         toggleFavouriteCategory,
         createEvent,
+        checkUserPostLimit,
         updateEvent,
         deleteEvent,
         markNotificationsAsRead,

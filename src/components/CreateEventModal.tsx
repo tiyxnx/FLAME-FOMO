@@ -51,11 +51,13 @@ export const CreateEventModal: React.FC = () => {
     isCreateEventOpen, 
     closeCreateEvent, 
     createEvent, 
+    checkUserPostLimit,
     updateEvent, 
     eventToEdit, 
     user 
   } = useApp();
 
+  const [submitError, setSubmitError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
@@ -314,8 +316,15 @@ export const CreateEventModal: React.FC = () => {
         registration_fee: registrationFee.trim() || undefined,
       });
     } else {
+      // RATE LIMIT CHECK FOR NEW EVENTS
+      const rateLimitCheck = checkUserPostLimit(user?.flame_email);
+      if (!rateLimitCheck.allowed) {
+        setSubmitError(rateLimitCheck.reason || 'Hourly posting limit reached.');
+        return;
+      }
+
       // CREATE NEW EVENT
-      createEvent({
+      const res = createEvent({
         event_name: eventName.trim(),
         category,
         date,
@@ -335,6 +344,11 @@ export const CreateEventModal: React.FC = () => {
         tentative_note: tentativeNote.trim() || undefined,
         registration_fee: registrationFee.trim() || undefined,
       });
+
+      if (res && !res.success) {
+        setSubmitError(res.error || 'Failed to publish event.');
+        return;
+      }
     }
 
     try {
@@ -351,6 +365,7 @@ export const CreateEventModal: React.FC = () => {
   };
 
   const isEditing = Boolean(eventToEdit);
+  const rateLimit = checkUserPostLimit(user?.flame_email);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in select-none">
@@ -392,6 +407,35 @@ export const CreateEventModal: React.FC = () => {
               ? 'Changes sync instantly to the main website and Supabase cloud for all students.'
               : 'Published events instantly appear on the discovery collage, planner, and interactive campus map.'}
           </p>
+
+          {/* Rate Limit Banner */}
+          {!isEditing && (
+            <div className={`mt-3 px-3 py-2 rounded-xs border text-xs flex items-center justify-between ${
+              rateLimit.isExempt
+                ? 'bg-amber-50/80 border-amber-300 text-amber-900'
+                : !rateLimit.allowed
+                  ? 'bg-rose-50 border-rose-300 text-rose-900 font-semibold'
+                  : 'bg-emerald-50/70 border-emerald-200 text-emerald-800'
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {rateLimit.isExempt ? '👑' : !rateLimit.allowed ? '⛔' : '⚡'}
+                </span>
+                <span>
+                  {rateLimit.isExempt 
+                    ? 'Organizer / Admin Access • Unlimited posting allowed' 
+                    : !rateLimit.allowed
+                      ? rateLimit.reason
+                      : `Hourly quota: ${rateLimit.count} of 2 events created in the last hour`}
+                </span>
+              </div>
+              {!rateLimit.isExempt && (
+                <span className="text-[10px] font-mono opacity-75">
+                  {rateLimit.allowed ? `${2 - rateLimit.count} slots left` : `Resets in ~${rateLimit.minutesLeft}m`}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* SMART PASTE / AUTO-FILL CARD */}
@@ -997,10 +1041,18 @@ export const CreateEventModal: React.FC = () => {
 
             <button
               type="submit"
-              className="px-6 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs sm:text-sm font-bold rounded-sm shadow-md transition-transform active:scale-95 flex items-center gap-2"
+              disabled={!isEditing && !rateLimit.allowed}
+              className="px-6 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] disabled:bg-neutral-400 disabled:cursor-not-allowed text-amber-100 text-xs sm:text-sm font-bold rounded-sm shadow-md transition-transform active:scale-95 flex items-center gap-2"
+              title={!isEditing && !rateLimit.allowed ? rateLimit.reason : undefined}
             >
               <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>{isEditing ? 'Save Changes & Update Bulletin' : 'Publish Event to Bulletin'}</span>
+              <span>
+                {isEditing 
+                  ? 'Save Changes & Update Bulletin' 
+                  : !rateLimit.allowed 
+                    ? `Limit Reached (${rateLimit.count}/2/hr)` 
+                    : 'Publish Event to Bulletin'}
+              </span>
             </button>
           </div>
 
