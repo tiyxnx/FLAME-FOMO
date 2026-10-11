@@ -72,6 +72,7 @@ export interface EventItem {
 export interface EventFeedbackItem {
   id: string;
   email: string;
+  author_email?: string; // Captured for moderator view only
   name?: string;
   score: number;
   comment?: string;

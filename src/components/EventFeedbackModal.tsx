@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { checkEventReviewEligibility } from '@/lib/constants';
+import { checkEventReviewEligibility, isAdminModerator } from '@/lib/constants';
 import { 
   X, 
   Star, 
@@ -14,7 +14,10 @@ import {
   Clock,
   Send,
   EyeOff,
-  UserCheck
+  UserCheck,
+  Shield,
+  ShieldAlert,
+  Trash2
 } from 'lucide-react';
 
 const FEEDBACK_TAGS = [
@@ -42,10 +45,13 @@ export const EventFeedbackModal: React.FC = () => {
     selectedEventForFeedback,
     closeEventFeedback,
     submitEventFeedback,
+    deleteEventFeedback,
     user,
     isAuthenticated,
     openAuthModal
   } = useApp();
+
+  const isModerator = isAdminModerator(user?.flame_email);
 
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
@@ -347,11 +353,32 @@ export const EventFeedbackModal: React.FC = () => {
             <div className="pt-4 border-t border-[#e2d6b5] space-y-2">
               <h5 className="font-editorial text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center justify-between">
                 <span>Verified Attendee Reviews ({event.feedback.length})</span>
-                <span className="text-[10px] text-amber-700 font-mono">100% Anonymous</span>
+                <span className="text-[10px] text-amber-700 font-mono">
+                  {isModerator ? '🛡️ Moderator View' : '100% Anonymous'}
+                </span>
               </h5>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+
+              {/* Moderator Alert Banner (Only shown to admin) */}
+              {isModerator && (
+                <div className="p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-sm text-xs text-purple-950 flex items-start gap-2 shadow-2xs">
+                  <ShieldAlert className="w-4 h-4 text-purple-700 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-purple-900">🛡️ Moderator Visibility Active</span>
+                      <span className="text-[9px] font-mono font-bold bg-purple-200/90 text-purple-900 px-1.5 py-0.5 rounded-2xs uppercase">
+                        Admin Only
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-purple-800 mt-0.5 leading-snug">
+                      Reviews appear as <em>&quot;Anonymous Flameite&quot;</em> to all regular students. Real reviewer emails are visible strictly to you ({user?.flame_email}) for campus safety and moderation.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                 {event.feedback.map((fb) => (
-                  <div key={fb.id} className="p-2.5 bg-white border border-[#e5dcbf] rounded-xs shadow-2xs space-y-1">
+                  <div key={fb.id} className="p-2.5 bg-white border border-[#e5dcbf] rounded-xs shadow-2xs space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-neutral-900 flex items-center gap-1">
@@ -367,10 +394,41 @@ export const EventFeedbackModal: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                      <span className="text-[10px] text-neutral-400">
-                        {new Date(fb.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-neutral-400 font-mono">
+                          {new Date(fb.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </span>
+                        {isModerator && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Remove review by ${fb.author_email || fb.email} for moderation?`)) {
+                                deleteEventFeedback(event.id, fb.id);
+                              }
+                            }}
+                            className="p-1 rounded hover:bg-rose-100 text-neutral-400 hover:text-rose-600 transition-colors ml-1"
+                            title="Delete review (Moderator Action)"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Moderator Badge: Revealed strictly to admin */}
+                    {isModerator && (
+                      <div className="px-2 py-1 bg-purple-50/90 border border-purple-200 rounded-2xs text-[10px] font-mono text-purple-900 flex items-center justify-between">
+                        <div className="flex items-center gap-1 truncate">
+                          <Shield className="w-3 h-3 text-purple-700 shrink-0" />
+                          <span className="text-neutral-500">Reviewer:</span>
+                          <span className="font-bold text-purple-950 truncate">{fb.author_email || fb.email || 'Unknown'}</span>
+                        </div>
+                        <span className="text-[9px] text-purple-700 font-sans uppercase font-bold shrink-0 ml-1">
+                          Moderation Eye
+                        </span>
+                      </div>
+                    )}
+
                     {fb.tag && (
                       <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold rounded-2xs bg-amber-100 text-amber-900 border border-amber-200">
                         {fb.tag}

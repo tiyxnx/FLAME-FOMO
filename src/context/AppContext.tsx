@@ -71,6 +71,7 @@ interface AppContextType {
   openEventFeedback: (event: EventItem) => void;
   closeEventFeedback: () => void;
   submitEventFeedback: (eventId: string, feedbackData: { score: number; comment?: string; tag?: string }) => { success: boolean; error?: string };
+  deleteEventFeedback: (eventId: string, feedbackId: string) => boolean;
 
   // Site Feedback Widget & Modal
   isSiteFeedbackOpen: boolean;
@@ -369,8 +370,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const currentFeedback = targetEvent.feedback || [];
     const newEntry: EventFeedbackItem = {
       id: `efb-${Date.now()}`,
-      email: 'anonymous@flame.edu.in', // Masked email
-      name: authorName,                 // Strictly anonymous
+      email: emailKey,           // Preserved internally for moderator inspection
+      author_email: emailKey,    // Only accessible to authorized admin moderator
+      name: authorName,          // Public label remains strictly "Anonymous Flameite"
       score: feedbackData.score,
       comment: feedbackData.comment,
       tag: feedbackData.tag,
@@ -384,6 +386,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     return { success: true };
+  };
+
+  const deleteEventFeedback = (eventId: string, feedbackId: string): boolean => {
+    const targetEvent = events.find((e) => e.id === eventId);
+    if (!targetEvent) return false;
+
+    const updatedFeedback = (targetEvent.feedback || []).filter((fb) => fb.id !== feedbackId);
+    updateEvent(eventId, { feedback: updatedFeedback });
+    return true;
   };
 
   const openSiteFeedback = () => setIsSiteFeedbackOpen(true);
@@ -911,6 +922,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openEventFeedback,
         closeEventFeedback,
         submitEventFeedback,
+        deleteEventFeedback,
         isSiteFeedbackOpen,
         openSiteFeedback,
         closeSiteFeedback,
