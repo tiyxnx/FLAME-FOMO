@@ -6,14 +6,19 @@ import { EventCard } from './EventCard';
 import { EmptyStateScrapbook } from './EmptyStateScrapbook';
 import { 
   Calendar, 
+  CalendarPlus,
   Clock, 
   MapPin, 
   BookOpen, 
   CheckCircle2, 
   Map, 
   Compass, 
-  Filter 
+  Filter,
+  Download,
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
+import { getGoogleCalendarUrl, generateIcsSchedule, downloadIcsFile } from '@/lib/googleCalendar';
 
 export const MyPlanView: React.FC = () => {
   const { 
@@ -25,6 +30,7 @@ export const MyPlanView: React.FC = () => {
   } = useApp();
 
   const [selectedDayFilter, setSelectedDayFilter] = useState<string>('All');
+  const [syncMessage, setSyncMessage] = useState<string>('');
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -57,6 +63,14 @@ export const MyPlanView: React.FC = () => {
 
   const hasAnyCommitment = planByDay.some((p) => p.totalCount > 0);
 
+  const handleExportToCalendar = () => {
+    const ics = generateIcsSchedule(goingEvents, user?.academic_timetable || []);
+    downloadIcsFile('flame_campus_schedule.ics', ics);
+    setSyncMessage(
+      'Downloaded flame_campus_schedule.ics! Open Google Calendar > Settings > Import to add your lectures and committed campus events in 1 click.'
+    );
+  };
+
   return (
     <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 select-none">
       
@@ -79,8 +93,17 @@ export const MyPlanView: React.FC = () => {
           </p>
         </div>
 
-        {/* Shortcut to Map */}
-        <div className="flex items-center gap-2">
+        {/* Action Buttons: Sync to Google Calendar & Plot on Map */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={handleExportToCalendar}
+            className="px-3.5 py-2 bg-[#1b253b] hover:bg-[#253350] text-blue-200 border border-blue-500/40 rounded-xs text-xs font-bold flex items-center gap-1.5 shadow transition-colors cursor-pointer"
+            title="Export all going events & lectures as .ics for Google Calendar"
+          >
+            <CalendarPlus className="w-4 h-4 text-[#4285F4]" />
+            <span>Sync to Google Calendar</span>
+          </button>
+
           <button
             onClick={() => setCurrentTab('campus-map')}
             className="px-4 py-2 bg-[#2a241b] hover:bg-[#383126] text-amber-200 border border-[#4d402f] rounded-xs text-xs font-bold flex items-center gap-1.5 shadow"
@@ -90,6 +113,25 @@ export const MyPlanView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Sync feedback notification banner */}
+      {syncMessage && (
+        <div className="p-3.5 mb-6 bg-blue-950/70 border border-blue-500/50 rounded-sm text-xs text-blue-200 flex items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <CalendarPlus className="w-4 h-4 text-blue-400 shrink-0" />
+            <span>{syncMessage}</span>
+          </div>
+          <a
+            href="https://calendar.google.com/calendar/u/0/r/settings/export"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[11px] font-bold flex items-center gap-1 whitespace-nowrap shadow-xs"
+          >
+            <span>Open Google Calendar</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      )}
 
       {/* Day Filter Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 custom-scrollbar">
@@ -207,11 +249,22 @@ export const MyPlanView: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 text-xs text-neutral-300">
+                      <div className="flex items-center gap-2.5 text-xs text-neutral-300">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-[#e25845]" />
-                          <span>{evt.venue_zone} ({evt.room_specific})</span>
+                          <span>{evt.venue_zone} {evt.room_specific ? `(${evt.room_specific})` : ''}</span>
                         </div>
+                        <a
+                          href={getGoogleCalendarUrl(evt)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-2 py-1 bg-[#1d1915] hover:bg-[#332b22] border border-[#544533] rounded text-amber-200 text-[11px] font-semibold flex items-center gap-1 shadow-xs transition-colors"
+                          title="Add this event to Google Calendar"
+                        >
+                          <CalendarPlus className="w-3 h-3 text-[#4285F4]" />
+                          <span className="hidden sm:inline">Add to Cal</span>
+                        </a>
                         <span className="text-[#f3da90] hover:underline text-[11px] font-semibold">
                           View &rarr;
                         </span>

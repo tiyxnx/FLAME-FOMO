@@ -6,6 +6,7 @@ import { isEventCompletedOrDone } from '@/lib/constants';
 import { 
   X, 
   Calendar, 
+  CalendarPlus,
   Clock, 
   MapPin, 
   Star, 
@@ -21,6 +22,7 @@ import {
   Ticket,
   MessageSquare
 } from 'lucide-react';
+import { getGoogleCalendarUrl } from '@/lib/googleCalendar';
 
 export const EventDetailModal: React.FC = () => {
   const {
@@ -391,6 +393,21 @@ export const EventDetailModal: React.FC = () => {
                 <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
                 <span>{isSaved ? 'Saved to Bookmarks' : 'Save for Later'}</span>
               </button>
+            )}
+
+            {/* 1-Click Google Calendar Sync (Upcoming events) */}
+            {!isCompleted && (
+              <a
+                href={getGoogleCalendarUrl(event)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-2 rounded-full text-xs font-bold border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-800 transition-colors flex items-center gap-1.5 shadow-xs"
+                title="Add this event to your Google Calendar"
+              >
+                <CalendarPlus className="w-3.5 h-3.5 text-[#4285F4]" />
+                <span className="hidden sm:inline">Add to Google Calendar</span>
+                <span className="sm:hidden">Calendar</span>
+              </a>
             )}
 
             {/* Feedback / Review Option for ended events */}
