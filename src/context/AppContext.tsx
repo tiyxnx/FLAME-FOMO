@@ -15,7 +15,8 @@ import {
   DEFAULT_TIMETABLE_SAMPLE,
   checkEventPostRateLimit,
   checkEventReviewEligibility,
-  EventPostRateLimitResult
+  EventPostRateLimitResult,
+  isAdminModerator
 } from '@/lib/constants';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -204,7 +205,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const handleSession = async (session: any) => {
           if (session?.user?.email) {
             const confirmedEmail = session.user.email.toLowerCase();
-            if (!confirmedEmail.endsWith('@flame.edu.in')) {
+            const isFlameEmail = confirmedEmail.endsWith('@flame.edu.in');
+            const isAdmin = isAdminModerator(confirmedEmail);
+            if (!isFlameEmail && !isAdmin) {
               await supabase.auth.signOut();
               setUser(null);
               localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
@@ -225,28 +228,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(profileObj));
                 localStorage.setItem(`flame_fomo_quiz_completed_${confirmedEmail}`, 'true');
                 setIsAuthModalOpen(false);
-                // Do NOT open onboarding for returning users who already have an account
+                setIsOnboardingOpen(false);
               } else {
                 const defaultName =
                   session.user.user_metadata?.full_name ||
                   confirmedEmail.split('@')[0].replace('.', ' ').toUpperCase();
+
+                // Preserve any local user data if present
+                const existingStored = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+                let parsedStored: UserProfile | null = null;
+                try {
+                  if (existingStored) parsedStored = JSON.parse(existingStored);
+                } catch {}
+
                 const newProfile: UserProfile = {
                   flame_email: confirmedEmail,
-                  name: defaultName,
-                  academic_year: 'UG2',
-                  category_preferences: ['Performances', 'Clubs', 'Competitions', 'Social'],
-                  academic_timetable: DEFAULT_TIMETABLE_SAMPLE,
-                  saved_events: [],
-                  going_events: [],
-                  favourite_events: [],
-                  favourite_categories: ['Performances', 'Competitions'],
-                  created_at: new Date().toISOString(),
+                  name: parsedStored?.name || defaultName,
+                  academic_year: parsedStored?.academic_year || 'UG2',
+                  category_preferences: parsedStored?.category_preferences || ['Performances', 'Clubs', 'Competitions', 'Social'],
+                  academic_timetable: parsedStored?.academic_timetable || DEFAULT_TIMETABLE_SAMPLE,
+                  saved_events: parsedStored?.saved_events || [],
+                  going_events: parsedStored?.going_events || [],
+                  favourite_events: parsedStored?.favourite_events || [],
+                  favourite_categories: parsedStored?.favourite_categories || ['Performances', 'Competitions'],
+                  quiz_completed: true,
+                  created_at: parsedStored?.created_at || new Date().toISOString(),
                 };
                 setUser(newProfile);
                 localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(newProfile));
+                localStorage.setItem(`flame_fomo_quiz_completed_${confirmedEmail}`, 'true');
                 await supabase.from('profiles').upsert([newProfile]);
                 setIsAuthModalOpen(false);
-                setIsOnboardingOpen(true);
+                setIsOnboardingOpen(false);
               }
             } catch (err) {
               console.error('Error syncing confirmed student session:', err);
@@ -491,8 +504,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     saveUserToStorage(newUser);
     closeAuthModal();
-    // Prompt onboarding for first time
-    openOnboarding();
     return { success: true };
   };
 
@@ -626,7 +637,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       supabase.from('profiles').upsert([newUser]).then();
     }
     closeAuthModal();
-    openOnboarding();
     return { success: true };
   };
 
