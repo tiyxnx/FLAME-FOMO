@@ -41,6 +41,7 @@ export interface UserProfile {
   going_events: string[]; // Event IDs marked as "I'm Going"
   favourite_events?: string[]; // Event IDs marked as "Favourite" (Star)
   favourite_categories?: EventCategory[];
+  quiz_completed?: boolean;
   created_at?: string;
 }
 

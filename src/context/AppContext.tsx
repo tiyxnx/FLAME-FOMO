@@ -220,15 +220,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 .single();
 
               if (existingProfile) {
-                setUser(existingProfile as UserProfile);
-                localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(existingProfile));
+                const profileObj = existingProfile as UserProfile;
+                setUser(profileObj);
+                localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(profileObj));
+                localStorage.setItem(`flame_fomo_quiz_completed_${confirmedEmail}`, 'true');
                 setIsAuthModalOpen(false);
-
-                // Enforce initial quiz if student has not completed it
-                const quizDone = localStorage.getItem(`flame_fomo_quiz_completed_${confirmedEmail}`) === 'true';
-                if (!quizDone) {
-                  setIsOnboardingOpen(true);
-                }
+                // Do NOT open onboarding for returning users who already have an account
               } else {
                 const defaultName =
                   session.user.user_metadata?.full_name ||

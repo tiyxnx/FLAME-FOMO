@@ -17,10 +17,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   going_events JSONB DEFAULT '[]'::jsonb,             -- Event IDs marked as I'm Going
   favourite_events JSONB DEFAULT '[]'::jsonb,         -- Event IDs marked as Favourite (Star)
   favourite_categories JSONB DEFAULT '[]'::jsonb,     -- Starred categories
+  quiz_completed BOOLEAN DEFAULT false,               -- Whether student completed initial onboarding
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS favourite_events JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS quiz_completed BOOLEAN DEFAULT false;
 
 -- 2. Create the EVENTS table
 CREATE TABLE IF NOT EXISTS public.events (

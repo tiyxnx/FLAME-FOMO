@@ -22,7 +22,8 @@ import {
   Trash2, 
   BookOpen, 
   Clock,
-  Edit3
+  Edit3,
+  X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -85,11 +86,24 @@ export const OnboardingModal: React.FC = () => {
     setTimetable(timetable.map(c => c.id === id ? { ...c, [field]: value } : c));
   };
 
+  const handleDismiss = () => {
+    updateProfile({
+      quiz_completed: true,
+    });
+
+    if (user?.flame_email) {
+      localStorage.setItem(`flame_fomo_quiz_completed_${user.flame_email.toLowerCase()}`, 'true');
+    }
+
+    closeOnboarding();
+  };
+
   const handleFinish = () => {
     updateProfile({
       academic_year: academicYear,
       category_preferences: preferences,
       academic_timetable: timetable,
+      quiz_completed: true,
     });
 
     if (user?.flame_email) {
@@ -122,6 +136,17 @@ export const OnboardingModal: React.FC = () => {
           className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-36 h-6 bg-[#f3da90]/90 shadow-md backdrop-blur-xs rotate-1 pointer-events-none"
           style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
         />
+
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className="absolute top-4 right-4 p-2 rounded-full bg-neutral-200/80 hover:bg-neutral-300 text-neutral-700 transition-colors z-30"
+          title="Close Quiz"
+          aria-label="Close Quiz"
+        >
+          <X className="w-5 h-5" />
+        </button>
 
         {/* Step Indicator Progress Bar */}
         <div className="mb-6">
@@ -426,18 +451,35 @@ export const OnboardingModal: React.FC = () => {
               <span>Back</span>
             </button>
           ) : (
-            <div />
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="px-3 py-2 text-xs font-semibold text-neutral-500 hover:text-neutral-800 transition-colors"
+            >
+              Skip for now
+            </button>
           )}
 
           {step < 4 ? (
-            <button
-              type="button"
-              onClick={() => setStep(step + 1)}
-              className="px-5 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs sm:text-sm font-bold rounded-sm shadow-md flex items-center gap-1.5"
-            >
-              <span>Next</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={handleDismiss}
+                  className="px-3 py-2 text-xs font-semibold text-neutral-500 hover:text-neutral-800 transition-colors"
+                >
+                  Skip for now
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setStep(step + 1)}
+                className="px-5 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs sm:text-sm font-bold rounded-sm shadow-md flex items-center gap-1.5"
+              >
+                <span>Next</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
             <button
               type="button"
