@@ -73,10 +73,17 @@ export const ApplicationsView: React.FC = () => {
     return events.filter((e) => {
       if (e.item_type !== 'application') return false;
       if (e.status === 'Completed' || e.status === 'Registration Closed') return false;
+      // Legacy beginning-of-year recruitment forms on Google Sites are closed/expired
+      if (e.id.startsWith('lifeatflame-app-')) return false;
       if (CLOSED_EXPIRED_APP_IDS.has(e.id)) return false;
+      // Exclude if registration deadline has passed today
+      if (todayStr && e.registration_deadline) {
+        const deadlineDate = e.registration_deadline.split(' ')[0];
+        if (deadlineDate < todayStr) return false;
+      }
       return true;
     });
-  }, [events]);
+  }, [events, todayStr]);
 
   // Check if current authenticated user has posted any applications
   const userApplications = useMemo(() => {
@@ -172,10 +179,10 @@ export const ApplicationsView: React.FC = () => {
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-medium text-[11px]">
                 <span className={`w-1.5 h-1.5 rounded-full ${isSyncingLifeAtFlame ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
-                Live Linked with Life@FLAME
+                Verified Active Deadlines
               </span>
               <span className="text-[#a89b87] text-[11px]">
-                39 clubs &amp; societies connected • Google Site deadlines sync automatically
+                Only active application forms with open deadlines are listed
               </span>
               <button
                 onClick={() => syncLifeAtFlameNow(true)}

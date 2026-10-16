@@ -165,16 +165,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (storedEvents) {
         const parsed: EventItem[] = JSON.parse(storedEvents);
         const cleaned = Array.isArray(parsed)
-          ? parsed.filter((e) => !dummyIds.includes(e.id))
+          ? parsed.filter((e) => !e.id.startsWith('lifeatflame-app-') && !dummyIds.includes(e.id))
           : [];
         const existingIds = new Set(cleaned.map((e) => e.id));
-        const missingSeeds = INITIAL_SEED_EVENTS.filter((e) => !existingIds.has(e.id) && !dummyIds.includes(e.id));
+        const missingSeeds = INITIAL_SEED_EVENTS.filter(
+          (e) => !existingIds.has(e.id) && !e.id.startsWith('lifeatflame-app-') && !dummyIds.includes(e.id)
+        );
         const merged = [...cleaned, ...missingSeeds];
         setEvents(merged);
         localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(merged));
       } else {
-        setEvents(INITIAL_SEED_EVENTS);
-        localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(INITIAL_SEED_EVENTS));
+        const seeds = INITIAL_SEED_EVENTS.filter((e) => !e.id.startsWith('lifeatflame-app-') && !dummyIds.includes(e.id));
+        setEvents(seeds);
+        localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(seeds));
       }
 
       const storedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
@@ -182,10 +185,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser) {
           parsedUser.saved_events = (parsedUser.saved_events || []).filter(
-            (id: string) => !dummyIds.includes(id)
+            (id: string) => !id.startsWith('lifeatflame-app-') && !dummyIds.includes(id)
           );
           parsedUser.going_events = (parsedUser.going_events || []).filter(
-            (id: string) => !dummyIds.includes(id)
+            (id: string) => !id.startsWith('lifeatflame-app-') && !dummyIds.includes(id)
           );
           setUser(parsedUser);
           localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(parsedUser));
@@ -248,10 +251,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 };
               });
 
+              // Filter out any legacy expired lifeatflame-app-* or dummy IDs
+              const cleanMappedEvents = mappedEvents.filter(
+                (e) => !e.id.startsWith('lifeatflame-app-') && !dummyIds.includes(e.id)
+              );
+
               // Merge any initial seed items missing from Supabase
-              const existingIds = new Set(mappedEvents.map((e) => e.id));
-              const missingSeeds = INITIAL_SEED_EVENTS.filter((e) => !existingIds.has(e.id));
-              const mergedEvents = [...mappedEvents, ...missingSeeds];
+              const existingIds = new Set(cleanMappedEvents.map((e) => e.id));
+              const missingSeeds = INITIAL_SEED_EVENTS.filter(
+                (e) => !existingIds.has(e.id) && !e.id.startsWith('lifeatflame-app-') && !dummyIds.includes(e.id)
+              );
+              const mergedEvents = [...cleanMappedEvents, ...missingSeeds];
 
               setEvents(mergedEvents);
               localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(mergedEvents));

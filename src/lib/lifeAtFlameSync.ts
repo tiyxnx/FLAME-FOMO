@@ -131,123 +131,14 @@ export async function fetchLifeAtFlameCalendarEvents(): Promise<EventItem[]> {
 }
 
 /**
- * 2. Fetch live club recruitment applications from Life@FLAME Join Clubs page
+ * 2. Fetch live club recruitment applications from Life@FLAME
+ * Note: Past semester general recruitment forms on join-clubs are closed / deadlines passed.
+ * Only active, currently open applications submitted by clubs will surface.
  */
 export async function fetchLifeAtFlameClubApplications(): Promise<EventItem[]> {
-  try {
-    const rawHtml = await fetchWithTimeout(LIFE_AT_FLAME_JOIN_CLUBS_URL);
-    const unescaped = rawHtml
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>');
-
-    // Match each club card: <a href="FORM_URL" ... class="club-card"> ... <img src="LOGO"> ... <div class="club-name">NAME</div>
-    const cardRegex = /<a[^>]+href="([^"]+)"[^>]*class="club-card"[^>]*>([\s\S]*?)<\/a>/gi;
-    let m;
-    const applications: EventItem[] = [];
-
-    // Fallback regex if class ordering differs
-    const altRegex = /<a[^>]+href="([^"]+)"[^>]*>[\s\S]*?<div class="club-name">([^<]+)<\/div>[\s\S]*?<\/a>/gi;
-
-    let matches = [...unescaped.matchAll(cardRegex)];
-    if (matches.length === 0) {
-      matches = [...unescaped.matchAll(altRegex)];
-    }
-
-    // Default upcoming recruitment deadline (rolling / semester onboarding)
-    const defaultDeadline = '2026-10-31 23:59';
-    const defaultDate = '2026-10-31';
-
-// Clubs whose application deadlines have passed or forms are closed
-const CLOSED_CLUBS_SET = new Set([
-  'flame dance club',
-  'flame astronomy club',
-  'flame mun club',
-  'flame on board',
-  'flame entrepreneurship lab',
-  'flame travel club',
-  'dotslash flame',
-  'the front row: film club',
-  'the front row',
-  'flame cooking collective',
-  'markit: flame marketing club',
-  'flame marketing club',
-  'flame yearbook committee',
-  'animal welfare committee',
-  'anime arcadia: flame anime club',
-  'anime arcadia',
-  'flame business & consulting',
-  'flame business and consulting',
-]);
-
-    for (const match of matches) {
-      const formUrl = match[1].trim();
-      const body = match[2];
-
-      // Extract club name
-      const nameMatch = body.match(/class="club-name">([^<]+)<\/div>/i);
-      const clubName = nameMatch ? nameMatch[1].trim() : (typeof match[2] === 'string' && !match[2].includes('<') ? match[2].trim() : '');
-      if (!clubName || clubName.length < 3) continue;
-
-      // Filter out clubs whose deadlines have passed
-      if (CLOSED_CLUBS_SET.has(clubName.toLowerCase().trim())) {
-        continue;
-      }
-
-      // Extract logo image if present
-      const imgMatch = body.match(/src="([^"]+)"/i);
-      const logoUrl = imgMatch ? imgMatch[1].trim() : undefined;
-
-      // If formUrl is not external (e.g. redirected internal page), ensure full url
-      let finalFormUrl = formUrl;
-      if (finalFormUrl.startsWith('/')) {
-        finalFormUrl = `https://sites.google.com${finalFormUrl}`;
-      }
-
-      const slug = clubName.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 35);
-      const id = `lifeatflame-app-${slug}`;
-      const category = mapClubCategory(clubName);
-
-      // Determine interview requirement
-      const hasInterview = [
-        'dance', 'theatre', 'naqaab', 'music', 'debate', 'mun', 'round table', 
-        'entrepreneurship', 'markit', 'design', 'glitch'
-      ].some(k => clubName.toLowerCase().includes(k));
-
-      applications.push({
-        id,
-        item_type: 'application' as const,
-        event_name: `${clubName}: Member Recruitment & Auditions`,
-        category,
-        categories: [category, 'Academic'],
-        date: defaultDate,
-        time_start_end: 'Rolling Applications & Review',
-        time_start: '10:00',
-        time_end: '18:00',
-        venue_zone: 'Academics',
-        room_specific: 'Kalidas & APJ Abdul Kalam Studios / Online',
-        organizer: clubName,
-        description: `Official student member recruitment drive for ${clubName}. Apply now to join active project teams, plan flagship initiatives, and represent FLAME. Published on the Life@FLAME Cultural Portal. Guidelines recommend applying to 3-4 clubs max.`,
-        registration_deadline: defaultDeadline,
-        registration_link: finalFormUrl,
-        requirements_eligibility: `Open to UG & PG Students [SOURCE: Life@FLAME] [TYPE: application]${hasInterview ? ' [HAS_INTERVIEW]' : ''}`,
-        has_interview: hasInterview,
-        interview_details: hasInterview 
-          ? 'Shortlisted candidates will be contacted via email/WhatsApp for auditions or personal interviews.' 
-          : undefined,
-        status: 'Upcoming' as const,
-        submitted_by: 'lifeatflame@flame.edu.in',
-        event_image: logoUrl,
-        created_at: new Date().toISOString()
-      });
-    }
-
-    return applications;
-  } catch (err) {
-    console.warn('[LifeAtFlameSync] Failed to fetch join-clubs page:', err);
-    return [];
-  }
+  // Past general club recruitment Google Forms on the join-clubs page have ended / closed.
+  // Returning empty to avoid surfacing expired applications.
+  return [];
 }
 
 /**
