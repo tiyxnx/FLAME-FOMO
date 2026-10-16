@@ -33,7 +33,10 @@ export const ApplicationsView: React.FC = () => {
     openCreateEvent, 
     openEditEvent,
     openEventDetail,
-    isUserAuthor 
+    isUserAuthor,
+    isSyncingLifeAtFlame,
+    syncLifeAtFlameNow,
+    lastLifeAtFlameSync
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -142,6 +145,24 @@ export const ApplicationsView: React.FC = () => {
             <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-1 max-w-2xl leading-relaxed">
               Want to join a club, lead a vertical, or audition for a production? Discover open positions and recruitment calls with strict deadlines and interview timelines.
             </p>
+
+            {/* Live Life@FLAME Portal Sync Status Banner */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-medium text-[11px]">
+                <span className={`w-1.5 h-1.5 rounded-full ${isSyncingLifeAtFlame ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+                Live Linked with Life@FLAME
+              </span>
+              <span className="text-[#a89b87] text-[11px]">
+                39 clubs &amp; societies connected • Google Site deadlines sync automatically
+              </span>
+              <button
+                onClick={() => syncLifeAtFlameNow(true)}
+                disabled={isSyncingLifeAtFlame}
+                className="text-[11px] text-purple-300 hover:text-purple-200 underline cursor-pointer ml-1 inline-flex items-center gap-1"
+              >
+                {isSyncingLifeAtFlame ? 'Syncing...' : 'Sync now'}
+              </button>
+            </div>
           </div>
 
           {/* Action Button */}

@@ -16,7 +16,8 @@ import {
   ExternalLink,
   ChevronDown,
   MessageSquare,
-  FileText
+  FileText,
+  RefreshCw
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -34,6 +35,9 @@ export const Header: React.FC = () => {
     events,
     openOnboarding,
     openSiteFeedback,
+    isSyncingLifeAtFlame,
+    lastLifeAtFlameSync,
+    syncLifeAtFlameNow,
   } = useApp();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -157,6 +161,24 @@ export const Header: React.FC = () => {
           {/* Right Header Controls: Notification Bell & User Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Life@FLAME Live Sync Status Badge */}
+            <button
+              onClick={() => syncLifeAtFlameNow(true)}
+              disabled={isSyncingLifeAtFlame}
+              title={
+                lastLifeAtFlameSync
+                  ? `Permanently linked with Life@FLAME portal. Last checked ${new Date(lastLifeAtFlameSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Click to sync now.`
+                  : 'Permanently linked with Life@FLAME portal. Click to sync now.'
+              }
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium bg-[#2a241c] border border-[#4a3e31] text-[#d6cbaf] hover:text-[#fbf7ee] hover:border-[#7c6953] hover:bg-[#362e24] transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <span className={`w-2 h-2 rounded-full ${isSyncingLifeAtFlame ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+              <span className="text-[11px] font-sans-ui tracking-tight font-medium hidden xs:inline">
+                {isSyncingLifeAtFlame ? 'Syncing...' : 'Life@FLAME'}
+              </span>
+              <RefreshCw className={`w-3 h-3 text-[#a89b87] ${isSyncingLifeAtFlame ? 'animate-spin' : ''}`} />
+            </button>
+
             {/* Notification Bell */}
             <div className="relative">
               <button

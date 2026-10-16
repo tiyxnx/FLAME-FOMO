@@ -103,6 +103,11 @@ interface AppContextType {
   markNotificationsAsRead: () => void;
   myCreatedEventIds: string[];
   isUserAuthor: (event: EventItem) => boolean;
+
+  // Life@FLAME Live Portal Synchronization
+  isSyncingLifeAtFlame: boolean;
+  lastLifeAtFlameSync: string | null;
+  syncLifeAtFlameNow: (force?: boolean) => Promise<{ success: boolean; count?: number; message?: string }>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -132,9 +137,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [myCreatedEventIds, setMyCreatedEventIds] = useState<string[]>([]);
+  const [isSyncingLifeAtFlame, setIsSyncingLifeAtFlame] = useState<boolean>(false);
+  const [lastLifeAtFlameSync, setLastLifeAtFlameSync] = useState<string | null>(null);
 
   // Load state on client mount
   useEffect(() => {
+    let authUnsubscribe: (() => void) | null = null;
     try {
       const dummyIds = ['evt-1', 'evt-2', 'evt-3', 'evt-4', 'evt-5', 'evt-6', 'evt-7', 'evt-8', 'evt-9'];
       const storedEvents = localStorage.getItem(LOCAL_STORAGE_EVENTS_KEY);
@@ -342,14 +350,116 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         });
 
-        return () => {
-          authListener?.subscription?.unsubscribe();
-        };
+        if (authListener?.subscription) {
+          authUnsubscribe = () => authListener.subscription.unsubscribe();
+        }
       }
+
+      // Load stored last sync timestamp
+      try {
+        const storedLastSync = localStorage.getItem('flame_fomo_last_sync_lifeatflame');
+        if (storedLastSync) setLastLifeAtFlameSync(storedLastSync);
+      } catch {}
+
+      // Automatically trigger background sync with Life@FLAME portal
+      syncLifeAtFlameNow(false);
+
+      // Keep permanently synced with Life@FLAME: poll every 15 minutes for new campus deadlines
+      const syncInterval = setInterval(() => {
+        syncLifeAtFlameNow(false);
+      }, 15 * 60 * 1000);
+
+      return () => {
+        if (authUnsubscribe) authUnsubscribe();
+        clearInterval(syncInterval);
+      };
     } catch (e) {
       console.error('Failed to load local storage state:', e);
     }
   }, []);
+
+  // Life@FLAME Live Synchronization Engine
+  const syncLifeAtFlameNow = async (force = false): Promise<{ success: boolean; count?: number; message?: string }> => {
+    setIsSyncingLifeAtFlame(true);
+    try {
+      const res = await fetch('/api/sync-lifeatflame', {
+        method: 'GET',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+      if (!res.ok) {
+        throw new Error(`Sync API responded with HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.success && Array.isArray(data.items)) {
+        const syncedItems: EventItem[] = data.items;
+
+        setEvents((prev) => {
+          const map = new Map<string, EventItem>();
+          // Preserve existing events and user posts
+          prev.forEach((e) => map.set(e.id, e));
+
+          // Upsert synced items preserving user interactions (saved, going, feedback)
+          syncedItems.forEach((item) => {
+            const existing = map.get(item.id);
+            if (existing) {
+              map.set(item.id, {
+                ...item,
+                saved_users: existing.saved_users,
+                going_users: existing.going_users,
+                favourite_users: existing.favourite_users,
+                ratings: existing.ratings,
+                feedback: existing.feedback,
+              });
+            } else {
+              map.set(item.id, item);
+            }
+          });
+
+          const merged = Array.from(map.values());
+          try {
+            localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
+
+        const nowIso = new Date().toISOString();
+        setLastLifeAtFlameSync(nowIso);
+        try {
+          localStorage.setItem('flame_fomo_last_sync_lifeatflame', nowIso);
+        } catch {}
+
+        return {
+          success: true,
+          count: data.totalSynced,
+          message: `Linked & synced ${data.totalSynced} campus items from Life@FLAME!`,
+        };
+      }
+      return { success: false, message: data.error || 'Failed to sync' };
+    } catch (err: any) {
+      console.warn('[AppContext] Life@FLAME auto-sync notice:', err.message);
+      return { success: false, message: err.message };
+    } finally {
+      setIsSyncingLifeAtFlame(false);
+    }
+  };
+
+  // Derive FOMO deadline awareness alerts automatically from all events & applications
+  useEffect(() => {
+    if (!events || events.length === 0) return;
+    const notifs: NotificationItem[] = events
+      .filter((ev) => ev.registration_deadline)
+      .map((ev) => ({
+        id: `notif-${ev.id}`,
+        title: ev.item_type === 'application' ? 'Application Deadline Approaching!' : 'Registration Closing Soon!',
+        message: `${ev.event_name} deadline: ${ev.registration_deadline}`,
+        eventId: ev.id,
+        deadline: ev.registration_deadline || '',
+        type: 'urgent_deadline',
+        read: false,
+        timestamp: 'Upcoming',
+      }));
+    setNotifications(notifs);
+  }, [events]);
 
   // Save events to local storage on change
   const saveEventsToStorage = (updated: EventItem[]) => {
@@ -1222,6 +1332,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         markNotificationsAsRead,
         myCreatedEventIds,
         isUserAuthor,
+        isSyncingLifeAtFlame,
+        lastLifeAtFlameSync,
+        syncLifeAtFlameNow,
       }}
     >
       {children}
