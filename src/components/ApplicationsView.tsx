@@ -22,6 +22,23 @@ import {
   FileText
 } from 'lucide-react';
 
+const CLOSED_EXPIRED_APP_IDS = new Set([
+  'lifeatflame-app-flame-dance-club',
+  'lifeatflame-app-flame-astronomy-club',
+  'lifeatflame-app-flame-mun-club',
+  'lifeatflame-app-flame-on-board',
+  'lifeatflame-app-flame-entrepreneurship-lab',
+  'lifeatflame-app-flame-travel-club',
+  'lifeatflame-app-dotslash-flame',
+  'lifeatflame-app-the-front-row-film-club',
+  'lifeatflame-app-flame-cooking-collective',
+  'lifeatflame-app-markit-flame-marketing-club',
+  'lifeatflame-app-flame-yearbook-committee',
+  'lifeatflame-app-animal-welfare-committee',
+  'lifeatflame-app-anime-arcadia-flame-anime-club',
+  'lifeatflame-app-flame-business-consulting'
+]);
+
 export const ApplicationsView: React.FC = () => {
   const { 
     events, 
@@ -51,9 +68,14 @@ export const ApplicationsView: React.FC = () => {
     setNowMs(now.getTime());
   }, []);
 
-  // Filter ONLY items marked as applications
+  // Filter ONLY items marked as applications AND actively open for students to apply
   const allApplications = useMemo(() => {
-    return events.filter((e) => e.item_type === 'application');
+    return events.filter((e) => {
+      if (e.item_type !== 'application') return false;
+      if (e.status === 'Completed' || e.status === 'Registration Closed') return false;
+      if (CLOSED_EXPIRED_APP_IDS.has(e.id)) return false;
+      return true;
+    });
   }, [events]);
 
   // Check if current authenticated user has posted any applications

@@ -159,6 +159,28 @@ export async function fetchLifeAtFlameClubApplications(): Promise<EventItem[]> {
     const defaultDeadline = '2026-10-31 23:59';
     const defaultDate = '2026-10-31';
 
+// Clubs whose application deadlines have passed or forms are closed
+const CLOSED_CLUBS_SET = new Set([
+  'flame dance club',
+  'flame astronomy club',
+  'flame mun club',
+  'flame on board',
+  'flame entrepreneurship lab',
+  'flame travel club',
+  'dotslash flame',
+  'the front row: film club',
+  'the front row',
+  'flame cooking collective',
+  'markit: flame marketing club',
+  'flame marketing club',
+  'flame yearbook committee',
+  'animal welfare committee',
+  'anime arcadia: flame anime club',
+  'anime arcadia',
+  'flame business & consulting',
+  'flame business and consulting',
+]);
+
     for (const match of matches) {
       const formUrl = match[1].trim();
       const body = match[2];
@@ -167,6 +189,11 @@ export async function fetchLifeAtFlameClubApplications(): Promise<EventItem[]> {
       const nameMatch = body.match(/class="club-name">([^<]+)<\/div>/i);
       const clubName = nameMatch ? nameMatch[1].trim() : (typeof match[2] === 'string' && !match[2].includes('<') ? match[2].trim() : '');
       if (!clubName || clubName.length < 3) continue;
+
+      // Filter out clubs whose deadlines have passed
+      if (CLOSED_CLUBS_SET.has(clubName.toLowerCase().trim())) {
+        continue;
+      }
 
       // Extract logo image if present
       const imgMatch = body.match(/src="([^"]+)"/i);

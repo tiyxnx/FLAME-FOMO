@@ -144,7 +144,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     let authUnsubscribe: (() => void) | null = null;
     try {
-      const dummyIds = ['evt-1', 'evt-2', 'evt-3', 'evt-4', 'evt-5', 'evt-6', 'evt-7', 'evt-8', 'evt-9'];
+      const dummyIds = [
+        'evt-1', 'evt-2', 'evt-3', 'evt-4', 'evt-5', 'evt-6', 'evt-7', 'evt-8', 'evt-9',
+        'lifeatflame-app-flame-dance-club',
+        'lifeatflame-app-flame-astronomy-club',
+        'lifeatflame-app-flame-mun-club',
+        'lifeatflame-app-flame-on-board',
+        'lifeatflame-app-flame-entrepreneurship-lab',
+        'lifeatflame-app-flame-travel-club',
+        'lifeatflame-app-dotslash-flame',
+        'lifeatflame-app-the-front-row-film-club',
+        'lifeatflame-app-flame-cooking-collective',
+        'lifeatflame-app-markit-flame-marketing-club',
+        'lifeatflame-app-flame-yearbook-committee',
+        'lifeatflame-app-animal-welfare-committee',
+        'lifeatflame-app-anime-arcadia-flame-anime-club',
+        'lifeatflame-app-flame-business-consulting'
+      ];
       const storedEvents = localStorage.getItem(LOCAL_STORAGE_EVENTS_KEY);
       if (storedEvents) {
         const parsed: EventItem[] = JSON.parse(storedEvents);
