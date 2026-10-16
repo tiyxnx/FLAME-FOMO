@@ -41,6 +41,11 @@ export const HomeView: React.FC = () => {
 
   // Filter featured cards with 2-day auto-expiry rule (or indefinitely if favourited)
   const displayedEvents = events.filter((evt) => {
+    // Applications strictly belong to the Applications tab, never regular events
+    if (evt.item_type === 'application') {
+      return false;
+    }
+
     // 2-day auto-expiry rule: remove from discovery collage after 2 days unless favourited
     if (!isEventActive(evt, favouriteEventIds)) {
       return false;

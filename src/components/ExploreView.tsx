@@ -49,9 +49,9 @@ export const ExploreView: React.FC = () => {
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-  // Events submitted by the authenticated user / current author
+  // Events submitted by the authenticated user / current author (excluding applications)
   const userSubmittedEvents = useMemo(() => {
-    return events.filter(isUserAuthor);
+    return events.filter((e) => e.item_type !== 'application' && isUserAuthor(e));
   }, [events, isUserAuthor]);
 
   const hasPostedEvents = userSubmittedEvents.length > 0;
@@ -59,6 +59,9 @@ export const ExploreView: React.FC = () => {
   // Filter events
   const filteredEvents = useMemo(() => {
     return events.filter((evt) => {
+      // Applications strictly belong to the Applications tab, never regular events
+      if (evt.item_type === 'application') return false;
+
       const isOwn = isUserAuthor(evt);
       const isOver = evt.status === 'Completed' || (todayStr ? evt.date < todayStr : false);
 

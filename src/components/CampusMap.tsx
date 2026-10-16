@@ -29,7 +29,7 @@ export const CampusMap: React.FC = () => {
   const [activePinEventId, setActivePinEventId] = useState<string | null>(null);
 
   // Requirement: ONLY events the user has marked as "I'm Going" render as numbered pins on the map image
-  const goingEvents = events.filter((e) => goingEventIds.includes(e.id));
+  const goingEvents = events.filter((e) => e.item_type !== 'application' && goingEventIds.includes(e.id));
 
   // Compute map pin coordinate with smart sub-building matching and gentle jitter
   const getCoordinatesForEvent = (event: EventItem, index: number) => {

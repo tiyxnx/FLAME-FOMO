@@ -38,8 +38,8 @@ interface AppContextType {
   unreadNotificationsCount: number;
 
   // Active view tab
-  currentTab: 'home' | 'explore' | 'my-plan' | 'campus-map' | 'profile';
-  setCurrentTab: (tab: 'home' | 'explore' | 'my-plan' | 'campus-map' | 'profile') => void;
+  currentTab: 'home' | 'explore' | 'applications' | 'my-plan' | 'campus-map' | 'profile';
+  setCurrentTab: (tab: 'home' | 'explore' | 'applications' | 'my-plan' | 'campus-map' | 'profile') => void;
 
   // Modals
   isAuthModalOpen: boolean;
@@ -52,8 +52,9 @@ interface AppContextType {
   closeOnboarding: () => void;
 
   isCreateEventOpen: boolean;
+  createEventInitialType: 'event' | 'application';
   eventToEdit: EventItem | null;
-  openCreateEvent: () => void;
+  openCreateEvent: (initialType?: 'event' | 'application' | any) => void;
   openEditEvent: (event: EventItem) => void;
   closeCreateEvent: () => void;
 
@@ -113,13 +114,14 @@ const LOCAL_STORAGE_NOTIFS_KEY = 'flame_fomo_notifications';
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [events, setEvents] = useState<EventItem[]>(INITIAL_SEED_EVENTS);
-  const [currentTab, setCurrentTab] = useState<'home' | 'explore' | 'my-plan' | 'campus-map' | 'profile'>('home');
+  const [currentTab, setCurrentTab] = useState<'home' | 'explore' | 'applications' | 'my-plan' | 'campus-map' | 'profile'>('home');
 
   // Modals state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalReason, setAuthModalReason] = useState<string>('');
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [createEventInitialType, setCreateEventInitialType] = useState<'event' | 'application'>('event');
   const [eventToEdit, setEventToEdit] = useState<EventItem | null>(null);
   const [selectedEventForDetail, setSelectedEventForDetail] = useState<EventItem | null>(null);
   const [clashInfo, setClashInfo] = useState<ClashInfo | null>(null);
@@ -183,6 +185,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 const feeMatch = ev.requirements_eligibility?.match(/\[FEE:\s*([^\]]+)\]/);
                 const pocNameMatch = ev.requirements_eligibility?.match(/\[POC_NAME:\s*([^\]]+)\]/);
                 const pocNumberMatch = ev.requirements_eligibility?.match(/\[POC_NUMBER:\s*([^\]]+)\]/);
+                const typeMatch = ev.requirements_eligibility?.match(/\[TYPE:\s*([^\]]+)\]/);
+                const interviewMatch = ev.requirements_eligibility?.match(/\[INTERVIEW:\s*([^\]]+)\]/);
+                const hasInterview = ev.has_interview ?? (Boolean(ev.interview_details) || Boolean(interviewMatch) || Boolean(ev.requirements_eligibility?.includes('[HAS_INTERVIEW]')));
+                const itemType = (ev.item_type || (typeMatch ? typeMatch[1].trim() : 'event')) as 'event' | 'application';
+
                 const sUsers = Array.isArray(ev.saved_users) ? ev.saved_users : [];
                 const gUsers = Array.isArray(ev.going_users) ? ev.going_users : [];
                 const fUsers = Array.isArray(ev.favourite_users) ? ev.favourite_users : [];
@@ -193,6 +200,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
                 return {
                   ...ev,
+                  item_type: itemType,
+                  has_interview: hasInterview,
+                  interview_details: ev.interview_details || (interviewMatch ? interviewMatch[1].trim() : undefined),
                   categories: parsedCats,
                   category: ev.category,
                   registration_fee: feeMatch ? feeMatch[1].trim() : undefined,
@@ -369,11 +379,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const openOnboarding = () => setIsOnboardingOpen(true);
   const closeOnboarding = () => setIsOnboardingOpen(false);
 
-  const openCreateEvent = () => {
+  const openCreateEvent = (initialType?: 'event' | 'application' | any) => {
+    const cleanType: 'event' | 'application' = initialType === 'application' ? 'application' : 'event';
     if (!user) {
-      openAuthModal('Sign in with your FLAME email to post events.');
+      openAuthModal(cleanType === 'application' ? 'Sign in with your FLAME email to post club applications.' : 'Sign in with your FLAME email to post events.');
       return;
     }
+    setCreateEventInitialType(cleanType);
     setEventToEdit(null);
     setIsCreateEventOpen(true);
   };
@@ -1001,7 +1013,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (newEvent.poc_number && !finalEligibility.includes('[POC_NUMBER:')) {
         finalEligibility = `${finalEligibility} [POC_NUMBER: ${newEvent.poc_number}]`.trim();
       }
-      const { is_tentative, tentative_note, registration_fee, categories, poc_name, poc_number, ...cleanPayload } = newEvent;
+      if (newEvent.item_type && !finalEligibility.includes('[TYPE:')) {
+        finalEligibility = `${finalEligibility} [TYPE: ${newEvent.item_type}]`.trim();
+      }
+      if (newEvent.has_interview && !finalEligibility.includes('[HAS_INTERVIEW]')) {
+        finalEligibility = `${finalEligibility} [HAS_INTERVIEW]`.trim();
+      }
+      if (newEvent.interview_details && !finalEligibility.includes('[INTERVIEW:')) {
+        finalEligibility = `${finalEligibility} [INTERVIEW: ${newEvent.interview_details}]`.trim();
+      }
+      const { 
+        is_tentative, 
+        tentative_note, 
+        registration_fee, 
+        categories, 
+        poc_name, 
+        poc_number, 
+        item_type, 
+        has_interview, 
+        interview_details, 
+        ...cleanPayload 
+      } = newEvent;
       cleanPayload.requirements_eligibility = finalEligibility || undefined;
       cleanPayload.category = (newEvent.categories && newEvent.categories.length > 0)
         ? newEvent.categories.join(', ')
@@ -1034,7 +1066,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (eventData.poc_number !== undefined) {
         finalEligibility = `${(finalEligibility || '').replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '').trim()} ${eventData.poc_number ? `[POC_NUMBER: ${eventData.poc_number}]` : ''}`.trim();
       }
-      const { is_tentative, tentative_note, registration_fee, categories, poc_name, poc_number, ...cleanPayload } = eventData;
+      if (eventData.item_type !== undefined) {
+        finalEligibility = `${(finalEligibility || '').replace(/\[TYPE:\s*[^\]]+\]/g, '').trim()} [TYPE: ${eventData.item_type}]`.trim();
+      }
+      if (eventData.has_interview !== undefined) {
+        finalEligibility = `${(finalEligibility || '').replace(/\[HAS_INTERVIEW\]/g, '').trim()} ${eventData.has_interview ? '[HAS_INTERVIEW]' : ''}`.trim();
+      }
+      if (eventData.interview_details !== undefined) {
+        finalEligibility = `${(finalEligibility || '').replace(/\[INTERVIEW:\s*[^\]]+\]/g, '').trim()} ${eventData.interview_details ? `[INTERVIEW: ${eventData.interview_details}]` : ''}`.trim();
+      }
+      const { 
+        is_tentative, 
+        tentative_note, 
+        registration_fee, 
+        categories, 
+        poc_name, 
+        poc_number, 
+        item_type, 
+        has_interview, 
+        interview_details, 
+        ...cleanPayload 
+      } = eventData;
       if (eventData.categories && eventData.categories.length > 0) {
         cleanPayload.category = eventData.categories.join(', ');
       }
@@ -1121,6 +1173,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openOnboarding,
         closeOnboarding,
         isCreateEventOpen,
+        createEventInitialType,
         eventToEdit,
         openCreateEvent,
         openEditEvent,

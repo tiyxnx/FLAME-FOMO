@@ -29,8 +29,9 @@ export const DontForget: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp 
 
   if (!todayStr || !nowTimestamp) return null;
 
-  // 1. Strictly exclude concluded events (event date must be today or future, status not Completed/Cancelled)
+  // 1. Strictly exclude applications & concluded events
   const activeUpcomingEvents = events.filter((e) => {
+    if (e.item_type === 'application') return false;
     if (e.status === 'Completed' || e.status === 'Cancelled') return false;
     if (e.date < todayStr) return false;
     return true;

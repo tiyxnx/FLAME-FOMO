@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { HomeView } from '@/components/HomeView';
 import { ExploreView } from '@/components/ExploreView';
+import { ApplicationsView } from '@/components/ApplicationsView';
 import { MyPlanView } from '@/components/MyPlanView';
 import { CampusMap } from '@/components/CampusMap';
 import { ProfileView } from '@/components/ProfileView';
@@ -35,6 +36,7 @@ export default function App() {
       <main className="flex-1 pb-24">
         {currentTab === 'home' && <HomeView />}
         {currentTab === 'explore' && <ExploreView />}
+        {currentTab === 'applications' && <ApplicationsView />}
         {currentTab === 'my-plan' && <MyPlanView />}
         {currentTab === 'campus-map' && <CampusMap />}
         {currentTab === 'profile' && <ProfileView />}

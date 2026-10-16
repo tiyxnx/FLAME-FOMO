@@ -44,6 +44,7 @@ export interface UserProfile {
 
 export interface EventItem {
   id: string;
+  item_type?: 'event' | 'application'; // 'event' (default) or 'application' (club recruitment)
   event_name: string;
   category: EventCategory | string;
   categories?: string[];
@@ -60,6 +61,8 @@ export interface EventItem {
   registration_deadline?: string; // YYYY-MM-DD HH:mm or YYYY-MM-DD
   registration_link?: string;
   requirements_eligibility?: string; // Target Student Year, e.g. "Open to All" or "UG1 & UG2"
+  has_interview?: boolean; // Whether club application involves interview / audition round
+  interview_details?: string; // Timeline, venue, or format for interviews
   event_image?: string;
   status: EventStatus;
   is_tentative?: boolean;

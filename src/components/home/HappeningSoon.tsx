@@ -36,6 +36,7 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
   // Order: Saved events first (soonest to latest), followed by other events (soonest to latest)
   const upcomingEvents = events
     .filter((e) => {
+      if (e.item_type === 'application') return false;
       if (e.status === 'Cancelled' || e.status === 'Completed') return false;
       return e.date >= dateRange.today && e.date <= dateRange.sevenDaysLater;
     })

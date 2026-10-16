@@ -77,6 +77,7 @@ export const EventDetailModal: React.FC = () => {
   const feeFromTag = event.requirements_eligibility?.match(/\[FEE:\s*([^\]]+)\]/)?.[1];
   const pocNameFromTag = event.requirements_eligibility?.match(/\[POC_NAME:\s*([^\]]+)\]/)?.[1];
   const pocNumberFromTag = event.requirements_eligibility?.match(/\[POC_NUMBER:\s*([^\]]+)\]/)?.[1];
+  const isApplication = event.item_type === 'application';
   const displayFee = event.registration_fee || feeFromTag;
   const displayPocName = event.poc_name || pocNameFromTag;
   const displayPocNumber = event.poc_number || pocNumberFromTag;
@@ -86,6 +87,9 @@ export const EventDetailModal: React.FC = () => {
     .replace(/\[FEE:\s*[^\]]+\]/g, '')
     .replace(/\[POC_NAME:\s*[^\]]+\]/g, '')
     .replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '')
+    .replace(/\[TYPE:\s*[^\]]+\]/g, '')
+    .replace(/\[INTERVIEW:\s*[^\]]+\]/g, '')
+    .replace(/\[HAS_INTERVIEW\]/g, '')
     .trim();
 
   // Allow the author who posted the event (or admin) to edit or delete it
@@ -130,10 +134,23 @@ export const EventDetailModal: React.FC = () => {
 
         {/* Header / Badges */}
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="px-3 py-1 bg-[#1a1714] text-amber-200 text-xs font-bold uppercase tracking-wider rounded-xs">
-            {event.category}
-          </span>
-          {displayFee && (
+          {isApplication ? (
+            <span className="px-3 py-1 bg-purple-900 text-purple-100 text-xs font-bold uppercase tracking-wider rounded-xs flex items-center gap-1.5">
+              <span>📋 Club Application</span>
+            </span>
+          ) : (
+            <span className="px-3 py-1 bg-[#1a1714] text-amber-200 text-xs font-bold uppercase tracking-wider rounded-xs">
+              {event.category}
+            </span>
+          )}
+
+          {event.has_interview && (
+            <span className="px-2.5 py-0.5 bg-purple-100 border border-purple-300 text-purple-900 text-xs font-bold rounded-xs flex items-center gap-1">
+              <span>🎙️ Interview Round Later</span>
+            </span>
+          )}
+
+          {!isApplication && displayFee && (
             <span className="px-2.5 py-0.5 bg-emerald-100 border border-emerald-400 text-emerald-900 text-xs font-bold rounded-xs flex items-center gap-1">
               <span>🎟️ {displayFee.toLowerCase() === 'free' ? 'Free Entry' : `Fee: ${displayFee}`}</span>
             </span>
@@ -153,12 +170,12 @@ export const EventDetailModal: React.FC = () => {
           )}
           {isCancelled && (
             <span className="px-2.5 py-0.5 bg-red-100 border border-red-400 text-red-700 text-xs font-bold uppercase rounded-xs">
-              Event Cancelled
+              Application Closed
             </span>
           )}
           {isCompleted && (
             <span className="px-2.5 py-0.5 bg-neutral-800 text-neutral-100 text-xs font-bold uppercase rounded-xs">
-              Completed
+              Closed
             </span>
           )}
         </div>
@@ -437,6 +454,23 @@ export const EventDetailModal: React.FC = () => {
           )}
         </div>
 
+        {/* Interview / Audition Stage Banner for Club Applications */}
+        {isApplication && (event.has_interview || event.interview_details) && (
+          <div className="p-3.5 bg-purple-50/90 border border-purple-300 rounded-sm mb-5 font-sans-ui">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
+                <span>🎙️ Interview / Audition Stage</span>
+              </span>
+              <span className="text-[10px] px-1.5 py-0.2 bg-purple-200 text-purple-900 font-semibold rounded">
+                Next Steps
+              </span>
+            </div>
+            <p className="text-xs text-purple-900 leading-relaxed">
+              {event.interview_details || 'Shortlisted candidates will be invited for an interview / audition round after written applications are reviewed.'}
+            </p>
+          </div>
+        )}
+
         {/* Description Body */}
         <div className="mb-6 font-sans-ui leading-relaxed text-sm text-neutral-800 whitespace-pre-line">
           {event.description}
@@ -444,22 +478,34 @@ export const EventDetailModal: React.FC = () => {
 
         {/* Registration CTA banner */}
         {event.registration_link && !isCancelled && (
-          <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-sm flex items-center justify-between gap-3 mb-6 font-sans-ui">
+          <div className={`p-3.5 rounded-sm flex items-center justify-between gap-3 mb-6 font-sans-ui ${
+            isApplication 
+              ? 'bg-purple-50 border border-purple-300' 
+              : 'bg-amber-50 border border-amber-300'
+          }`}>
             <div>
-              <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider">
-                Registration Required
+              <h4 className={`text-xs font-bold uppercase tracking-wider ${
+                isApplication ? 'text-purple-950' : 'text-amber-950'
+              }`}>
+                {isApplication ? 'Official Club Application Form' : 'Registration Required'}
               </h4>
-              <p className="text-xs text-amber-800">
-                Official external registration via Google Form / RSVP link.
+              <p className={`text-xs ${isApplication ? 'text-purple-800' : 'text-amber-800'}`}>
+                {isApplication 
+                  ? 'Submit your official club application before the cutoff deadline.' 
+                  : 'Official external registration via Google Form / RSVP link.'}
               </p>
             </div>
             <a
               href={event.registration_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs sm:text-sm font-bold rounded shadow flex items-center gap-1.5 whitespace-nowrap"
+              className={`px-4 py-2 text-xs sm:text-sm font-bold rounded shadow flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+                isApplication 
+                  ? 'bg-purple-900 hover:bg-purple-950 text-purple-100' 
+                  : 'bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100'
+              }`}
             >
-              <span>Register Now</span>
+              <span>{isApplication ? 'Fill Application Form' : 'Register Now'}</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -538,19 +584,40 @@ export const EventDetailModal: React.FC = () => {
               </button>
             )}
 
-            {/* I'm Going (Only on upcoming events, removed when ended) */}
+            {/* Primary Action (Apply Now for applications, I'm Going for events) */}
             {!isCompleted && (
-              <button
-                onClick={() => handleAction('going')}
-                className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md transition-transform active:scale-95 flex items-center gap-2 ${
-                  isGoing
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    : 'bg-neutral-900 hover:bg-black text-amber-100'
-                }`}
-              >
-                <Check className="w-4 h-4" />
-                <span>{isGoing ? "You're Going!" : "I'm Going"}</span>
-              </button>
+              isApplication ? (
+                event.registration_link ? (
+                  <a
+                    href={event.registration_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md transition-transform active:scale-95 flex items-center gap-2 bg-purple-900 hover:bg-purple-950 text-white"
+                  >
+                    <span>Apply Now</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => handleAction('save')}
+                    className="px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md bg-purple-900 text-white"
+                  >
+                    <span>Track Application</span>
+                  </button>
+                )
+              ) : (
+                <button
+                  onClick={() => handleAction('going')}
+                  className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-md transition-transform active:scale-95 flex items-center gap-2 ${
+                    isGoing
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-neutral-900 hover:bg-black text-amber-100'
+                  }`}
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{isGoing ? "You're Going!" : "I'm Going"}</span>
+                </button>
+              )
             )}
           </div>
         </div>

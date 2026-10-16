@@ -15,7 +15,8 @@ import {
   Check, 
   ExternalLink,
   ChevronDown,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -38,7 +39,7 @@ export const Header: React.FC = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  const handleTabClick = (tab: 'home' | 'explore' | 'my-plan' | 'campus-map' | 'profile') => {
+  const handleTabClick = (tab: 'home' | 'explore' | 'applications' | 'my-plan' | 'campus-map' | 'profile') => {
     if ((tab === 'my-plan' || tab === 'campus-map' || tab === 'profile') && !isAuthenticated) {
       openAuthModal(`Sign in with your FLAME email to access ${tab === 'my-plan' ? 'My Plan' : tab === 'campus-map' ? 'the Campus Map' : 'your Profile'}.`);
       return;
@@ -108,6 +109,18 @@ export const Header: React.FC = () => {
             >
               <Compass className="w-4 h-4" />
               <span>Explore</span>
+            </button>
+
+            <button
+              onClick={() => handleTabClick('applications')}
+              className={`px-3.5 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
+                currentTab === 'applications'
+                  ? 'bg-[#fbf7ee] text-[#1c1a17] font-semibold shadow-md'
+                  : 'text-[#d6cbaf] hover:text-[#fbf7ee] hover:bg-[#2b2721]'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span>Applications</span>
             </button>
 
             <button
@@ -326,6 +339,16 @@ export const Header: React.FC = () => {
           >
             <Compass className="w-4 h-4 mb-0.5" />
             <span>Explore</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('applications')}
+            className={`flex flex-col items-center py-1 px-2 rounded ${
+              currentTab === 'applications' ? 'text-amber-300 font-bold' : 'text-[#a89b87]'
+            }`}
+          >
+            <FileText className="w-4 h-4 mb-0.5" />
+            <span>Apply</span>
           </button>
 
           <button

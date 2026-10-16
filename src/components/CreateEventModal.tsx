@@ -49,13 +49,15 @@ export const CreateEventModal: React.FC = () => {
     checkUserPostLimit,
     updateEvent, 
     eventToEdit, 
-    user 
+    user,
+    createEventInitialType 
   } = useApp();
 
   const [submitError, setSubmitError] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
+  const [itemType, setItemType] = useState<'event' | 'application'>('event');
   const [eventName, setEventName] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>(['Workshop']);
   const [date, setDate] = useState('2026-10-08');
@@ -69,6 +71,8 @@ export const CreateEventModal: React.FC = () => {
   const [organizer, setOrganizer] = useState('');
   const [pocName, setPocName] = useState('');
   const [pocNumber, setPocNumber] = useState('');
+  const [hasInterview, setHasInterview] = useState(false);
+  const [interviewDetails, setInterviewDetails] = useState('');
   const [description, setDescription] = useState('');
   const [registrationDeadlineDate, setRegistrationDeadlineDate] = useState('');
   const [registrationDeadlineTime, setRegistrationDeadlineTime] = useState('23:59');
@@ -93,6 +97,13 @@ export const CreateEventModal: React.FC = () => {
     if (!isCreateEventOpen) return;
 
     if (eventToEdit) {
+      setItemType(eventToEdit.item_type || 'event');
+      setHasInterview(Boolean(eventToEdit.has_interview || eventToEdit.interview_details || eventToEdit.requirements_eligibility?.includes('[HAS_INTERVIEW]')));
+      setInterviewDetails(
+        eventToEdit.interview_details || 
+        eventToEdit.requirements_eligibility?.match(/\[INTERVIEW:\s*([^\]]+)\]/)?.[1] || 
+        ''
+      );
       setEventName(eventToEdit.event_name);
       if (eventToEdit.categories && eventToEdit.categories.length > 0) {
         setSelectedCategories(eventToEdit.categories as EventCategory[]);
@@ -139,7 +150,10 @@ export const CreateEventModal: React.FC = () => {
         setRegistrationDeadlineTime('23:59');
       }
     } else {
-      // Default new event
+      // Default new item
+      setItemType(createEventInitialType || 'event');
+      setHasInterview(false);
+      setInterviewDetails('');
       setEventName('');
       setSelectedCategories(['Workshop']);
       const tomorrow = new Date();
@@ -165,7 +179,7 @@ export const CreateEventModal: React.FC = () => {
       setIsCustomRoom(false);
     }
     setErrorMsg('');
-  }, [eventToEdit, isCreateEventOpen, user]);
+  }, [eventToEdit, isCreateEventOpen, user, createEventInitialType]);
 
   if (!isCreateEventOpen) return null;
 
@@ -254,8 +268,11 @@ export const CreateEventModal: React.FC = () => {
     const categoryString = selectedCategories.join(', ');
 
     if (eventToEdit) {
-      // UPDATE EXISTING EVENT
+      // UPDATE EXISTING EVENT OR APPLICATION
       updateEvent(eventToEdit.id, {
+        item_type: itemType,
+        has_interview: itemType === 'application' ? hasInterview : false,
+        interview_details: itemType === 'application' && hasInterview ? interviewDetails.trim() : undefined,
         event_name: eventName.trim(),
         category: categoryString,
         categories: selectedCategories,
@@ -279,15 +296,18 @@ export const CreateEventModal: React.FC = () => {
         registration_fee: registrationFee.trim() || undefined,
       });
     } else {
-      // RATE LIMIT CHECK FOR NEW EVENTS
+      // RATE LIMIT CHECK FOR NEW POSTS
       const rateLimitCheck = checkUserPostLimit(user?.flame_email);
       if (!rateLimitCheck.allowed) {
         setSubmitError(rateLimitCheck.reason || 'Hourly posting limit reached.');
         return;
       }
 
-      // CREATE NEW EVENT
+      // CREATE NEW EVENT OR APPLICATION
       const res = createEvent({
+        item_type: itemType,
+        has_interview: itemType === 'application' ? hasInterview : false,
+        interview_details: itemType === 'application' && hasInterview ? interviewDetails.trim() : undefined,
         event_name: eventName.trim(),
         category: categoryString,
         categories: selectedCategories,
@@ -356,23 +376,67 @@ export const CreateEventModal: React.FC = () => {
         </button>
 
         {/* Header */}
-        <div className="mb-5">
+        <div className="mb-4">
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs ${isEditing ? 'bg-amber-200 text-amber-900' : 'stamp-urgent'}`}>
-              {isEditing ? '✏️ Edit Mode' : 'Student Bulletin'}
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs ${
+              isEditing 
+                ? 'bg-amber-200 text-amber-900' 
+                : itemType === 'application' 
+                  ? 'bg-purple-200 text-purple-900 font-bold' 
+                  : 'stamp-urgent'
+            }`}>
+              {isEditing 
+                ? '✏️ Edit Mode' 
+                : itemType === 'application' 
+                  ? '📋 Club Recruitment' 
+                  : 'Student Bulletin'}
             </span>
             <span className="text-xs text-neutral-500 font-handwritten text-base">
-              {isEditing ? 'update listing details' : 'post to campus'}
+              {isEditing 
+                ? 'update listing details' 
+                : itemType === 'application' 
+                  ? 'open membership calls' 
+                  : 'post to campus'}
             </span>
           </div>
           <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-900 mt-1">
-            {isEditing ? 'Edit Campus Event' : 'Submit a Campus Event'}
+            {isEditing 
+              ? (itemType === 'application' ? 'Edit Club Application' : 'Edit Campus Event') 
+              : (itemType === 'application' ? 'Post a Club Application' : 'Submit a Campus Event')}
           </h2>
           <p className="text-xs text-neutral-600 font-sans-ui mt-0.5">
-            {isEditing 
-              ? 'Changes sync instantly to the main website and Supabase cloud for all students.'
+            {itemType === 'application'
+              ? 'Recruiting new members, core committee, or auditioning? Applications appear in the Applications tab with strict deadlines.'
               : 'Published events instantly appear on the discovery collage, planner, and interactive campus map.'}
           </p>
+
+          {/* Type Toggle: Campus Event vs Club Application */}
+          {!isEditing && (
+            <div className="mt-3 grid grid-cols-2 gap-2 p-1 bg-[#ede6d3] rounded-md border border-[#d6cbb0]">
+              <button
+                type="button"
+                onClick={() => setItemType('event')}
+                className={`py-2 px-3 text-xs font-bold rounded-sm flex items-center justify-center gap-1.5 transition-all ${
+                  itemType === 'event'
+                    ? 'bg-[#c93b2b] text-white shadow-sm ring-1 ring-[#b02e20]'
+                    : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/50'
+                }`}
+              >
+                <span>🎟️ Campus Event</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setItemType('application')}
+                className={`py-2 px-3 text-xs font-bold rounded-sm flex items-center justify-center gap-1.5 transition-all ${
+                  itemType === 'application'
+                    ? 'bg-[#1e1b17] text-amber-200 shadow-sm ring-1 ring-amber-400/40'
+                    : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/50'
+                }`}
+              >
+                <span>📋 Club Application</span>
+              </button>
+            </div>
+          )}
 
           {/* Rate Limit Banner */}
           {!isEditing && (
@@ -392,7 +456,7 @@ export const CreateEventModal: React.FC = () => {
                     ? 'Organizer / Admin Access • Unlimited posting allowed' 
                     : !rateLimit.allowed
                       ? rateLimit.reason
-                      : `Hourly quota: ${rateLimit.count} of 2 events created in the last hour`}
+                      : `Hourly quota: ${rateLimit.count} of 2 ${itemType === 'application' ? 'applications' : 'events'} created in the last hour`}
                 </span>
               </div>
               {!rateLimit.isExempt && (
@@ -409,11 +473,11 @@ export const CreateEventModal: React.FC = () => {
           {/* 1. Title */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-              Event Title <span className="text-[#c93b2b]">*</span>
+              {itemType === 'application' ? 'Application / Role Title' : 'Event Title'} <span className="text-[#c93b2b]">*</span>
             </label>
             <input
               type="text"
-              placeholder="e.g. Midnight Acoustic Jam or AI Prompt Battle"
+              placeholder={itemType === 'application' ? "e.g. Core Committee 2026-27 Recruitment or Acting Auditions" : "e.g. Midnight Acoustic Jam or AI Prompt Battle"}
               value={eventName}
               onChange={(e) => setEventName(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-white border border-[#d6cbb0] rounded-sm text-sm font-semibold text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
@@ -603,11 +667,11 @@ export const CreateEventModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Organizer / Student Club <span className="text-[#c93b2b]">*</span>
+                {itemType === 'application' ? 'Club / Student Organization' : 'Organizer / Student Club'} <span className="text-[#c93b2b]">*</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g. Student Council or Media Collective"
+                placeholder={itemType === 'application' ? "e.g. MARKiT, First Cut, Rotaract Club" : "e.g. Student Council or Media Collective"}
                 value={organizer}
                 onChange={(e) => setOrganizer(e.target.value)}
                 className="w-full px-3.5 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
@@ -643,11 +707,11 @@ export const CreateEventModal: React.FC = () => {
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-[#c93b2b]" />
-                <span>Event POC (Person of Contact)</span>
+                <span>{itemType === 'application' ? 'Club POC (Recruitment Lead)' : 'Event POC (Person of Contact)'}</span>
                 <span className="text-[11px] font-normal normal-case text-neutral-500">(Optional)</span>
               </label>
               <span className="text-[10px] text-neutral-500 font-sans-ui">
-                Person handling this event
+                {itemType === 'application' ? 'Student lead handling recruitments' : 'Person handling this event'}
               </span>
             </div>
 
@@ -680,14 +744,49 @@ export const CreateEventModal: React.FC = () => {
             </div>
           </div>
 
+          {/* 4c. Interview & Audition Details (Dedicated for Applications) */}
+          {itemType === 'application' && (
+            <div className="p-3 bg-[#faf6ee] border border-[#d6cbb0] rounded-sm space-y-2.5">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={hasInterview}
+                  onChange={(e) => setHasInterview(e.target.checked)}
+                  className="w-4 h-4 accent-[#c93b2b] rounded cursor-pointer"
+                />
+                <span className="text-xs font-bold text-neutral-900">
+                  Includes an Interview / Audition round later
+                </span>
+              </label>
+
+              {hasInterview && (
+                <div className="pt-1">
+                  <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                    Interview / Audition Details & Timeline
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Shortlisted applicants will be invited for personal interviews on Oct 24th & 25th in Classroom Block A."
+                    value={interviewDetails}
+                    onChange={(e) => setInterviewDetails(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
+                  />
+                  <p className="text-[10px] text-neutral-500 mt-1">
+                    Help applicants know what rounds or dates to expect after submitting their application.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 5. Description */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-              Description <span className="text-[#c93b2b]">*</span>
+              {itemType === 'application' ? 'Role Overview & Requirements' : 'Description'} <span className="text-[#c93b2b]">*</span>
             </label>
             <textarea
               rows={3}
-              placeholder="What makes this event exciting? Add instructions, vibe, gear to bring, or what to expect."
+              placeholder={itemType === 'application' ? "Describe the positions open, responsibilities, commitments, and qualities your club is looking for." : "What makes this event exciting? Add instructions, vibe, gear to bring, or what to expect."}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3.5 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs sm:text-sm text-neutral-900 font-sans-ui"
@@ -699,7 +798,7 @@ export const CreateEventModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/60 border border-amber-200/80 rounded-sm">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">
-                Registration Deadline (Optional)
+                {itemType === 'application' ? 'Strict Application Deadline' : 'Registration Deadline (Optional)'}
               </label>
               <div className="flex gap-2">
                 <input
@@ -716,41 +815,45 @@ export const CreateEventModal: React.FC = () => {
                 />
               </div>
               <p className="text-[10px] text-amber-800 mt-1">
-                Triggers high-priority red stamp and notification radar
+                {itemType === 'application' 
+                  ? '⚠️ Applications have strict cutoffs. Radar alerts students before closing.' 
+                  : 'Triggers high-priority red stamp and notification radar'}
               </p>
             </div>
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">
-                External RSVP / Google Form Link (Optional)
+                {itemType === 'application' ? 'Application Form URL (Google Form, etc.)' : 'External RSVP / Google Form Link (Optional)'}
               </label>
               <input
                 type="url"
-                placeholder="https://forms.google.com/your-form"
+                placeholder={itemType === 'application' ? "https://forms.gle/your-application-form" : "https://forms.google.com/your-form"}
                 value={registrationLink}
                 onChange={(e) => setRegistrationLink(e.target.value)}
                 className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
               />
               <p className="text-[10px] text-amber-800 mt-1">
-                Direct link to Google Form / RSVP website
+                {itemType === 'application' ? 'Link where students can submit their club application' : 'Direct link to Google Form / RSVP website'}
               </p>
             </div>
 
-            <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
-              <label className="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">
-                Registration Fee / Stall Price (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Free, or ₹200 (₹300 on-spot), or ₹3,540 (Business Stall)"
-                value={registrationFee}
-                onChange={(e) => setRegistrationFee(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 placeholder:text-neutral-400"
-              />
-              <p className="text-[10px] text-amber-800 mt-1">
-                Displays a prominent ticket/price badge on the event card (e.g. &ldquo;₹200&rdquo; or &ldquo;Free&rdquo;).
-              </p>
-            </div>
+            {itemType !== 'application' && (
+              <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
+                <label className="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">
+                  Registration Fee / Stall Price (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Free, or ₹200 (₹300 on-spot), or ₹3,540 (Business Stall)"
+                  value={registrationFee}
+                  onChange={(e) => setRegistrationFee(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 placeholder:text-neutral-400"
+                />
+                <p className="text-[10px] text-amber-800 mt-1">
+                  Displays a prominent ticket/price badge on the event card (e.g. &ldquo;₹200&rdquo; or &ldquo;Free&rdquo;).
+                </p>
+              </div>
+            )}
           </div>
 
           {/* 7. Event Poster / Flyer (File Upload Only) */}
@@ -879,10 +982,10 @@ export const CreateEventModal: React.FC = () => {
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span>
                 {isEditing 
-                  ? 'Save Changes & Update Bulletin' 
+                  ? (itemType === 'application' ? 'Update Application Call' : 'Save Changes & Update Bulletin')
                   : !rateLimit.allowed 
                     ? `Limit Reached (${rateLimit.count}/2/hr)` 
-                    : 'Publish Event to Bulletin'}
+                    : (itemType === 'application' ? 'Publish Club Application' : 'Publish Event to Bulletin')}
               </span>
             </button>
           </div>
