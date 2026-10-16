@@ -20,32 +20,14 @@ import {
   Calendar, 
   Clock, 
   MapPin, 
-  Link as LinkIcon, 
   Users, 
-  FileText, 
-  Image as ImageIcon,
   CheckCircle2,
   Upload,
-  Wand2,
-  RefreshCw,
   Trash2,
   AlertCircle,
-  FileDown,
-  Sparkles as SparklesIcon
+  Phone
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { parseAnnouncement, ParseFieldStatus } from '@/lib/announcementParser';
-
-const CURATED_PRESETS = [
-  { label: '🎸 Live Music', url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80' },
-  { label: '💻 Tech / AI', url: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80' },
-  { label: '☕ Coffee & Talk', url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80' },
-  { label: '⚽ Sports Match', url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=600&q=80' },
-  { label: '🎨 Art Workshop', url: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80' },
-  { label: '🎬 Film / Drama', url: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=600&q=80' },
-  { label: '🌿 Nature Walk', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80' },
-  { label: '🌌 Stargazing', url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80' },
-];
 
 const COHORT_OPTIONS = [
   'Open to All Students',
@@ -85,6 +67,8 @@ export const CreateEventModal: React.FC = () => {
   const [roomSpecific, setRoomSpecific] = useState('');
   const [isCustomRoom, setIsCustomRoom] = useState(false);
   const [organizer, setOrganizer] = useState('');
+  const [pocName, setPocName] = useState('');
+  const [pocNumber, setPocNumber] = useState('');
   const [description, setDescription] = useState('');
   const [registrationDeadlineDate, setRegistrationDeadlineDate] = useState('');
   const [registrationDeadlineTime, setRegistrationDeadlineTime] = useState('23:59');
@@ -93,6 +77,7 @@ export const CreateEventModal: React.FC = () => {
   const [requirementsEligibility, setRequirementsEligibility] = useState('Open to All Students');
   const [eventImage, setEventImage] = useState('');
   const [status, setStatus] = useState<EventStatus>('Upcoming');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const toggleCategorySelection = (cat: EventCategory) => {
     if (selectedCategories.includes(cat)) {
@@ -102,16 +87,6 @@ export const CreateEventModal: React.FC = () => {
       setSelectedCategories([...selectedCategories, cat]);
     }
   };
-
-  // UI state for image picker
-  const [imageTab, setImageTab] = useState<'ai' | 'upload' | 'preset' | 'url'>('ai');
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  // Smart Auto-Fill from Announcement State
-  const [rawPasteText, setRawPasteText] = useState('');
-  const [parseResults, setParseResults] = useState<{ filledCount: number; statuses: ParseFieldStatus[] } | null>(null);
-  const [isPasteSectionOpen, setIsPasteSectionOpen] = useState(!eventToEdit);
 
   // Pre-fill when editing or initialize fresh
   useEffect(() => {
@@ -131,13 +106,17 @@ export const CreateEventModal: React.FC = () => {
       setVenueZone(eventToEdit.venue_zone);
       setRoomSpecific(eventToEdit.room_specific || '');
       setOrganizer(eventToEdit.organizer);
+      setPocName(eventToEdit.poc_name || '');
+      setPocNumber(eventToEdit.poc_number || '');
       setDescription(eventToEdit.description);
       setRegistrationLink(eventToEdit.registration_link || '');
       setRegistrationFee(eventToEdit.registration_fee || '');
       setRequirementsEligibility(
         (eventToEdit.requirements_eligibility || '')
           .replace('[TENTATIVE]', '')
-          .replace(/\[FEE:\s*[^\]]+\]/, '')
+          .replace(/\[FEE:\s*[^\]]+\]/g, '')
+          .replace(/\[POC_NAME:\s*[^\]]+\]/g, '')
+          .replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '')
           .trim() || 'Open to All Students'
       );
       setEventImage(eventToEdit.event_image || '');
@@ -173,6 +152,8 @@ export const CreateEventModal: React.FC = () => {
       setVenueZone('Academics');
       setRoomSpecific('');
       setOrganizer(user?.name ? `${user.name} / Student Org` : 'FLAME Student Initiative');
+      setPocName('');
+      setPocNumber('');
       setDescription('');
       setRegistrationDeadlineDate('');
       setRegistrationDeadlineTime('23:59');
@@ -181,68 +162,12 @@ export const CreateEventModal: React.FC = () => {
       setRequirementsEligibility('Open to All Students');
       setEventImage('');
       setStatus('Upcoming');
-      setImageTab('ai');
       setIsCustomRoom(false);
-      setRawPasteText('');
-      setParseResults(null);
     }
     setErrorMsg('');
   }, [eventToEdit, isCreateEventOpen, user]);
 
-  const handleSmartAutoFill = () => {
-    if (!rawPasteText.trim()) return;
-    const result = parseAnnouncement(rawPasteText);
-
-    if (result.data.eventName) setEventName(result.data.eventName);
-    if (result.data.category) setSelectedCategories([result.data.category]);
-    if (result.data.date) setDate(result.data.date);
-    if (result.data.timeStart) setTimeStart(result.data.timeStart);
-    if (result.data.timeEnd) setTimeEnd(result.data.timeEnd);
-    if (result.data.venueZone) {
-      setVenueZone(result.data.venueZone);
-      if (result.data.roomSpecific) {
-        setRoomSpecific(result.data.roomSpecific);
-      }
-    }
-    if (result.data.organizer) setOrganizer(result.data.organizer);
-    if (result.data.description) setDescription(result.data.description);
-    if (result.data.registrationFee) setRegistrationFee(result.data.registrationFee);
-    if (result.data.registrationLink) setRegistrationLink(result.data.registrationLink);
-    if (result.data.registrationDeadlineDate) setRegistrationDeadlineDate(result.data.registrationDeadlineDate);
-    if (result.data.registrationDeadlineTime) setRegistrationDeadlineTime(result.data.registrationDeadlineTime);
-    if (result.data.requirementsEligibility) setRequirementsEligibility(result.data.requirementsEligibility);
-
-    setParseResults({
-      filledCount: result.filledCount,
-      statuses: result.statuses,
-    });
-
-    try {
-      confetti({ particleCount: 35, spread: 50, origin: { y: 0.45 } });
-    } catch {}
-  };
-
   if (!isCreateEventOpen) return null;
-
-  // Handle AI Poster Generation based on subject line
-  const handleGenerateAiPoster = () => {
-    if (!eventName.trim()) {
-      setErrorMsg('Please enter an Event Name above so the AI knows what poster to create!');
-      return;
-    }
-    setErrorMsg('');
-    setIsGeneratingAi(true);
-
-    const safeTitle = eventName.trim().replace(/[^a-zA-Z0-9 ]/g, ' ');
-    const prompt = `${safeTitle}, ${selectedCategories.join(', ')} university campus event, artistic aesthetic poster, warm film photography, polaroid style, beautiful cinematic lighting`;
-    const randomSeed = Math.floor(Math.random() * 1000000);
-    const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=500&nologo=true&seed=${randomSeed}`;
-    
-    setEventImage(aiUrl);
-    setTimeout(() => {
-      setIsGeneratingAi(false);
-    }, 700);
-  };
 
   // Handle File Upload from device (Phone / Laptop)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,6 +266,8 @@ export const CreateEventModal: React.FC = () => {
         venue_zone: venueZone,
         room_specific: roomSpecific.trim() || undefined,
         organizer: organizer.trim(),
+        poc_name: pocName.trim() || undefined,
+        poc_number: pocNumber.trim() || undefined,
         description: description.trim(),
         registration_deadline: deadlineString,
         registration_link: registrationLink.trim() || undefined,
@@ -371,6 +298,8 @@ export const CreateEventModal: React.FC = () => {
         venue_zone: venueZone,
         room_specific: roomSpecific.trim() || undefined,
         organizer: organizer.trim(),
+        poc_name: pocName.trim() || undefined,
+        poc_number: pocNumber.trim() || undefined,
         description: description.trim(),
         registration_deadline: deadlineString,
         registration_link: registrationLink.trim() || undefined,
@@ -474,102 +403,6 @@ export const CreateEventModal: React.FC = () => {
             </div>
           )}
         </div>
-
-        {/* SMART PASTE / AUTO-FILL CARD */}
-        {!isEditing && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-[#fdfbf6] via-[#faf5e8] to-[#f4eee0] border-2 border-dashed border-[#d4c5a5] rounded-sm shadow-xs font-sans-ui">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-full bg-amber-200/80 text-amber-900">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xs uppercase tracking-wider text-neutral-900">
-                    Smart Auto-Fill from Announcement
-                  </h3>
-                  <p className="text-[11px] text-neutral-600">
-                    Paste an email or club notice — title, date, time, fee, links & details will auto-fill!
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsPasteSectionOpen(!isPasteSectionOpen)}
-                className="text-xs text-neutral-600 hover:text-neutral-900 font-semibold underline"
-              >
-                {isPasteSectionOpen ? 'Collapse' : 'Expand'}
-              </button>
-            </div>
-
-            {isPasteSectionOpen && (
-              <div className="mt-3 space-y-2.5 animate-fade-in">
-                <textarea
-                  rows={4}
-                  value={rawPasteText}
-                  onChange={(e) => setRawPasteText(e.target.value)}
-                  placeholder="Paste email announcement or message here... (e.g. 'From: The Anime Club... Bunkasai on 23rd October 6:00 pm to 11:00 pm at Plaza... Price: Rs. 3540... Form: https://forms.gle/...')"
-                  className="w-full p-2.5 bg-white border border-[#d6cbb0] rounded text-xs text-neutral-900 placeholder:text-neutral-400 font-sans-ui focus:outline-none focus:border-[#c93b2b]"
-                />
-
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={handleSmartAutoFill}
-                    disabled={!rawPasteText.trim()}
-                    className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] disabled:bg-neutral-300 disabled:text-neutral-500 text-white font-bold text-xs rounded shadow-xs flex items-center gap-2 transition-all active:scale-95"
-                  >
-                    <Wand2 className="w-3.5 h-3.5" />
-                    <span>Auto-Fill Form</span>
-                  </button>
-
-                  {rawPasteText.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRawPasteText('');
-                        setParseResults(null);
-                      }}
-                      className="text-xs text-neutral-500 hover:text-neutral-800 underline"
-                    >
-                      Clear Text
-                    </button>
-                  )}
-                </div>
-
-                {/* Auto-fill field status breakdown */}
-                {parseResults && (
-                  <div className="mt-3 p-3 bg-white/95 border border-[#c9bfa7] rounded text-xs space-y-2 animate-fade-in shadow-2xs">
-                    <div className="flex items-center justify-between border-b border-neutral-200/80 pb-1.5">
-                      <span className="font-bold text-neutral-900 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>Auto-Fill Summary:</span>
-                      </span>
-                      <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                        {parseResults.filledCount} fields populated
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] pt-1">
-                      {parseResults.statuses.map((st, i) => (
-                        <div key={i} className="flex items-start gap-1.5 leading-snug">
-                          {st.success ? (
-                            <span className="text-emerald-600 font-bold shrink-0">✓</span>
-                          ) : (
-                            <span className="text-amber-600 font-bold shrink-0">⚠️</span>
-                          )}
-                          <span className={st.success ? 'text-neutral-800' : 'text-amber-900 font-medium'}>
-                            <strong className="text-neutral-700">{st.label}:</strong> {st.value}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4 font-sans-ui text-sm">
           
@@ -805,6 +638,48 @@ export const CreateEventModal: React.FC = () => {
             </div>
           </div>
 
+          {/* 4b. Person of Contact (POC) */}
+          <div className="p-3 bg-[#fdfaf4] border border-[#d6cbb0] rounded-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-[#c93b2b]" />
+                <span>Event POC (Person of Contact)</span>
+                <span className="text-[11px] font-normal normal-case text-neutral-500">(Optional)</span>
+              </label>
+              <span className="text-[10px] text-neutral-500 font-sans-ui">
+                Person handling this event
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                  POC Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Tiyana Shah"
+                  value={pocName}
+                  onChange={(e) => setPocName(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#c93b2b]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                  POC Contact Number
+                </label>
+                <input
+                  type="tel"
+                  placeholder="e.g. +91 98765 43210"
+                  value={pocNumber}
+                  onChange={(e) => setPocNumber(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#c93b2b]"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* 5. Description */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
@@ -878,17 +753,22 @@ export const CreateEventModal: React.FC = () => {
             </div>
           </div>
 
-          {/* 7. Image Studio: AI Generator, File Upload, Presets & URL */}
-          <div className="p-3.5 bg-white border-2 border-[#e4d9c4] rounded-sm space-y-3">
+          {/* 7. Event Poster / Flyer (File Upload Only) */}
+          <div className="p-3.5 bg-white border-2 border-[#e4d9c4] rounded-sm space-y-3 font-sans-ui">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800">
-                Event Poster / Visual Photo
-              </label>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800">
+                  Event Poster / Visual Photo
+                </label>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  Upload an image file from your device (phone or laptop)
+                </p>
+              </div>
               {eventImage && (
                 <button
                   type="button"
                   onClick={() => setEventImage('')}
-                  className="text-[11px] text-red-600 hover:underline flex items-center gap-1"
+                  className="text-[11px] text-red-600 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                 >
                   <Trash2 className="w-3 h-3" />
                   <span>Remove Image</span>
@@ -896,182 +776,67 @@ export const CreateEventModal: React.FC = () => {
               )}
             </div>
 
-            {/* Selector Tabs */}
-            <div className="flex flex-wrap gap-1.5 p-1 bg-[#f4eee0] rounded-sm border border-[#ded3bb]">
-              <button
-                type="button"
-                onClick={() => setImageTab('ai')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 ${
-                  imageTab === 'ai' 
-                    ? 'bg-[#1c1917] text-amber-200 shadow-xs' 
-                    : 'text-neutral-700 hover:text-neutral-900'
-                }`}
+            {/* Hidden native file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+
+            {!eventImage ? (
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="p-6 bg-[#fcfaf4] hover:bg-[#faf4e6] border-2 border-dashed border-[#d6cbb0] hover:border-neutral-400 rounded-sm text-center cursor-pointer transition-all active:scale-[0.99] group"
               >
-                <Wand2 className="w-3.5 h-3.5 text-amber-400" />
-                <span>AI Poster Generator</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setImageTab('upload')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 ${
-                  imageTab === 'upload' 
-                    ? 'bg-[#1c1917] text-amber-200 shadow-xs' 
-                    : 'text-neutral-700 hover:text-neutral-900'
-                }`}
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Upload File</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setImageTab('preset')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 ${
-                  imageTab === 'preset' 
-                    ? 'bg-[#1c1917] text-amber-200 shadow-xs' 
-                    : 'text-neutral-700 hover:text-neutral-900'
-                }`}
-              >
-                <ImageIcon className="w-3.5 h-3.5" />
-                <span>Aesthetic Presets</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setImageTab('url')}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors flex items-center gap-1.5 ${
-                  imageTab === 'url' 
-                    ? 'bg-[#1c1917] text-amber-200 shadow-xs' 
-                    : 'text-neutral-700 hover:text-neutral-900'
-                }`}
-              >
-                <LinkIcon className="w-3.5 h-3.5" />
-                <span>Paste Link</span>
-              </button>
-            </div>
-
-            {/* TAB CONTENT 1: AI GENERATOR */}
-            {imageTab === 'ai' && (
-              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-sm space-y-2.5">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#c93b2b]" />
-                      <span>Generate AI Campus Poster</span>
-                    </h4>
-                    <p className="text-[11px] text-amber-800 mt-0.5">
-                      Creates an artistic film-photography poster tailored to &ldquo;{eventName || 'your event title'}&rdquo;.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleGenerateAiPoster}
-                    disabled={isGeneratingAi}
-                    className="px-3.5 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs font-bold rounded shadow-sm flex items-center gap-1.5 shrink-0 transition-transform active:scale-95 disabled:opacity-60"
-                  >
-                    {isGeneratingAi ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        <span>Generating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="w-3.5 h-3.5" />
-                        <span>{eventImage ? 'Regenerate Variation' : 'Generate Poster'}</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* TAB CONTENT 2: FILE UPLOAD */}
-            {imageTab === 'upload' && (
-              <div className="p-4 bg-[#fcfaf4] border-2 border-dashed border-[#d6cbb0] rounded-sm text-center">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <Upload className="w-8 h-8 text-neutral-400 mx-auto mb-1.5" />
+                <Upload className="w-8 h-8 text-neutral-400 group-hover:text-[#c93b2b] mx-auto mb-2 transition-colors" />
                 <p className="text-xs font-bold text-neutral-800">
-                  Select an image from your laptop or phone
+                  Click to select image file
                 </p>
                 <p className="text-[11px] text-neutral-500 mt-0.5">
-                  Supports JPG, PNG, and WebP (auto-optimized for fast loading)
+                  Supports JPG, PNG, and WebP (auto-optimized for fast campus loading)
                 </p>
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mt-3 px-4 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-amber-100 text-xs font-semibold rounded shadow-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="mt-3 px-4 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-amber-100 text-xs font-semibold rounded shadow-xs transition-colors"
                 >
-                  Choose Image File
+                  Upload File
                 </button>
               </div>
-            )}
-
-            {/* TAB CONTENT 3: PRESETS */}
-            {imageTab === 'preset' && (
-              <div className="space-y-1.5">
-                <p className="text-[11px] text-neutral-600">
-                  Click a campus aesthetic preset to instantly apply high-res photography:
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {CURATED_PRESETS.map((preset) => (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() => setEventImage(preset.url)}
-                      className={`p-2 border rounded text-xs font-medium text-left transition-all flex items-center gap-1.5 ${
-                        eventImage === preset.url
-                          ? 'border-[#c93b2b] bg-red-50 text-[#c93b2b] font-bold'
-                          : 'border-[#dfd5c0] bg-white hover:bg-[#faf6ee] text-neutral-800'
-                      }`}
-                    >
-                      <span className="truncate">{preset.label}</span>
-                    </button>
-                  ))}
+            ) : (
+              <div className="p-3 bg-[#f8f5ee] border border-[#ded3bb] rounded-sm flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative w-20 h-16 rounded overflow-hidden border border-neutral-300 shadow-xs shrink-0 bg-neutral-200">
+                    <img
+                      src={eventImage}
+                      alt="Uploaded poster preview"
+                      className="w-full h-full object-cover"
+                      onError={() => setErrorMsg('Failed to load image preview. Please choose another file.')}
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-neutral-900 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Image Uploaded</span>
+                    </p>
+                    <p className="text-[11px] text-neutral-600 truncate mt-0.5">
+                      Ready to display on the polaroid card
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* TAB CONTENT 4: URL */}
-            {imageTab === 'url' && (
-              <div>
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/... or paste image link"
-                  value={eventImage}
-                  onChange={(e) => setEventImage(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-                />
-              </div>
-            )}
-
-            {/* LIVE POLAROID IMAGE PREVIEW */}
-            {eventImage && (
-              <div className="relative mt-2 p-2 bg-[#f4eee0] border border-[#ded3bb] rounded-sm flex items-center gap-3">
-                <div className="relative w-24 h-16 rounded overflow-hidden border border-neutral-300 shadow-sm shrink-0 bg-neutral-200">
-                  <img
-                    src={eventImage}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                    onError={() => setErrorMsg('Failed to load image preview. Please try another image or generate with AI.')}
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-neutral-900 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>Poster Attached</span>
-                  </p>
-                  <p className="text-[11px] text-neutral-600 truncate mt-0.5">
-                    {eventImage.startsWith('data:') ? 'Custom uploaded image (Ready)' : eventImage}
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1.5 bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300 text-xs font-semibold rounded shadow-2xs shrink-0 transition-colors cursor-pointer"
+                >
+                  Change File
+                </button>
               </div>
             )}
           </div>

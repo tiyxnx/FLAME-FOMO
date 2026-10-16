@@ -86,4 +86,8 @@ ALTER TABLE public.site_feedback ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read site_feedback" ON public.site_feedback FOR SELECT USING (true);
 CREATE POLICY "Public insert site_feedback" ON public.site_feedback FOR INSERT WITH CHECK (true);
 
+-- 6. Event Point of Contact (POC)
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS poc_name TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS poc_number TEXT;
+
 

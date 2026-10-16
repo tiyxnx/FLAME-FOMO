@@ -25,7 +25,8 @@ import {
   Trash2,
   AlertTriangle,
   Ticket,
-  MessageSquare
+  MessageSquare,
+  Phone
 } from 'lucide-react';
 import { getGoogleCalendarUrl } from '@/lib/googleCalendar';
 
@@ -74,11 +75,17 @@ export const EventDetailModal: React.FC = () => {
   );
 
   const feeFromTag = event.requirements_eligibility?.match(/\[FEE:\s*([^\]]+)\]/)?.[1];
+  const pocNameFromTag = event.requirements_eligibility?.match(/\[POC_NAME:\s*([^\]]+)\]/)?.[1];
+  const pocNumberFromTag = event.requirements_eligibility?.match(/\[POC_NUMBER:\s*([^\]]+)\]/)?.[1];
   const displayFee = event.registration_fee || feeFromTag;
+  const displayPocName = event.poc_name || pocNameFromTag;
+  const displayPocNumber = event.poc_number || pocNumberFromTag;
 
   const cleanEligibility = (event.requirements_eligibility || '')
     .replace('[TENTATIVE]', '')
     .replace(/\[FEE:\s*[^\]]+\]/g, '')
+    .replace(/\[POC_NAME:\s*[^\]]+\]/g, '')
+    .replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '')
     .trim();
 
   // Allow the author who posted the event (or admin) to edit or delete it
@@ -386,6 +393,45 @@ export const EventDetailModal: React.FC = () => {
               <div>
                 <span className="text-neutral-500 text-[10px] uppercase font-bold block">Eligibility</span>
                 <span className="font-semibold text-sm">{cleanEligibility}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Person of Contact (POC) */}
+          {(displayPocName || displayPocNumber) && (
+            <div className="flex items-center gap-2.5 text-neutral-800 sm:col-span-2 p-2.5 bg-[#fdfbf6] rounded-xs border border-[#ded3bb]">
+              <Phone className="w-4 h-4 text-[#c93b2b] shrink-0" />
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div>
+                  <span className="text-neutral-500 text-[10px] uppercase font-bold block">
+                    Person of Contact (POC)
+                  </span>
+                  <span className="font-semibold text-sm text-neutral-900">
+                    {displayPocName || 'Event Coordinator'}
+                  </span>
+                </div>
+                {displayPocNumber && (
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <span className="text-neutral-400 hidden sm:inline">·</span>
+                    <a
+                      href={`tel:${displayPocNumber.replace(/[^0-9+]/g, '')}`}
+                      className="px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 text-amber-200 text-xs font-bold rounded flex items-center gap-1 transition-colors"
+                      title="Call POC"
+                    >
+                      <Phone className="w-3 h-3 text-amber-300" />
+                      <span>{displayPocNumber}</span>
+                    </a>
+                    <a
+                      href={`https://wa.me/${displayPocNumber.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded transition-colors"
+                      title="WhatsApp POC"
+                    >
+                      WhatsApp
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           )}

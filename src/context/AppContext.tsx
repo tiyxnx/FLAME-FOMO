@@ -181,6 +181,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (data) {
               const mappedEvents: EventItem[] = (data as any[]).map((ev) => {
                 const feeMatch = ev.requirements_eligibility?.match(/\[FEE:\s*([^\]]+)\]/);
+                const pocNameMatch = ev.requirements_eligibility?.match(/\[POC_NAME:\s*([^\]]+)\]/);
+                const pocNumberMatch = ev.requirements_eligibility?.match(/\[POC_NUMBER:\s*([^\]]+)\]/);
                 const sUsers = Array.isArray(ev.saved_users) ? ev.saved_users : [];
                 const gUsers = Array.isArray(ev.going_users) ? ev.going_users : [];
                 const fUsers = Array.isArray(ev.favourite_users) ? ev.favourite_users : [];
@@ -194,6 +196,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   categories: parsedCats,
                   category: ev.category,
                   registration_fee: feeMatch ? feeMatch[1].trim() : undefined,
+                  poc_name: ev.poc_name || (pocNameMatch ? pocNameMatch[1].trim() : undefined),
+                  poc_number: ev.poc_number || (pocNumberMatch ? pocNumberMatch[1].trim() : undefined),
                   is_tentative:
                     ev.status === 'Tentative' ||
                     ev.time_start_end?.includes('Tentative') ||
@@ -991,7 +995,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (newEvent.registration_fee && !finalEligibility.includes('[FEE:')) {
         finalEligibility = `${finalEligibility} [FEE: ${newEvent.registration_fee}]`.trim();
       }
-      const { is_tentative, tentative_note, registration_fee, categories, ...cleanPayload } = newEvent;
+      if (newEvent.poc_name && !finalEligibility.includes('[POC_NAME:')) {
+        finalEligibility = `${finalEligibility} [POC_NAME: ${newEvent.poc_name}]`.trim();
+      }
+      if (newEvent.poc_number && !finalEligibility.includes('[POC_NUMBER:')) {
+        finalEligibility = `${finalEligibility} [POC_NUMBER: ${newEvent.poc_number}]`.trim();
+      }
+      const { is_tentative, tentative_note, registration_fee, categories, poc_name, poc_number, ...cleanPayload } = newEvent;
       cleanPayload.requirements_eligibility = finalEligibility || undefined;
       cleanPayload.category = (newEvent.categories && newEvent.categories.length > 0)
         ? newEvent.categories.join(', ')
@@ -1015,10 +1025,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured()) {
       let finalEligibility = eventData.requirements_eligibility;
-      if (eventData.registration_fee) {
-        finalEligibility = `${(finalEligibility || '').replace(/\[FEE:\s*[^\]]+\]/, '').trim()} [FEE: ${eventData.registration_fee}]`.trim();
+      if (eventData.registration_fee !== undefined) {
+        finalEligibility = `${(finalEligibility || '').replace(/\[FEE:\s*[^\]]+\]/g, '').trim()} ${eventData.registration_fee ? `[FEE: ${eventData.registration_fee}]` : ''}`.trim();
       }
-      const { is_tentative, tentative_note, registration_fee, categories, ...cleanPayload } = eventData;
+      if (eventData.poc_name !== undefined) {
+        finalEligibility = `${(finalEligibility || '').replace(/\[POC_NAME:\s*[^\]]+\]/g, '').trim()} ${eventData.poc_name ? `[POC_NAME: ${eventData.poc_name}]` : ''}`.trim();
+      }
+      if (eventData.poc_number !== undefined) {
+        finalEligibility = `${(finalEligibility || '').replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '').trim()} ${eventData.poc_number ? `[POC_NUMBER: ${eventData.poc_number}]` : ''}`.trim();
+      }
+      const { is_tentative, tentative_note, registration_fee, categories, poc_name, poc_number, ...cleanPayload } = eventData;
       if (eventData.categories && eventData.categories.length > 0) {
         cleanPayload.category = eventData.categories.join(', ');
       }

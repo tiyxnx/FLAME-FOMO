@@ -54,6 +54,8 @@ export interface EventItem {
   venue_zone: VenueZone;
   room_specific?: string;
   organizer: string;
+  poc_name?: string; // Person of Contact handling the event
+  poc_number?: string; // Contact phone / WhatsApp of POC
   description: string;
   registration_deadline?: string; // YYYY-MM-DD HH:mm or YYYY-MM-DD
   registration_link?: string;

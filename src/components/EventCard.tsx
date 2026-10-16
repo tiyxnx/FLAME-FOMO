@@ -398,8 +398,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
         <div className="flex flex-col pt-1 border-t border-neutral-200/80">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 truncate">
-              <span className="font-handwritten text-xs text-neutral-500 truncate">
-                by {event.organizer}
+              <span className="font-handwritten text-xs text-neutral-500 truncate" title={event.poc_name ? `POC: ${event.poc_name}` : undefined}>
+                by {event.organizer}{event.poc_name ? ` · POC: ${event.poc_name}` : ''}
               </span>
               {isAuthor && (
                 <span className="text-[9px] font-bold text-amber-900 bg-amber-200/90 border border-amber-400/80 px-1.5 py-0.2 rounded-2xs uppercase tracking-tight">
