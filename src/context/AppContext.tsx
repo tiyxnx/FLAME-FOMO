@@ -100,6 +100,8 @@ interface AppContextType {
   updateEvent: (eventId: string, eventData: Partial<EventItem>) => void;
   deleteEvent: (eventId: string) => void;
   markNotificationsAsRead: () => void;
+  myCreatedEventIds: string[];
+  isUserAuthor: (event: EventItem) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -127,6 +129,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isSiteFeedbackOpen, setIsSiteFeedbackOpen] = useState(false);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [myCreatedEventIds, setMyCreatedEventIds] = useState<string[]>([]);
 
   // Load state on client mount
   useEffect(() => {
@@ -162,6 +165,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Notifications initially empty; populated dynamically from real events
       setNotifications([]);
+
+      try {
+        const storedCreated = localStorage.getItem('flame_fomo_my_created_event_ids');
+        if (storedCreated) setMyCreatedEventIds(JSON.parse(storedCreated));
+      } catch {}
 
       // Sync with Supabase cloud if keys are present
       if (isSupabaseConfigured()) {
@@ -961,6 +969,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = [newEvent, ...events];
     saveEventsToStorage(updated);
 
+    try {
+      const stored = localStorage.getItem('flame_fomo_my_created_event_ids');
+      const ids: string[] = stored ? JSON.parse(stored) : [];
+      const nextIds = [...ids, newId];
+      localStorage.setItem('flame_fomo_my_created_event_ids', JSON.stringify(nextIds));
+      setMyCreatedEventIds(nextIds);
+    } catch {}
+
     // Save timestamp to local audit history for instant enforcement
     try {
       const normalized = userEmail.toLowerCase().trim();
@@ -1029,6 +1045,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     }
 
+    try {
+      const stored = localStorage.getItem('flame_fomo_my_created_event_ids');
+      const ids: string[] = stored ? JSON.parse(stored) : [];
+      const nextIds = ids.filter((id) => id !== eventId);
+      localStorage.setItem('flame_fomo_my_created_event_ids', JSON.stringify(nextIds));
+      setMyCreatedEventIds(nextIds);
+    } catch {}
+
     if (isSupabaseConfigured()) {
       supabase.from('events').delete().eq('id', eventId).then(({ error }) => {
         if (error) console.error('Supabase deleteEvent error:', error);
@@ -1038,6 +1062,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const markNotificationsAsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
+
+  const isUserAuthor = (event: EventItem): boolean => {
+    const userEmail = (user?.flame_email || '').toLowerCase().trim();
+    if (userEmail === 'tiyana.shah@flame.edu.in') return true;
+
+    if (userEmail && event.submitted_by) {
+      const author = event.submitted_by.toLowerCase().trim();
+      const username = userEmail.split('@')[0];
+      if (author === userEmail || author === username) return true;
+    }
+
+    if (myCreatedEventIds.includes(event.id)) {
+      return true;
+    }
+
+    return false;
   };
 
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
@@ -1101,6 +1142,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateEvent,
         deleteEvent,
         markNotificationsAsRead,
+        myCreatedEventIds,
+        isUserAuthor,
       }}
     >
       {children}

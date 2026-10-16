@@ -26,7 +26,8 @@ export const ExploreView: React.FC = () => {
     savedEventIds, 
     goingEventIds, 
     favouriteEventIds,
-    openAuthModal 
+    openAuthModal,
+    isUserAuthor,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,19 +49,10 @@ export const ExploreView: React.FC = () => {
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-  // Check if current user is author of an event
-  const isUserAuthor = (evt: EventItem) => {
-    if (!isAuthenticated || !user?.flame_email || !evt.submitted_by) return false;
-    const email = user.flame_email.toLowerCase().trim();
-    const username = email.split('@')[0];
-    const sub = evt.submitted_by.toLowerCase().trim();
-    return sub === email || sub === username;
-  };
-
-  // Events submitted by the authenticated user
+  // Events submitted by the authenticated user / current author
   const userSubmittedEvents = useMemo(() => {
     return events.filter(isUserAuthor);
-  }, [events, isAuthenticated, user]);
+  }, [events, isUserAuthor]);
 
   const hasPostedEvents = userSubmittedEvents.length > 0;
 
@@ -267,11 +259,21 @@ export const ExploreView: React.FC = () => {
           {/* Category Filter Dropdown */}
           <div>
             <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={viewMyEventsOnly ? 'MY_EVENTS' : selectedCategory}
+              onChange={(e) => {
+                if (e.target.value === 'MY_EVENTS') {
+                  setViewMyEventsOnly(true);
+                } else {
+                  setViewMyEventsOnly(false);
+                  setSelectedCategory(e.target.value);
+                }
+              }}
               className="w-full px-3 py-2 bg-[#171512] border border-[#42392d] rounded-sm text-xs font-semibold text-neutral-200 focus:outline-none focus:border-amber-400"
             >
               <option value="All">Category: All Categories</option>
+              {hasPostedEvents && (
+                <option value="MY_EVENTS">✦ My Events ({userSubmittedEvents.length})</option>
+              )}
               {EVENT_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>Category: {cat}</option>
               ))}
@@ -297,8 +299,8 @@ export const ExploreView: React.FC = () => {
 
         </div>
 
-        {/* Quick pill count summary */}
-        <div className="flex items-center justify-between text-xs text-[#a89b87] pt-2 border-t border-[#312a20]">
+        {/* Quick pill count summary & My Events toolbar button */}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#a89b87] pt-2 border-t border-[#312a20]">
           <div className="flex items-center gap-2">
             <span>
               Showing <strong className="text-amber-200 font-mono">{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'}
@@ -310,21 +312,38 @@ export const ExploreView: React.FC = () => {
             )}
           </div>
 
-          {(searchQuery || selectedCategory !== 'All' || timeFilter !== 'All' || fitsMyScheduleOnly || viewMyEventsOnly) && (
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('All');
-                setTimeFilter('All');
-                setFitsMyScheduleOnly(false);
-                setViewMyEventsOnly(false);
-              }}
-              className="text-[#f3da90] hover:underline flex items-center gap-1"
-            >
-              <X className="w-3 h-3" />
-              <span>Reset Filters</span>
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {hasPostedEvents && (
+              <button
+                type="button"
+                onClick={() => setViewMyEventsOnly(!viewMyEventsOnly)}
+                className={`px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  viewMyEventsOnly
+                    ? 'bg-[#c93b2b] text-white shadow-xs ring-1 ring-red-400'
+                    : 'bg-[#1b1814] text-[#d6cbaf] hover:text-white border border-[#42392d]'
+                }`}
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>{viewMyEventsOnly ? 'View All Events' : `My Events (${userSubmittedEvents.length})`}</span>
+              </button>
+            )}
+
+            {(searchQuery || selectedCategory !== 'All' || timeFilter !== 'All' || fitsMyScheduleOnly || viewMyEventsOnly) && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('All');
+                  setTimeFilter('All');
+                  setFitsMyScheduleOnly(false);
+                  setViewMyEventsOnly(false);
+                }}
+                className="text-[#f3da90] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+                <span>Reset Filters</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

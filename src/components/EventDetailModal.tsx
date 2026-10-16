@@ -49,6 +49,7 @@ export const EventDetailModal: React.FC = () => {
     deleteEvent,
     setCurrentTab,
     updateEvent,
+    isUserAuthor,
   } = useApp();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -80,13 +81,8 @@ export const EventDetailModal: React.FC = () => {
     .replace(/\[FEE:\s*[^\]]+\]/g, '')
     .trim();
 
-  // Allow only the author who posted the event to edit or delete it
-  const isAuthor = Boolean(
-    isAuthenticated && 
-    user?.flame_email && 
-    event.submitted_by && 
-    event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim()
-  );
+  // Allow the author who posted the event (or admin) to edit or delete it
+  const isAuthor = isUserAuthor(event);
   const canManage = isAuthor;
 
   const savedCount = getEventSavedCount(event, savedEventIds);

@@ -45,6 +45,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     openEditEvent,
     deleteEvent,
     openEventFeedback,
+    isUserAuthor,
   } = useApp();
 
   const isSaved = savedEventIds.includes(event.id);
@@ -64,13 +65,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     user?.flame_email && 
     user.flame_email.toLowerCase().trim() === 'tiyana.shah@flame.edu.in'
   );
-  const isAuthor = Boolean(
-    isAuthenticated &&
-    user?.flame_email &&
-    event.submitted_by &&
-    (event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim() ||
-     event.submitted_by.toLowerCase().trim() === user.flame_email.split('@')[0].toLowerCase().trim())
-  );
+  const isAuthor = isUserAuthor(event);
   const canEdit = isAuthor || isAdmin;
   const isTentative = Boolean(
     event.is_tentative || 

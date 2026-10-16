@@ -52,7 +52,8 @@ export const ProfileView: React.FC = () => {
     openEventDetail,
     openEventFeedback,
     setCurrentTab,
-    openOnboarding
+    openOnboarding,
+    isUserAuthor,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'preferences' | 'saved' | 'submitted'>('preferences');
@@ -83,11 +84,7 @@ export const ProfileView: React.FC = () => {
   const userEmail = (user.flame_email || '').toLowerCase().trim();
   const isAdmin = userEmail === 'tiyana.shah@flame.edu.in';
   
-  const submittedEvents = events.filter((e) => {
-    if (isAdmin) return true;
-    const author = (e.submitted_by || '').toLowerCase().trim();
-    return author === userEmail || (author.length > 0 && author === userEmail.split('@')[0]);
-  });
+  const submittedEvents = events.filter(isUserAuthor);
 
   const toggleCategory = (cat: EventCategory) => {
     if (preferences.includes(cat)) {
