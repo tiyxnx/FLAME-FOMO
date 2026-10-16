@@ -324,8 +324,6 @@ export async function syncLifeAtFlameAll(): Promise<{
           event_image: item.event_image || null,
           status: item.status,
           submitted_by: item.submitted_by || 'lifeatflame-sync',
-          poc_name: item.poc_name || null,
-          poc_number: item.poc_number || null,
         }));
 
         const { error } = await supabase
