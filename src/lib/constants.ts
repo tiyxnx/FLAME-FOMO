@@ -358,7 +358,7 @@ export const INITIAL_SEED_EVENTS: EventItem[] = [
     registration_deadline: '2026-10-16 14:00',
     requirements_eligibility: 'Open to All Students & Faculty [FEE: Free]',
     event_image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80',
-    status: 'Upcoming',
+    status: 'Completed',
     submitted_by: 'tiyana.shah@flame.edu.in',
   },
   {

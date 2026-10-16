@@ -176,7 +176,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase
           .from('events')
           .select('*')
-          .order('date', { ascending: true })
+          .order('created_at', { ascending: false })
           .then(({ data, error }) => {
             if (data) {
               const mappedEvents: EventItem[] = (data as any[]).map((ev) => {

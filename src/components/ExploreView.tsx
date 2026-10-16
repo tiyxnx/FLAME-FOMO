@@ -131,23 +131,27 @@ export const ExploreView: React.FC = () => {
 
       return true;
     }).sort((a, b) => {
-      const todayString = todayStr;
-      const aCompleted = a.status === 'Completed' || (todayString ? a.date < todayString : false);
-      const bCompleted = b.status === 'Completed' || (todayString ? b.date < todayString : false);
+      const todayString = todayStr || (typeof window !== 'undefined' ? new Date().toISOString().split('T')[0] : '2026-10-17');
+      const aCompleted = a.status === 'Completed' || a.status === 'Cancelled' || (todayString ? a.date < todayString : false);
+      const bCompleted = b.status === 'Completed' || b.status === 'Cancelled' || (todayString ? b.date < todayString : false);
 
+      // 1. Ended events NEVER appear before active events (they go to the bottom)
       if (aCompleted && !bCompleted) return 1;
       if (!aCompleted && bCompleted) return -1;
       
-      // For upcoming events: Chronological order (soonest to latest)
-      if (!aCompleted && !bCompleted) {
-        return a.date.localeCompare(b.date);
+      // 2. For active events: Order they've been posted (recent ones -> old posted)
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (timeA && timeB && timeA !== timeB) {
+        return timeB - timeA;
       }
 
-      // For completed events: Favourited events show up before other completed events
-      const aFav = favouriteEventIds.includes(a.id);
-      const bFav = favouriteEventIds.includes(b.id);
-      if (aFav && !bFav) return -1;
-      if (!aFav && bFav) return 1;
+      // Fallback: Preserve events array insertion order (newest first)
+      const indexA = events.indexOf(a);
+      const indexB = events.indexOf(b);
+      if (indexA !== -1 && indexB !== -1 && indexA !== indexB) {
+        return indexA - indexB;
+      }
 
       return b.date.localeCompare(a.date);
     });
