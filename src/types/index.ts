@@ -1,16 +1,13 @@
 export type AcademicYear = 'UG1' | 'UG2' | 'UG3' | 'UG4' | 'All';
 
 export type EventCategory = 
+  | 'Exhibition/stall'
+  | 'Workshop'
+  | 'Lecture'
+  | 'Competition'
   | 'Academic'
-  | 'Clubs'
-  | 'Sports'
-  | 'Social'
-  | 'Competitions'
-  | 'Workshops'
   | 'Performances'
-  | 'Career'
-  | 'Talks/Lectures'
-  | 'Other';
+  | 'Community welfare';
 
 export type VenueZone = 
   | 'Academics'
@@ -48,7 +45,8 @@ export interface UserProfile {
 export interface EventItem {
   id: string;
   event_name: string;
-  category: EventCategory;
+  category: EventCategory | string;
+  categories?: string[];
   date: string; // YYYY-MM-DD
   time_start_end: string; // e.g. "17:00 - 18:30"
   time_start?: string; // "17:00"

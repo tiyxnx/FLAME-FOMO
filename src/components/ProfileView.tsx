@@ -184,20 +184,20 @@ export const ProfileView: React.FC = () => {
               className="px-3.5 py-2 bg-[#2c261e] hover:bg-[#383127] text-amber-200 border border-amber-400/30 text-xs font-bold rounded-xs shadow flex items-center gap-1.5 transition-all"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Retake Quiz</span>
+              <span>Edit Quiz Answers</span>
             </button>
             <button
               onClick={openCreateEvent}
               className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs font-bold rounded-xs shadow flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              <span>Post New Event</span>
+              <span>Post Event</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* The Three Distinct Tabs as required by read.md Section 6.3 */}
+      {/* The Three Tabs */}
       <div className="flex border-b border-[#3d3429] mb-6">
         <button
           onClick={() => setActiveTab('preferences')}
@@ -208,7 +208,7 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          <span>1. Edit Preferences / Timetable</span>
+          <span>1. Schedule & Interests</span>
         </button>
 
         <button
@@ -220,7 +220,7 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <Bookmark className="w-4 h-4" />
-          <span>2. My Saved Events ({bookmarkedEvents.length})</span>
+          <span>2. Saved Events ({bookmarkedEvents.length})</span>
         </button>
 
         <button
@@ -232,7 +232,7 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <FileEdit className="w-4 h-4" />
-          <span>3. {isAdmin ? `Admin Dashboard (${submittedEvents.length})` : `Events You've Posted (${submittedEvents.length})`}</span>
+          <span>3. {isAdmin ? `All Events (${submittedEvents.length})` : `Your Posted Events (${submittedEvents.length})`}</span>
         </button>
       </div>
 
@@ -249,7 +249,7 @@ export const ProfileView: React.FC = () => {
           {/* Cohort Selector */}
           <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
             <h3 className="font-editorial text-lg font-bold text-amber-100 mb-3">
-              Academic Cohort
+              Your Year
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {ACADEMIC_YEARS.map((yr) => (
@@ -275,7 +275,7 @@ export const ProfileView: React.FC = () => {
           {/* Category Preferences */}
           <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
             <h3 className="font-editorial text-lg font-bold text-amber-100 mb-3">
-              Interest Preferences
+              Your Interests
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {EVENT_CATEGORIES.map((cat) => {
@@ -299,13 +299,18 @@ export const ProfileView: React.FC = () => {
             </div>
           </div>
 
-          {/* Academic Timetable for Clash Detection */}
+          {/* Add class or weekly commitments */}
           <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-editorial text-lg font-bold text-amber-100">
-                Academic Class Timetable (Clash Detection Engine)
-              </h3>
-              <span className="text-xs text-[#a89b87] font-mono">{timetable.length} active slots</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+              <div>
+                <h3 className="font-editorial text-lg font-bold text-amber-100">
+                  Add class or any other weekly commitments
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Add classes or weekly commitments to check for clashes.
+                </p>
+              </div>
+              <span className="text-xs text-[#a89b87] font-mono">{timetable.length} added</span>
             </div>
 
             {/* List */}
@@ -317,7 +322,7 @@ export const ProfileView: React.FC = () => {
                       <input 
                          value={cls.courseName} 
                          onChange={e => handleEditChange(cls.id, 'courseName', e.target.value)}
-                         placeholder="Course Name"
+                         placeholder="Class or commitment name"
                          className="flex-1 p-1.5 text-xs bg-[#181613] border border-[#383025] rounded text-white" 
                       />
                       <input 
@@ -375,7 +380,7 @@ export const ProfileView: React.FC = () => {
                           type="button"
                           onClick={() => setEditingClassId(cls.id)}
                           className="text-amber-400 hover:text-amber-300 p-1 bg-[#25201a] rounded transition-colors"
-                          title="Edit Class"
+                          title="Edit"
                         >
                           <Edit3 className="w-3 h-3" />
                         </button>
@@ -383,7 +388,7 @@ export const ProfileView: React.FC = () => {
                           type="button"
                           onClick={() => removeClass(cls.id)}
                           className="text-red-400 hover:text-red-300 p-1 bg-[#25201a] rounded transition-colors"
-                          title="Remove Class"
+                          title="Remove"
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -394,22 +399,22 @@ export const ProfileView: React.FC = () => {
               ))}
             </div>
 
-            {/* Add class line */}
+            {/* Add commitment form */}
             <div className="p-3 bg-[#181613] border border-[#383025] rounded space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                Add Enrolled Course Slot
+                Add class or commitment
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <input
                   type="text"
-                  placeholder="Course Name"
+                  placeholder="Class or commitment name"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
                   className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
                 />
                 <input
                   type="text"
-                  placeholder="Location (e.g. Chanakya Hall 2)"
+                  placeholder="Location (e.g. Chanakya 2)"
                   value={newRoom}
                   onChange={(e) => setNewRoom(e.target.value)}
                   className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
@@ -461,7 +466,7 @@ export const ProfileView: React.FC = () => {
                   className="p-2 bg-neutral-800 hover:bg-neutral-700 text-amber-200 font-bold rounded flex items-center justify-center gap-1 col-span-2 sm:col-span-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add Class</span>
+                  <span>Add</span>
                 </button>
               </div>
             </div>
@@ -473,7 +478,7 @@ export const ProfileView: React.FC = () => {
                 className="px-6 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs sm:text-sm font-bold rounded shadow flex items-center gap-2 ml-auto"
               >
                 <Save className="w-4 h-4" />
-                <span>Save Changes</span>
+                <span>Save</span>
               </button>
             </div>
           </div>
@@ -485,10 +490,10 @@ export const ProfileView: React.FC = () => {
         <div>
           {bookmarkedEvents.length === 0 ? (
             <EmptyStateScrapbook
-              title="No Saved Events Yet"
-              subtitle="You haven't bookmarked any events. Explore the bulletin board to star, bookmark, or join events."
+              title="No saved events"
+              subtitle="Events you save will appear here."
               actionButton={{
-                label: "Explore All Events",
+                label: "View All Events",
                 onClick: () => setCurrentTab('explore'),
               }}
             />
@@ -507,18 +512,18 @@ export const ProfileView: React.FC = () => {
         <div>
           {submittedEvents.length === 0 ? (
             <EmptyStateScrapbook
-              title="You Haven't Posted Any Events Yet"
-              subtitle="When you submit club workshops, sports fixtures, performances, or notices, they will all appear here so you can edit the details anytime!"
+              title="No posted events"
+              subtitle="Events you post will appear here so you can edit them anytime."
               actionButton={{
-                label: "+ Post an Event",
+                label: "Post an Event",
                 onClick: openCreateEvent,
               }}
             />
           ) : (
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
-                <span>{isAdmin ? 'Admin access: manage any event on the platform' : 'Manage and edit the events you have published to the campus bulletin'}</span>
-                <span className="text-amber-300 font-bold">{submittedEvents.length} {isAdmin ? 'Total Events' : 'Published'}</span>
+                <span>{isAdmin ? 'Manage all campus events' : 'Manage the events you have posted'}</span>
+                <span className="text-amber-300 font-bold">{submittedEvents.length} {isAdmin ? 'Total Events' : 'Posted'}</span>
               </div>
 
               {submittedEvents.map((evt) => (

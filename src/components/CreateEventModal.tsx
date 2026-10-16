@@ -15,6 +15,7 @@ import {
 } from '@/lib/constants';
 import { 
   X, 
+  Check,
   Sparkles, 
   Calendar, 
   Clock, 
@@ -62,7 +63,7 @@ export const CreateEventModal: React.FC = () => {
 
   // Form State
   const [eventName, setEventName] = useState('');
-  const [category, setCategory] = useState<EventCategory>('Clubs');
+  const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>(['Workshop']);
   const [date, setDate] = useState('2026-10-08');
   const [isTentative, setIsTentative] = useState(false);
   const [tentativeNote, setTentativeNote] = useState('');
@@ -81,6 +82,15 @@ export const CreateEventModal: React.FC = () => {
   const [eventImage, setEventImage] = useState('');
   const [status, setStatus] = useState<EventStatus>('Upcoming');
 
+  const toggleCategorySelection = (cat: EventCategory) => {
+    if (selectedCategories.includes(cat)) {
+      if (selectedCategories.length === 1) return; // Keep at least one selected
+      setSelectedCategories(selectedCategories.filter((c) => c !== cat));
+    } else {
+      setSelectedCategories([...selectedCategories, cat]);
+    }
+  };
+
   // UI state for image picker
   const [imageTab, setImageTab] = useState<'ai' | 'upload' | 'preset' | 'url'>('ai');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -97,7 +107,12 @@ export const CreateEventModal: React.FC = () => {
 
     if (eventToEdit) {
       setEventName(eventToEdit.event_name);
-      setCategory(eventToEdit.category);
+      if (eventToEdit.categories && eventToEdit.categories.length > 0) {
+        setSelectedCategories(eventToEdit.categories as EventCategory[]);
+      } else if (eventToEdit.category) {
+        const parts = eventToEdit.category.split(',').map((c) => c.trim()).filter(Boolean) as EventCategory[];
+        setSelectedCategories(parts.length > 0 ? parts : ['Workshop']);
+      }
       setDate(eventToEdit.date);
       setTimeStart(eventToEdit.time_start || '17:00');
       setTimeEnd(eventToEdit.time_end || '18:30');
@@ -135,7 +150,7 @@ export const CreateEventModal: React.FC = () => {
     } else {
       // Default new event
       setEventName('');
-      setCategory('Clubs');
+      setSelectedCategories(['Workshop']);
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       setDate(tomorrow.toISOString().split('T')[0]);
@@ -167,7 +182,7 @@ export const CreateEventModal: React.FC = () => {
     const result = parseAnnouncement(rawPasteText);
 
     if (result.data.eventName) setEventName(result.data.eventName);
-    if (result.data.category) setCategory(result.data.category);
+    if (result.data.category) setSelectedCategories([result.data.category]);
     if (result.data.date) setDate(result.data.date);
     if (result.data.timeStart) setTimeStart(result.data.timeStart);
     if (result.data.timeEnd) setTimeEnd(result.data.timeEnd);
@@ -207,7 +222,7 @@ export const CreateEventModal: React.FC = () => {
     setIsGeneratingAi(true);
 
     const safeTitle = eventName.trim().replace(/[^a-zA-Z0-9 ]/g, ' ');
-    const prompt = `${safeTitle}, ${category} university campus event, artistic aesthetic poster, warm film photography, polaroid style, beautiful cinematic lighting`;
+    const prompt = `${safeTitle}, ${selectedCategories.join(', ')} university campus event, artistic aesthetic poster, warm film photography, polaroid style, beautiful cinematic lighting`;
     const randomSeed = Math.floor(Math.random() * 1000000);
     const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=500&nologo=true&seed=${randomSeed}`;
     
@@ -293,11 +308,20 @@ export const CreateEventModal: React.FC = () => {
 
     const fallbackImage = 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=600&q=80';
 
+    if (selectedCategories.length === 0) {
+      setErrorMsg('Please select at least one category.');
+      return;
+    }
+
+    const primaryCategory = selectedCategories[0];
+    const categoryString = selectedCategories.join(', ');
+
     if (eventToEdit) {
       // UPDATE EXISTING EVENT
       updateEvent(eventToEdit.id, {
         event_name: eventName.trim(),
-        category,
+        category: categoryString,
+        categories: selectedCategories,
         date,
         time_start_end: timeStartEnd,
         time_start: timeStart,
@@ -326,7 +350,8 @@ export const CreateEventModal: React.FC = () => {
       // CREATE NEW EVENT
       const res = createEvent({
         event_name: eventName.trim(),
-        category,
+        category: categoryString,
+        categories: selectedCategories,
         date,
         time_start_end: timeStartEnd,
         time_start: timeStart,
@@ -536,35 +561,55 @@ export const CreateEventModal: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4 font-sans-ui text-sm">
           
-          {/* 1. Title & Category */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Event Title <span className="text-[#c93b2b]">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Midnight Acoustic Jam or AI Prompt Battle"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border border-[#d6cbb0] rounded-sm text-sm font-semibold text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
-                required
-              />
-            </div>
+          {/* 1. Title */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
+              Event Title <span className="text-[#c93b2b]">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Midnight Acoustic Jam or AI Prompt Battle"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-white border border-[#d6cbb0] rounded-sm text-sm font-semibold text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
+              required
+            />
+          </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Category <span className="text-[#c93b2b]">*</span>
+          {/* Categories: Multi-select */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                Categories <span className="text-[#c93b2b]">*</span>{' '}
+                <span className="text-[11px] font-normal normal-case text-neutral-500">(choose all that apply)</span>
               </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as EventCategory)}
-                className="w-full px-3 py-2.5 bg-white border border-[#d6cbb0] rounded-sm text-sm text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
-              >
-                {EVENT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+              <span className="text-[11px] text-neutral-500 font-medium">
+                {selectedCategories.length} selected
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 p-2 bg-[#fdfaf5] border border-[#d6cbb0] rounded-sm">
+              {EVENT_CATEGORIES.map((cat) => {
+                const isSelected = selectedCategories.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => toggleCategorySelection(cat)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      isSelected
+                        ? 'bg-[#c93b2b] text-white shadow-sm ring-1 ring-[#a82a1c]'
+                        : 'bg-white text-neutral-700 border border-[#d6cbb0] hover:border-neutral-400 hover:bg-neutral-50'
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    {isSelected ? (
+                      <span className="text-[11px] font-bold">✓</span>
+                    ) : (
+                      <span className="text-neutral-400 text-[11px]">+</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

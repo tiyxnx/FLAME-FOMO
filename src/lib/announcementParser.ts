@@ -108,7 +108,7 @@ export function parseAnnouncement(raw: string): ParseResult {
     lowerText.includes('tournament') ||
     lowerText.includes('match')
   ) {
-    data.category = 'Sports';
+    data.category = 'Competition';
   } else if (
     lowerText.includes('theatre') ||
     lowerText.includes('drama') ||
@@ -123,43 +123,46 @@ export function parseAnnouncement(raw: string): ParseResult {
   ) {
     data.category = 'Performances';
   } else if (
+    lowerText.includes('stall') ||
+    lowerText.includes('exhibition') ||
+    lowerText.includes('artist alley') ||
+    lowerText.includes('bunkasai') ||
+    lowerText.includes('flea') ||
+    lowerText.includes('kiosk') ||
+    lowerText.includes('booth')
+  ) {
+    data.category = 'Exhibition/stall';
+  } else if (
     lowerText.includes('masterclass') ||
     lowerText.includes('workshop') ||
     lowerText.includes('bootcamp') ||
     lowerText.includes('hands-on')
   ) {
-    data.category = 'Workshops';
+    data.category = 'Workshop';
   } else if (
     lowerText.includes('competition') ||
     lowerText.includes('hackathon') ||
     lowerText.includes('contest') ||
     lowerText.includes('quiz') ||
-    lowerText.includes('debate')
+    lowerText.includes('debate') ||
+    lowerText.includes('tournament')
   ) {
-    data.category = 'Competitions';
-  } else if (
-    lowerText.includes('anime') ||
-    lowerText.includes('artist alley') ||
-    lowerText.includes('bunkasai') ||
-    lowerText.includes('art club') ||
-    lowerText.includes('society') ||
-    lowerText.includes('club')
-  ) {
-    data.category = 'Clubs';
+    data.category = 'Competition';
   } else if (
     lowerText.includes('lecture') ||
     lowerText.includes('guest lecture') ||
     lowerText.includes('speaker') ||
     lowerText.includes('talk')
   ) {
-    data.category = 'Talks/Lectures';
+    data.category = 'Lecture';
   } else if (
-    lowerText.includes('career') ||
-    lowerText.includes('internship') ||
-    lowerText.includes('placement') ||
-    lowerText.includes('resume')
+    lowerText.includes('welfare') ||
+    lowerText.includes('community') ||
+    lowerText.includes('charity') ||
+    lowerText.includes('volunteer') ||
+    lowerText.includes('donation')
   ) {
-    data.category = 'Career';
+    data.category = 'Community welfare';
   } else if (
     lowerText.includes('symposium') ||
     lowerText.includes('colloquium') ||
@@ -168,14 +171,16 @@ export function parseAnnouncement(raw: string): ParseResult {
   ) {
     data.category = 'Academic';
   } else if (
-    lowerText.includes('party') ||
-    lowerText.includes('mixer') ||
-    lowerText.includes('social') ||
-    lowerText.includes('celebration')
+    lowerText.includes('performance') ||
+    lowerText.includes('music') ||
+    lowerText.includes('concert') ||
+    lowerText.includes('dance') ||
+    lowerText.includes('acoustic') ||
+    lowerText.includes('open mic')
   ) {
-    data.category = 'Social';
+    data.category = 'Performances';
   } else {
-    data.category = 'Clubs';
+    data.category = 'Workshop';
   }
 
   // ===========================================================================

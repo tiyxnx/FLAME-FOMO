@@ -1,16 +1,13 @@
 import { EventCategory, VenueZone, AcademicYear, EventItem, MapCoordinates, ClassScheduleItem } from '@/types';
 
 export const EVENT_CATEGORIES: EventCategory[] = [
+  'Exhibition/stall',
+  'Workshop',
+  'Lecture',
+  'Competition',
   'Academic',
-  'Clubs',
-  'Sports',
-  'Social',
-  'Competitions',
-  'Workshops',
   'Performances',
-  'Career',
-  'Talks/Lectures',
-  'Other',
+  'Community welfare',
 ];
 
 export const ACADEMIC_YEARS: AcademicYear[] = ['UG1', 'UG2', 'UG3', 'UG4', 'All'];

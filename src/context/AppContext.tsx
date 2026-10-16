@@ -176,8 +176,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 const sUsers = Array.isArray(ev.saved_users) ? ev.saved_users : [];
                 const gUsers = Array.isArray(ev.going_users) ? ev.going_users : [];
                 const fUsers = Array.isArray(ev.favourite_users) ? ev.favourite_users : [];
+                const rawCat = ev.category || '';
+                const parsedCats = Array.isArray(ev.categories) && ev.categories.length > 0
+                  ? ev.categories
+                  : rawCat ? rawCat.split(',').map((c: string) => c.trim()).filter(Boolean) : [];
+
                 return {
                   ...ev,
+                  categories: parsedCats,
+                  category: ev.category,
                   registration_fee: feeMatch ? feeMatch[1].trim() : undefined,
                   is_tentative:
                     ev.status === 'Tentative' ||
@@ -210,8 +217,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           });
 
-        // Auto-detect when student completes Google OAuth or clicks confirmation link
-        const handleSession = async (session: any) => {
+        // Auto-detect when student completes Google OAuth or signs in
+        const handleSession = async (session: any, isFreshSignIn = false) => {
           if (session?.user?.email) {
             const confirmedEmail = session.user.email.toLowerCase();
             const isFlameEmail = confirmedEmail.endsWith('@flame.edu.in');
@@ -235,9 +242,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 const profileObj = existingProfile as UserProfile;
                 setUser(profileObj);
                 localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(profileObj));
-                localStorage.setItem(`flame_fomo_quiz_completed_${confirmedEmail}`, 'true');
                 setIsAuthModalOpen(false);
-                setIsOnboardingOpen(false);
+                // Quiz should ONLY show up during a fresh sign in, never on reload
+                if (isFreshSignIn) {
+                  setIsOnboardingOpen(true);
+                } else {
+                  setIsOnboardingOpen(false);
+                }
               } else {
                 const defaultName =
                   session.user.user_metadata?.full_name ||
@@ -254,21 +265,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   flame_email: confirmedEmail,
                   name: parsedStored?.name || defaultName,
                   academic_year: parsedStored?.academic_year || 'UG2',
-                  category_preferences: parsedStored?.category_preferences || ['Performances', 'Clubs', 'Competitions', 'Social'],
+                  category_preferences: parsedStored?.category_preferences || ['Performances', 'Workshop', 'Competition'],
                   academic_timetable: parsedStored?.academic_timetable || DEFAULT_TIMETABLE_SAMPLE,
                   saved_events: parsedStored?.saved_events || [],
                   going_events: parsedStored?.going_events || [],
                   favourite_events: parsedStored?.favourite_events || [],
-                  favourite_categories: parsedStored?.favourite_categories || ['Performances', 'Competitions'],
+                  favourite_categories: parsedStored?.favourite_categories || ['Performances', 'Competition'],
                   quiz_completed: true,
                   created_at: parsedStored?.created_at || new Date().toISOString(),
                 };
                 setUser(newProfile);
                 localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(newProfile));
-                localStorage.setItem(`flame_fomo_quiz_completed_${confirmedEmail}`, 'true');
                 await supabase.from('profiles').upsert([newProfile]);
                 setIsAuthModalOpen(false);
-                setIsOnboardingOpen(false);
+                // Quiz should ONLY show up during a fresh sign in, never on reload
+                if (isFreshSignIn) {
+                  setIsOnboardingOpen(true);
+                } else {
+                  setIsOnboardingOpen(false);
+                }
               }
             } catch (err) {
               console.error('Error syncing confirmed student session:', err);
@@ -276,14 +291,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         };
 
-        // Check active session immediately
+        // Check active session immediately on page load / reload: isFreshSignIn is ALWAYS false
         supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session) handleSession(session);
+          if (session) handleSession(session, false);
         });
 
-        // Listen for redirect hash token when student clicks email link
-        const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-          if (session) handleSession(session);
+        // Listen for auth state changes
+        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+          if (session) {
+            let isFresh = false;
+            if (event === 'SIGNED_IN') {
+              const pending = typeof window !== 'undefined' && localStorage.getItem('flame_pending_oauth_signin') === 'true';
+              if (pending) {
+                isFresh = true;
+                localStorage.removeItem('flame_pending_oauth_signin');
+              }
+            }
+            handleSession(session, isFresh);
+          }
         });
 
         return () => {
@@ -464,6 +489,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const loginWithGoogle = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('flame_pending_oauth_signin', 'true');
+    }
     if (isSupabaseConfigured()) {
       try {
         const { error } = await supabase.auth.signInWithOAuth({
@@ -502,17 +530,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       flame_email: trimmed,
       name: name || trimmed.split('@')[0].replace('.', ' ').toUpperCase(),
       academic_year: 'UG2',
-      category_preferences: ['Performances', 'Clubs', 'Competitions', 'Social'],
+      category_preferences: ['Performances', 'Workshop', 'Competition'],
       academic_timetable: DEFAULT_TIMETABLE_SAMPLE,
       saved_events: [],
       going_events: [],
       favourite_events: [],
-      favourite_categories: ['Performances', 'Competitions'],
+      favourite_categories: ['Performances', 'Competition'],
       created_at: new Date().toISOString(),
     };
 
     saveUserToStorage(newUser);
     closeAuthModal();
+    // Only open quiz on explicit sign-in
+    setIsOnboardingOpen(true);
     return { success: true };
   };
 
@@ -620,6 +650,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (existingProfile) {
           saveUserToStorage(existingProfile as UserProfile);
           closeAuthModal();
+          // Only open quiz on explicit sign-in
+          setIsOnboardingOpen(true);
           return { success: true };
         }
       } catch (e) {
@@ -632,12 +664,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       flame_email: trimmed,
       name: name || trimmed.split('@')[0].replace('.', ' ').toUpperCase(),
       academic_year: 'UG2',
-      category_preferences: ['Performances', 'Clubs', 'Competitions', 'Social'],
+      category_preferences: ['Performances', 'Workshop', 'Competition'],
       academic_timetable: DEFAULT_TIMETABLE_SAMPLE,
       saved_events: [],
       going_events: [],
       favourite_events: [],
-      favourite_categories: ['Performances', 'Competitions'],
+      favourite_categories: ['Performances', 'Competition'],
       created_at: new Date().toISOString(),
     };
 
@@ -646,6 +678,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       supabase.from('profiles').upsert([newUser]).then();
     }
     closeAuthModal();
+    // Only open quiz on explicit sign-in
+    setIsOnboardingOpen(true);
     return { success: true };
   };
 
@@ -941,8 +975,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (newEvent.registration_fee && !finalEligibility.includes('[FEE:')) {
         finalEligibility = `${finalEligibility} [FEE: ${newEvent.registration_fee}]`.trim();
       }
-      const { is_tentative, tentative_note, registration_fee, ...cleanPayload } = newEvent;
+      const { is_tentative, tentative_note, registration_fee, categories, ...cleanPayload } = newEvent;
       cleanPayload.requirements_eligibility = finalEligibility || undefined;
+      cleanPayload.category = (newEvent.categories && newEvent.categories.length > 0)
+        ? newEvent.categories.join(', ')
+        : newEvent.category;
 
       supabase.from('events').insert([cleanPayload]).then(({ error }) => {
         if (error) console.error('Supabase createEvent error:', error);
@@ -965,7 +1002,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (eventData.registration_fee) {
         finalEligibility = `${(finalEligibility || '').replace(/\[FEE:\s*[^\]]+\]/, '').trim()} [FEE: ${eventData.registration_fee}]`.trim();
       }
-      const { is_tentative, tentative_note, registration_fee, ...cleanPayload } = eventData;
+      const { is_tentative, tentative_note, registration_fee, categories, ...cleanPayload } = eventData;
+      if (eventData.categories && eventData.categories.length > 0) {
+        cleanPayload.category = eventData.categories.join(', ');
+      }
       if (finalEligibility !== undefined) {
         cleanPayload.requirements_eligibility = finalEligibility || undefined;
       }

@@ -46,8 +46,12 @@ export const HomeView: React.FC = () => {
       return false;
     }
 
-    if (selectedQuickCategory !== 'All' && evt.category !== selectedQuickCategory) {
-      return false;
+    if (selectedQuickCategory !== 'All') {
+      const eventCats = Array.isArray(evt.categories) && evt.categories.length > 0
+        ? evt.categories
+        : (evt.category ? evt.category.split(',').map((c: string) => c.trim()) : []);
+      const matchCat = eventCats.some((c: string) => c.toLowerCase() === selectedQuickCategory.toLowerCase());
+      if (!matchCat) return false;
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -93,12 +97,12 @@ export const HomeView: React.FC = () => {
               </span>
             </div>
 
-            <h1 className="font-editorial text-3xl sm:text-5xl font-black text-[#fbf7ee] tracking-tight leading-[1.15]">
-              FLAME <span className="text-[#e25845] italic font-serif">FOMO</span>
+            <h1 className="font-editorial text-3xl sm:text-5xl font-black text-[#fbf7ee] tracking-tight leading-[1.15] flex flex-wrap items-baseline gap-2.5 sm:gap-3.5">
+              <span>FLAME <span className="text-[#e25845] italic font-serif">FOMO</span></span>
+              <span className="text-xl sm:text-3xl font-sans-ui font-bold text-[#f5d688] tracking-normal drop-shadow-sm">
+                — No more
+              </span>
             </h1>
-            <p className="text-sm sm:text-base text-[#b8aa93] font-sans-ui mt-1 max-w-xl font-medium">
-              No more
-            </p>
           </div>
 
           {/* Compact Search Bar */}

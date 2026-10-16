@@ -33,7 +33,7 @@ export const OnboardingModal: React.FC = () => {
   const [step, setStep] = useState<number>(1);
   const [academicYear, setAcademicYear] = useState<AcademicYear>(user?.academic_year || 'UG2');
   const [preferences, setPreferences] = useState<EventCategory[]>(
-    user?.category_preferences || ['Performances', 'Clubs', 'Competitions', 'Social']
+    user?.category_preferences || ['Performances', 'Workshop', 'Competition']
   );
   const [timetable, setTimetable] = useState<ClassScheduleItem[]>(
     user?.academic_timetable && user.academic_timetable.length > 0
@@ -271,10 +271,10 @@ export const OnboardingModal: React.FC = () => {
           <div className="space-y-4">
             <div className="text-center">
               <h2 className="font-editorial text-2xl font-bold text-neutral-900">
-                Academic Timetable Sync
+                Classes & Weekly Commitments
               </h2>
               <p className="text-xs text-neutral-600 mt-1">
-                Input your class slots. FLAME FOMO automatically detects schedule clashes before you commit to events!
+                Add your classes or other weekly commitments to avoid clashes.
               </p>
             </div>
 
@@ -367,12 +367,12 @@ export const OnboardingModal: React.FC = () => {
             {/* Add class snippet */}
             <div className="p-3 bg-[#f5efe1] border border-[#e0d3ba] rounded-sm space-y-2">
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-700">
-                Add Another Course / Class
+                Add class or weekly commitment
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <input
                   type="text"
-                  placeholder="Course Name (e.g. Media Ethics)"
+                  placeholder="Class or commitment name"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
                   className="p-2 bg-white border border-[#d6cbb0] rounded text-neutral-900"
@@ -380,7 +380,7 @@ export const OnboardingModal: React.FC = () => {
                 
                 <input
                   type="text"
-                  placeholder="Location (e.g. Chanakya Hall 2)"
+                  placeholder="Location (e.g. Chanakya 2)"
                   value={newRoom}
                   onChange={(e) => setNewRoom(e.target.value)}
                   className="p-2 bg-white border border-[#d6cbb0] rounded text-neutral-900"

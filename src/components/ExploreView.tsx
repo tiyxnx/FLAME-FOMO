@@ -70,8 +70,12 @@ export const ExploreView: React.FC = () => {
       }
 
       // 2. Category Filter
-      if (selectedCategory !== 'All' && evt.category !== selectedCategory) {
-        return false;
+      if (selectedCategory !== 'All') {
+        const eventCats = Array.isArray(evt.categories) && evt.categories.length > 0
+          ? evt.categories
+          : (evt.category ? evt.category.split(',').map((c: string) => c.trim()) : []);
+        const matchCat = eventCats.some((c: string) => c.toLowerCase() === selectedCategory.toLowerCase());
+        if (!matchCat) return false;
       }
 
       // 3. Time Filter
