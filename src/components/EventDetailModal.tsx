@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { isEventCompletedOrDone } from '@/lib/constants';
+import { 
+  isEventCompletedOrDone,
+  getEventSavedCount,
+  getEventGoingCount,
+  getEventFavouriteCount
+} from '@/lib/constants';
 import { 
   X, 
   Calendar, 
@@ -83,6 +88,10 @@ export const EventDetailModal: React.FC = () => {
     event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim()
   );
   const canManage = isAuthor;
+
+  const savedCount = getEventSavedCount(event, savedEventIds);
+  const goingCount = getEventGoingCount(event, goingEventIds);
+  const favCount = getEventFavouriteCount(event, favouriteEventIds);
 
   const handleAction = (type: 'going' | 'save' | 'fav') => {
     if (!isAuthenticated) {
@@ -267,6 +276,45 @@ export const EventDetailModal: React.FC = () => {
           </div>
         )}
 
+        {/* Creator Real-time Engagement & Feedback Dashboard */}
+        {isAuthor && (
+          <div className="mb-5 p-4 bg-[#f8f3e5] border-2 border-dashed border-[#d3be92] rounded-sm text-neutral-900 shadow-sm animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <div>
+                <span className="font-editorial text-[10px] font-bold uppercase tracking-wider bg-[#c93b2b] text-amber-100 px-2 py-0.5 rounded-2xs">
+                  Organizer Dashboard
+                </span>
+                <h4 className="font-editorial text-sm font-bold text-neutral-900 mt-0.5">
+                  Your Event Analytics &amp; Student Feedback
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => openEventFeedback(event)}
+                className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-bold rounded flex items-center gap-1.5 shadow-2xs transition-transform active:scale-95 cursor-pointer w-fit"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>{event.feedback?.length || 0} Student Reviews</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2.5 text-center">
+              <div className="bg-white/85 p-2 rounded border border-[#e0d3bc] shadow-xs">
+                <span className="text-xl font-black text-emerald-800 block">{goingCount}</span>
+                <span className="text-[11px] text-neutral-600 font-semibold">Attending (Going)</span>
+              </div>
+              <div className="bg-white/85 p-2 rounded border border-[#e0d3bc] shadow-xs">
+                <span className="text-xl font-black text-[#c93b2b] block">{savedCount}</span>
+                <span className="text-[11px] text-neutral-600 font-semibold">Bookmarked (Saved)</span>
+              </div>
+              <div className="bg-white/85 p-2 rounded border border-[#e0d3bc] shadow-xs">
+                <span className="text-xl font-black text-amber-700 block">{favCount}</span>
+                <span className="text-[11px] text-neutral-600 font-semibold">Favourited (Starred)</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Visual photo if present */}
         {event.event_image && (
           <div className="relative w-full h-56 sm:h-64 rounded-sm overflow-hidden mb-5 border border-neutral-300 shadow-md bg-neutral-100">
@@ -311,6 +359,17 @@ export const EventDetailModal: React.FC = () => {
               <span className="text-neutral-500 text-[10px] uppercase font-bold block">Venue</span>
               <span className="font-semibold text-sm">
                 {event.venue_zone} {event.room_specific ? `· ${event.room_specific}` : ''}
+              </span>
+            </div>
+          </div>
+
+          {/* Public Saved count */}
+          <div className="flex items-center gap-2 text-neutral-800">
+            <Bookmark className="w-4 h-4 text-[#c93b2b] shrink-0" />
+            <div>
+              <span className="text-neutral-500 text-[10px] uppercase font-bold block">Community Interest</span>
+              <span className="font-semibold text-sm">
+                {savedCount} {savedCount === 1 ? 'student saved this' : 'students saved this'}
               </span>
             </div>
           </div>
@@ -391,7 +450,7 @@ export const EventDetailModal: React.FC = () => {
                 }`}
               >
                 <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
-                <span>{isSaved ? 'Saved to Bookmarks' : 'Save for Later'}</span>
+                <span>{isSaved ? 'Saved to Bookmarks' : 'Save for Later'}{savedCount > 0 ? ` (${savedCount})` : ''}</span>
               </button>
             )}
 

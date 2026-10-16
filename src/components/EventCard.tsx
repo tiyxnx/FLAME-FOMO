@@ -16,6 +16,11 @@ import {
   Edit3,
   MessageSquare
 } from 'lucide-react';
+import { 
+  getEventSavedCount, 
+  getEventGoingCount, 
+  getEventFavouriteCount 
+} from '@/lib/constants';
 
 interface EventCardProps {
   event: EventItem;
@@ -45,6 +50,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
   const isFavourited = favouriteEventIds.includes(event.id);
   const isFavCategory = favouriteCategories.includes(event.category);
   const isCancelled = event.status === 'Cancelled';
+
+  const savedCount = getEventSavedCount(event, savedEventIds);
+  const goingCount = getEventGoingCount(event, goingEventIds);
+  const favCount = getEventFavouriteCount(event, favouriteEventIds);
   const isAdmin = Boolean(
     isAuthenticated && 
     user?.flame_email && 
@@ -276,7 +285,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
               }`}
             >
               <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
-              <span>{isSaved ? 'Saved' : 'Save'}</span>
+              <span>{isSaved ? 'Saved' : 'Save'}{savedCount > 0 ? ` (${savedCount})` : ''}</span>
             </button>
           )}
 
@@ -349,7 +358,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           )}
         </div>
 
-        {/* Organizer annotation in handwritten font */}
+        {/* Organizer annotation in handwritten font & student metrics */}
         <div className="flex flex-col pt-1 border-t border-neutral-200/80">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 truncate">
@@ -363,21 +372,41 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
               )}
             </div>
 
-            {/* Status indicators */}
+            {/* Status indicators and public Saved count */}
             <div className="flex items-center gap-1 shrink-0">
               {isGoing && (
                 <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
                   <Check className="w-2.5 h-2.5" /> Added
                 </span>
               )}
-              {isSaved && !isGoing && (
+              {isSaved ? (
                 <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                  <Bookmark className="w-2.5 h-2.5 fill-amber-800" /> Saved
+                  <Bookmark className="w-2.5 h-2.5 fill-amber-800" /> Saved {savedCount > 0 ? `(${savedCount})` : ''}
                 </span>
-              )}
+              ) : savedCount > 0 ? (
+                <span className="text-[10px] font-semibold text-neutral-700 bg-neutral-100/90 border border-neutral-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5" title={`${savedCount} students saved this event`}>
+                  <Bookmark className="w-2.5 h-2.5 text-[#c93b2b]" /> {savedCount} saved
+                </span>
+              ) : null}
             </div>
           </div>
-          {event.submitted_by && (
+
+          {/* Author Real-time Engagement Ribbon */}
+          {isAuthor && (
+            <div className="mt-1.5 pt-1 border-t border-dashed border-amber-400/70 flex items-center justify-between text-[10px] font-medium text-amber-950 bg-amber-50/80 px-2 py-1 rounded-2xs">
+              <span className="font-bold text-[#c93b2b] uppercase text-[9px]">Post Stats:</span>
+              <div className="flex items-center gap-2">
+                <span title="Students attending">👥 {goingCount} going</span>
+                <span title="Students saved">🔖 {savedCount} saved</span>
+                <span title="Students favourited">⭐ {favCount}</span>
+                {Boolean(event.feedback && event.feedback.length > 0) && (
+                  <span title="Student feedback reviews" className="font-bold text-[#c93b2b]">💬 {event.feedback!.length}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {event.submitted_by && !isAuthor && (
             <span className="text-[9px] text-neutral-400 font-sans-ui mt-0.5 truncate">
               Posted by: {event.submitted_by}
             </span>

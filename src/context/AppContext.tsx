@@ -173,6 +173,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (data) {
               const mappedEvents: EventItem[] = (data as any[]).map((ev) => {
                 const feeMatch = ev.requirements_eligibility?.match(/\[FEE:\s*([^\]]+)\]/);
+                const sUsers = Array.isArray(ev.saved_users) ? ev.saved_users : [];
+                const gUsers = Array.isArray(ev.going_users) ? ev.going_users : [];
+                const fUsers = Array.isArray(ev.favourite_users) ? ev.favourite_users : [];
                 return {
                   ...ev,
                   registration_fee: feeMatch ? feeMatch[1].trim() : undefined,
@@ -180,6 +183,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     ev.status === 'Tentative' ||
                     ev.time_start_end?.includes('Tentative') ||
                     ev.requirements_eligibility?.includes('[TENTATIVE]'),
+                  saved_users: sUsers,
+                  going_users: gUsers,
+                  favourite_users: fUsers,
+                  saved_count: typeof ev.saved_count === 'number' ? ev.saved_count : sUsers.length,
+                  going_count: typeof ev.going_count === 'number' ? ev.going_count : gUsers.length,
+                  favourite_count: typeof ev.favourite_count === 'number' ? ev.favourite_count : fUsers.length,
                 };
               });
               setEvents(mappedEvents);
@@ -668,6 +677,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : [...currentSaved, eventId];
 
     updateProfile({ saved_events: updatedSaved });
+
+    const userEmail = user.flame_email.toLowerCase();
+    setEvents((prev) => {
+      const next = prev.map((ev) => {
+        if (ev.id !== eventId) return ev;
+        const currentUsers = Array.isArray(ev.saved_users) ? ev.saved_users : [];
+        const nextUsers = isAlreadySaved
+          ? currentUsers.filter((u) => u.toLowerCase() !== userEmail)
+          : currentUsers.some((u) => u.toLowerCase() === userEmail) ? currentUsers : [...currentUsers, userEmail];
+        const nextCount = nextUsers.length;
+        if (isSupabaseConfigured()) {
+          supabase
+            .from('events')
+            .update({ saved_users: nextUsers, saved_count: nextCount })
+            .eq('id', eventId)
+            .then();
+        }
+        return { ...ev, saved_users: nextUsers, saved_count: nextCount };
+      });
+      localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(next));
+      return next;
+    });
   };
 
   // Clash check helper
@@ -739,10 +770,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const currentGoing = user.going_events || [];
     const isAlreadyGoing = currentGoing.includes(eventId);
+    const userEmail = user.flame_email.toLowerCase();
 
     if (isAlreadyGoing) {
       // Remove
       updateProfile({ going_events: currentGoing.filter((id) => id !== eventId) });
+      setEvents((prev) => {
+        const next = prev.map((ev) => {
+          if (ev.id !== eventId) return ev;
+          const currentUsers = Array.isArray(ev.going_users) ? ev.going_users : [];
+          const nextUsers = currentUsers.filter((u) => u.toLowerCase() !== userEmail);
+          const nextCount = nextUsers.length;
+          if (isSupabaseConfigured()) {
+            supabase
+              .from('events')
+              .update({ going_users: nextUsers, going_count: nextCount })
+              .eq('id', eventId)
+              .then();
+          }
+          return { ...ev, going_users: nextUsers, going_count: nextCount };
+        });
+        localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(next));
+        return next;
+      });
       return;
     }
 
@@ -765,6 +815,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Add to going
     const nextGoing = [...currentGoing, eventId];
     updateProfile({ going_events: nextGoing });
+    setEvents((prev) => {
+      const next = prev.map((ev) => {
+        if (ev.id !== eventId) return ev;
+        const currentUsers = Array.isArray(ev.going_users) ? ev.going_users : [];
+        const nextUsers = currentUsers.some((u) => u.toLowerCase() === userEmail) ? currentUsers : [...currentUsers, userEmail];
+        const nextCount = nextUsers.length;
+        if (isSupabaseConfigured()) {
+          supabase
+            .from('events')
+            .update({ going_users: nextUsers, going_count: nextCount })
+            .eq('id', eventId)
+            .then();
+        }
+        return { ...ev, going_users: nextUsers, going_count: nextCount };
+      });
+      localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(next));
+      return next;
+    });
 
     // Crucial UX constraint from read.md line 130:
     // If registration_link exists, prompt user with external link to complete their actual registration!
@@ -793,6 +861,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : [...currentFavs, eventId];
 
     updateProfile({ favourite_events: updatedFavs });
+
+    const userEmail = user.flame_email.toLowerCase();
+    setEvents((prev) => {
+      const next = prev.map((ev) => {
+        if (ev.id !== eventId) return ev;
+        const currentUsers = Array.isArray(ev.favourite_users) ? ev.favourite_users : [];
+        const nextUsers = isAlreadyFav
+          ? currentUsers.filter((u) => u.toLowerCase() !== userEmail)
+          : currentUsers.some((u) => u.toLowerCase() === userEmail) ? currentUsers : [...currentUsers, userEmail];
+        const nextCount = nextUsers.length;
+        if (isSupabaseConfigured()) {
+          supabase
+            .from('events')
+            .update({ favourite_users: nextUsers, favourite_count: nextCount })
+            .eq('id', eventId)
+            .then();
+        }
+        return { ...ev, favourite_users: nextUsers, favourite_count: nextCount };
+      });
+      localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(next));
+      return next;
+    });
   };
 
   const toggleFavouriteCategory = (category: EventCategory) => {

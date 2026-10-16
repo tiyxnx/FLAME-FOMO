@@ -66,6 +66,12 @@ CREATE POLICY "Public delete events" ON public.events FOR DELETE USING (true);
 -- 5. Student Feedback & Ratings System
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS ratings JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS feedback JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS saved_users JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS going_users JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS favourite_users JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS saved_count INT DEFAULT 0;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS going_count INT DEFAULT 0;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS favourite_count INT DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS public.site_feedback (
   id TEXT PRIMARY KEY,

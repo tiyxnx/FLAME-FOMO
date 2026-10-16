@@ -103,19 +103,15 @@ export const ExploreView: React.FC = () => {
 
       return true;
     }).sort((a, b) => {
-      const todayString = new Date().toISOString().split('T')[0];
-      const aCompleted = a.status === 'Completed' || a.date < todayString;
-      const bCompleted = b.status === 'Completed' || b.date < todayString;
+      const todayString = todayStr;
+      const aCompleted = a.status === 'Completed' || (todayString ? a.date < todayString : false);
+      const bCompleted = b.status === 'Completed' || (todayString ? b.date < todayString : false);
 
       if (aCompleted && !bCompleted) return 1;
       if (!aCompleted && bCompleted) return -1;
       
-      // For upcoming events: Saved events show up BEFORE other events!
+      // For upcoming events: Chronological order (soonest to latest)
       if (!aCompleted && !bCompleted) {
-        const aSaved = savedEventIds.includes(a.id);
-        const bSaved = savedEventIds.includes(b.id);
-        if (aSaved && !bSaved) return -1;
-        if (!aSaved && bSaved) return 1;
         return a.date.localeCompare(b.date);
       }
 

@@ -66,26 +66,25 @@ export const SiteFeedbackWidget: React.FC = () => {
 
   return (
     <>
-      {/* Floating Scrapbook Bookmark Tab pinned on the right edge */}
+      {/* Floating Scrapbook Bookmark Tab pinned on the right edge above the plus button */}
       <div 
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 select-none flex items-center"
-        onMouseEnter={() => setIsTabHovered(true)}
-        onMouseLeave={() => setIsTabHovered(false)}
+        className="fixed right-0 bottom-24 sm:bottom-28 z-40 select-none flex items-center pointer-events-none"
       >
         {/* Hover Tooltip / Teaser Banner on Desktop */}
         <div 
           className={`mr-2 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#25211c] text-amber-200 text-xs font-semibold rounded-md shadow-xl border border-[#4a4033] whitespace-nowrap transition-all duration-300 pointer-events-none ${
             isTabHovered && !isSiteFeedbackOpen
               ? 'opacity-100 translate-x-0' 
-              : 'opacity-0 translate-x-3 pointer-events-none'
+              : 'opacity-0 translate-x-3'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           <span>Feedback or bug report? Click to share!</span>
         </div>
 
-        {/* The Tab Button itself */}
+        {/* The Tab Button itself - hover strictly triggers only when cursor is ON this button */}
         <button
+          type="button"
           onClick={() => {
             if (isSiteFeedbackOpen) {
               closeSiteFeedback();
@@ -93,8 +92,10 @@ export const SiteFeedbackWidget: React.FC = () => {
               openSiteFeedback();
             }
           }}
+          onMouseEnter={() => setIsTabHovered(true)}
+          onMouseLeave={() => setIsTabHovered(false)}
           title="Share Website Feedback or Report a Bug"
-          className="relative bg-gradient-to-l from-[#c93b2b] to-[#b02e20] text-amber-100 px-2.5 py-3.5 rounded-l-md shadow-2xl border-l-2 border-y-2 border-amber-300/40 hover:from-[#d94432] hover:to-[#c93b2b] transition-all duration-200 flex flex-col items-center gap-2 group active:scale-95"
+          className="relative pointer-events-auto bg-gradient-to-l from-[#c93b2b] to-[#b02e20] text-amber-100 px-2.5 py-3 rounded-l-md shadow-2xl border-l-2 border-y-2 border-amber-300/40 hover:from-[#d94432] hover:to-[#c93b2b] transition-all duration-200 flex flex-col items-center gap-1.5 group active:scale-95 cursor-pointer"
         >
           {/* Scrapbook washi tape clip on tab */}
           <div 

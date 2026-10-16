@@ -68,6 +68,12 @@ export interface EventItem {
   submitted_by?: string; // user email if UGC
   ratings?: { email: string; score: number }[]; // Array of ratings
   feedback?: EventFeedbackItem[]; // Student reviews & feedback notes
+  saved_users?: string[]; // Array of user emails who saved
+  going_users?: string[]; // Array of user emails who clicked I'm Going
+  favourite_users?: string[]; // Array of user emails who favourited
+  saved_count?: number; // Total count of students who saved
+  going_count?: number; // Total count of students attending
+  favourite_count?: number; // Total count of students who favourited
   created_at?: string;
 }
 

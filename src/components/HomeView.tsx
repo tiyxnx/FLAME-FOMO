@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { DontForget } from './home/DontForget';
-import { MyPlanToday } from './home/MyPlanToday';
 import { HappeningSoon } from './home/HappeningSoon';
 import { YourWeek } from './home/YourWeek';
 import { EventCard } from './EventCard';
@@ -25,6 +24,7 @@ export const HomeView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [dateFormatted, setDateFormatted] = useState('Wednesday, Oct 7, 2026');
+  const [todayIsoStr, setTodayIsoStr] = useState('');
 
   useEffect(() => {
     const today = new Date();
@@ -36,6 +36,7 @@ export const HomeView: React.FC = () => {
         year: 'numeric',
       })
     );
+    setTodayIsoStr(today.toISOString().split('T')[0]);
   }, []);
 
   // Filter featured cards with 2-day auto-expiry rule (or indefinitely if favourited)
@@ -58,19 +59,15 @@ export const HomeView: React.FC = () => {
     }
     return true;
   }).sort((a, b) => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const aCompleted = a.status === 'Completed' || a.date < todayStr;
-    const bCompleted = b.status === 'Completed' || b.date < todayStr;
+    const todayStr = todayIsoStr;
+    const aCompleted = a.status === 'Completed' || (todayStr ? a.date < todayStr : false);
+    const bCompleted = b.status === 'Completed' || (todayStr ? b.date < todayStr : false);
 
     if (aCompleted && !bCompleted) return 1;
     if (!aCompleted && bCompleted) return -1;
     
-    // For upcoming events: Saved events show up BEFORE other events!
+    // For upcoming events: Chronological order (soonest to latest)
     if (!aCompleted && !bCompleted) {
-      const aSaved = savedEventIds.includes(a.id);
-      const bSaved = savedEventIds.includes(b.id);
-      if (aSaved && !bSaved) return -1;
-      if (!aSaved && bSaved) return 1;
       return a.date.localeCompare(b.date);
     }
 
@@ -157,10 +154,7 @@ export const HomeView: React.FC = () => {
       {/* 6.1 Priority 1: Don't Forget (Red paper-slip module displaying single most urgent deadline) */}
       <DontForget eventsProp={displayedEvents} />
 
-      {/* 6.1 Priority 2: My Plan Today (Planner-style chronological list of today's committed events & classes) */}
-      <MyPlanToday eventsProp={displayedEvents} />
-
-      {/* 6.1 Priority 3: Happening Soon (Horizontally scrollable row of upcoming event Polaroids) */}
+      {/* Priority: Happening Soon (Horizontally scrollable row of upcoming event Polaroids) */}
       <HappeningSoon eventsProp={displayedEvents} />
 
       {/* 6.1 Your Week: Compact Monday-Friday preview showing event/class counts per day */}

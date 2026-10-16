@@ -27,9 +27,15 @@ import {
   Clock, 
   MapPin,
   Save,
-  Edit3
+  Edit3,
+  MessageSquare
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { 
+  getEventSavedCount, 
+  getEventGoingCount, 
+  getEventFavouriteCount 
+} from '@/lib/constants';
 
 export const ProfileView: React.FC = () => {
   const { 
@@ -37,12 +43,14 @@ export const ProfileView: React.FC = () => {
     events, 
     savedEventIds, 
     goingEventIds, 
+    favouriteEventIds,
     updateProfile, 
     deleteEvent, 
     updateEvent,
     openCreateEvent,
     openEditEvent,
     openEventDetail,
+    openEventFeedback,
     setCurrentTab,
     openOnboarding
   } = useApp();
@@ -572,6 +580,29 @@ export const ProfileView: React.FC = () => {
                           <MapPin className="w-3 h-3 text-[#c93b2b]" />
                           {evt.venue_zone} {evt.room_specific ? `(${evt.room_specific})` : ''}
                         </span>
+                      </div>
+
+                      {/* Engagement Metrics for Creator */}
+                      <div className="flex flex-wrap items-center gap-2 mt-2.5 pt-2 border-t border-[#342c22]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/90">Engagement:</span>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-800/60" title="Students attending">
+                          👥 {getEventGoingCount(evt, goingEventIds)} Going
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-950/80 text-red-300 border border-red-800/60" title="Students saved">
+                          🔖 {getEventSavedCount(evt, savedEventIds)} Saved
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-950/80 text-amber-300 border border-amber-800/60" title="Students favourited">
+                          ⭐ {getEventFavouriteCount(evt, favouriteEventIds)} Favourited
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => openEventFeedback(evt)}
+                          className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 border border-amber-500 transition-colors flex items-center gap-1 cursor-pointer ml-auto shadow-2xs"
+                          title="View all student feedback and reviews"
+                        >
+                          <MessageSquare className="w-3 h-3 text-amber-950" />
+                          <span>{evt.feedback?.length || 0} Feedback Reviews &rarr;</span>
+                        </button>
                       </div>
                     </div>
                   </div>

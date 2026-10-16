@@ -448,3 +448,39 @@ export const checkEventReviewEligibility = (
   };
 };
 
+/**
+ * Calculates total saved count for an event, considering saved_users array,
+ * direct saved_count field, and locally saved events.
+ */
+export const getEventSavedCount = (event: EventItem, savedEventIds: string[] = []): number => {
+  const usersCount = Array.isArray(event.saved_users) ? event.saved_users.length : 0;
+  const directCount = typeof event.saved_count === 'number' ? event.saved_count : 0;
+  const count = Math.max(usersCount, directCount);
+  if (savedEventIds.includes(event.id) && count === 0) return 1;
+  return count;
+};
+
+/**
+ * Calculates total going count for an event, considering going_users array,
+ * direct going_count field, and locally marked going events.
+ */
+export const getEventGoingCount = (event: EventItem, goingEventIds: string[] = []): number => {
+  const usersCount = Array.isArray(event.going_users) ? event.going_users.length : 0;
+  const directCount = typeof event.going_count === 'number' ? event.going_count : 0;
+  const count = Math.max(usersCount, directCount);
+  if (goingEventIds.includes(event.id) && count === 0) return 1;
+  return count;
+};
+
+/**
+ * Calculates total favourite count for an event, considering favourite_users array,
+ * direct favourite_count field, and locally marked favourite events.
+ */
+export const getEventFavouriteCount = (event: EventItem, favEventIds: string[] = []): number => {
+  const usersCount = Array.isArray(event.favourite_users) ? event.favourite_users.length : 0;
+  const directCount = typeof event.favourite_count === 'number' ? event.favourite_count : 0;
+  const count = Math.max(usersCount, directCount);
+  if (favEventIds.includes(event.id) && count === 0) return 1;
+  return count;
+};
+

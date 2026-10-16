@@ -10,22 +10,51 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
   const events = eventsProp || contextEvents;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [todayStr, setTodayStr] = React.useState('2026-10-07');
+  const [dateRange, setDateRange] = React.useState<{ today: string; sevenDaysLater: string }>({
+    today: '',
+    sevenDaysLater: '',
+  });
+
   React.useEffect(() => {
-    setTodayStr(new Date().toISOString().split('T')[0]);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
+
+    const end = new Date(now);
+    end.setDate(end.getDate() + 7);
+    const endYear = end.getFullYear();
+    const endMonth = String(end.getMonth() + 1).padStart(2, '0');
+    const endDay = String(end.getDate()).padStart(2, '0');
+    const sevenDaysLater = `${endYear}-${endMonth}-${endDay}`;
+
+    setDateRange({ today, sevenDaysLater });
   }, []);
 
-  // Filter events happening soon (upcoming or today onwards)
+  // Filter events happening in the next 7 days from today's date
+  // Order: Saved events first (soonest to latest), followed by other events (soonest to latest)
   const upcomingEvents = events
-    .filter((e) => e.status !== 'Cancelled' && e.status !== 'Completed' && e.date >= todayStr)
+    .filter((e) => {
+      if (e.status === 'Cancelled' || e.status === 'Completed') return false;
+      return e.date >= dateRange.today && e.date <= dateRange.sevenDaysLater;
+    })
     .sort((a, b) => {
       const aSaved = savedEventIds.includes(a.id);
       const bSaved = savedEventIds.includes(b.id);
+      // Saved events appear before other events
       if (aSaved && !bSaved) return -1;
       if (!aSaved && bSaved) return 1;
-      return a.date.localeCompare(b.date);
-    })
-    .slice(0, 7);
+
+      // Soonest date to latest date
+      if (a.date !== b.date) {
+        return a.date.localeCompare(b.date);
+      }
+      // Soonest time to latest time
+      const aTime = a.time_start || a.time_start_end || '';
+      const bTime = b.time_start || b.time_start_end || '';
+      return aTime.localeCompare(bTime);
+    });
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -42,7 +71,7 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 bg-[#e25845] text-white text-[10px] font-black uppercase tracking-wider rounded-xs">
-              Priority 3 · Radar
+              Next 7 Days · Radar
             </span>
             <span className="text-xs text-[#a89b87] font-handwritten text-base">
               swipe horizontally
@@ -55,40 +84,53 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
         </div>
 
         {/* Scroll Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => scroll('left')}
-            className="p-2 rounded-full bg-[#2a251e] border border-[#443a2e] text-neutral-300 hover:text-white hover:bg-[#383126] transition-colors"
-            title="Scroll Left"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => scroll('right')}
-            className="p-2 rounded-full bg-[#2a251e] border border-[#443a2e] text-neutral-300 hover:text-white hover:bg-[#383126] transition-colors"
-            title="Scroll Right"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+        {upcomingEvents.length > 0 && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => scroll('left')}
+              className="p-2 rounded-full bg-[#2a251e] border border-[#443a2e] text-neutral-300 hover:text-white hover:bg-[#383126] transition-colors"
+              title="Scroll Left"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              className="p-2 rounded-full bg-[#2a251e] border border-[#443a2e] text-neutral-300 hover:text-white hover:bg-[#383126] transition-colors"
+              title="Scroll Right"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Horizontally Scrollable Row */}
-      <div
-        ref={scrollContainerRef}
-        className="flex gap-5 overflow-x-auto custom-scrollbar pb-6 pt-3 px-1 -mx-1"
-        style={{ scrollSnapType: 'x mandatory' }}
-      >
-        {upcomingEvents.map((evt, idx) => (
-          <div
-            key={evt.id}
-            className="shrink-0 w-72 sm:w-80"
-            style={{ scrollSnapAlign: 'start' }}
-          >
-            <EventCard event={evt} rotationIndex={idx} />
-          </div>
-        ))}
-      </div>
+      {/* Horizontally Scrollable Row or Empty State */}
+      {upcomingEvents.length === 0 ? (
+        <div className="py-8 px-6 text-center bg-[#1d1914] border border-dashed border-[#443a2e] rounded-lg">
+          <p className="font-handwritten text-xl text-[#f3da90] mb-1">
+            Nothing scheduled in the next 7 days ☕
+          </p>
+          <p className="text-xs text-[#a89b87]">
+            Check out the Campus Discovery Board below or post an event using the + button!
+          </p>
+        </div>
+      ) : (
+        <div
+          ref={scrollContainerRef}
+          className="flex gap-5 overflow-x-auto custom-scrollbar pb-6 pt-3 px-1 -mx-1"
+          style={{ scrollSnapType: 'x mandatory' }}
+        >
+          {upcomingEvents.map((evt, idx) => (
+            <div
+              key={evt.id}
+              className="shrink-0 w-72 sm:w-80"
+              style={{ scrollSnapAlign: 'start' }}
+            >
+              <EventCard event={evt} rotationIndex={idx} />
+            </div>
+          ))}
+        </div>
+      )}
 
     </div>
   );
