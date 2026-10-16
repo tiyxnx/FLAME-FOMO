@@ -193,10 +193,10 @@ export const EventFeedbackModal: React.FC = () => {
                 <CheckCircle2 className="w-7 h-7" />
               </div>
               <h4 className="font-editorial text-lg font-bold text-emerald-950">
-                Anonymous Review Pinned! 📌
+                Review Submitted! 📌
               </h4>
               <p className="text-xs text-emerald-800">
-                Thank you! Your feedback has been posted anonymously under <strong>&quot;Anonymous Flameite&quot;</strong>.
+                Thank you! Your feedback has been posted anonymously under <strong>&quot;Anonymous student&quot;</strong>.
               </p>
             </div>
           ) : eligibility.canReview ? (
@@ -208,7 +208,7 @@ export const EventFeedbackModal: React.FC = () => {
                 <EyeOff className="w-4 h-4 text-amber-400 shrink-0" />
                 <div className="text-[11px] leading-tight">
                   <span className="font-bold text-amber-300">100% Anonymous Review: </span>
-                  Your name and email will be hidden. Fellow students and organizers will only see: <em>&quot;Anonymous Flameite&quot;</em>.
+                  Your name and email will be hidden. Fellow students and organizers will only see: <em>&quot;Anonymous student&quot;</em>.
                 </div>
               </div>
 
@@ -370,7 +370,7 @@ export const EventFeedbackModal: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-[11px] text-purple-800 mt-0.5 leading-snug">
-                      Reviews appear as <em>&quot;Anonymous Flameite&quot;</em> to all regular students. Real reviewer emails are visible strictly to you ({user?.flame_email}) for campus safety and moderation.
+                      Reviews appear as <em>&quot;Anonymous student&quot;</em> to all regular students. Real reviewer emails are visible strictly to you ({user?.flame_email}) for campus safety and moderation.
                     </p>
                   </div>
                 </div>
@@ -383,7 +383,7 @@ export const EventFeedbackModal: React.FC = () => {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-neutral-900 flex items-center gap-1">
                           <EyeOff className="w-3 h-3 text-neutral-500" />
-                          <span>Anonymous Flameite</span>
+                          <span>Anonymous student</span>
                         </span>
                         <div className="flex items-center ml-1">
                           {[1, 2, 3, 4, 5].map((s) => (

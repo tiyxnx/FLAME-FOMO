@@ -159,10 +159,10 @@ export const SiteFeedbackWidget: React.FC = () => {
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <h4 className="font-editorial text-xl font-bold text-emerald-950">
-                    Thank You, Fellow Flameite! 💌
+                    Thank you! 💌
                   </h4>
                   <p className="text-xs text-emerald-800">
-                    Your feedback has been pinned for the campus dev team. We read every single idea to make event discovery effortless.
+                    Your feedback has been received. Thanks for helping make FLAME FOMO better!
                   </p>
                 </div>
               ) : (

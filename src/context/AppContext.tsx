@@ -380,7 +380,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     // Always store as anonymous to guarantee privacy!
-    const authorName = 'Anonymous Flameite';
+    const authorName = 'Anonymous student';
     const emailKey = user?.flame_email || 'anonymous@flame.edu.in';
 
     const currentRatings = targetEvent.ratings || [];
@@ -394,7 +394,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `efb-${Date.now()}`,
       email: emailKey,           // Preserved internally for moderator inspection
       author_email: emailKey,    // Only accessible to authorized admin moderator
-      name: authorName,          // Public label remains strictly "Anonymous Flameite"
+      name: authorName,          // Public label remains strictly "Anonymous student"
       score: feedbackData.score,
       comment: feedbackData.comment,
       tag: feedbackData.tag,

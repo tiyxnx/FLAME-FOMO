@@ -61,7 +61,7 @@ export const YourWeek: React.FC<{ eventsProp?: import('@/types').EventItem[] }> 
               Weekly Overview
             </span>
             <span className="text-xs text-[#a89a83] font-handwritten text-base">
-              mon &ndash; sun commitments
+              Monday to Sunday
             </span>
           </div>
           <h3 className="font-editorial text-2xl font-bold text-[#f5ebd7] mt-0.5">
@@ -73,7 +73,7 @@ export const YourWeek: React.FC<{ eventsProp?: import('@/types').EventItem[] }> 
           onClick={() => setCurrentTab('my-plan')}
           className="text-xs font-semibold text-amber-200 hover:text-amber-100 flex items-center gap-1"
         >
-          <span>Open Full Schedule</span>
+          <span>View your schedule</span>
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>

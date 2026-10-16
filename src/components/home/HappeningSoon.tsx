@@ -71,10 +71,10 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 bg-[#e25845] text-white text-[10px] font-black uppercase tracking-wider rounded-xs">
-              Next 7 Days · Radar
+              Next 7 Days
             </span>
             <span className="text-xs text-[#a89b87] font-handwritten text-base">
-              swipe horizontally
+              swipe to see more
             </span>
           </div>
           <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-[#f5ebd7] mt-0.5 flex items-center gap-2">

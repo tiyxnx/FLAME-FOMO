@@ -79,7 +79,7 @@ export const Header: React.FC = () => {
                 </span>
               </div>
               <span className="text-[10px] sm:text-[11px] text-[#b8ab96] tracking-wide font-sans-ui -mt-1 hidden xs:block">
-                Tactile Campus Planner
+                Campus Events
               </span>
             </div>
           </div>
@@ -295,7 +295,7 @@ export const Header: React.FC = () => {
                   guest mode
                 </span>
                 <button
-                  onClick={() => openAuthModal('Sign in with your FLAME University email to unlock My Plan, the Campus Map, and Event Publishing.')}
+                  onClick={() => openAuthModal('Sign in with your FLAME email to save events and build your schedule.')}
                   className="px-3.5 py-1.5 sm:px-4 sm:py-2 bg-[#c93b2b] hover:bg-[#b53324] text-amber-100 text-xs sm:text-sm font-semibold rounded-md shadow-md border border-amber-200/20 transition-all flex items-center gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-300" />

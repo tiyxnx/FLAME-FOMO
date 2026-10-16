@@ -140,17 +140,17 @@ export const ExploreView: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center gap-2">
           <span className="stamp-urgent text-xs bg-amber-950/60 border-amber-500 text-amber-200">
-            Master Catalogue
+            All Events
           </span>
           <span className="text-xs text-[#a89b87] font-handwritten text-base">
-            every campus pulse in one place
+            everything in one place
           </span>
         </div>
         <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#f5ebd7] mt-1">
-          Explore Campus Events
+          Explore All Events
         </h2>
         <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5">
-          Filter through talks, acoustic sets, sports cups, and hackathons across FLAME University.
+          Browse and filter all events happening at FLAME.
         </p>
       </div>
 

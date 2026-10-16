@@ -80,10 +80,10 @@ export const DontForget: React.FC<{ eventsProp?: import('@/types').EventItem[] }
           <div className="space-y-1.5 flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 bg-amber-300 text-neutral-950 font-black text-[10px] tracking-wider uppercase rounded-xs shadow-xs">
-                Priority 1 · Don&apos;t Forget!
+                Don&apos;t Forget!
               </span>
               <span className="text-xs text-amber-200 font-handwritten text-base">
-                most urgent deadline on campus
+                registration closing soon
               </span>
             </div>
 

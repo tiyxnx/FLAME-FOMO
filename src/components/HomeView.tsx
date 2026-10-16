@@ -83,19 +83,11 @@ export const HomeView: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 select-none">
       
-      {/* 6.1 Hero Section: Editorial heading paired with current date, search bar, and horizontal quick-filter pills */}
+      {/* Hero Section */}
       <div className="relative mb-6 sm:mb-8 pt-2">
-        
-        {/* Push pin motif */}
-        <div className="push-pin" />
-
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#3b3327]">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-handwritten text-lg sm:text-xl text-[#f3da90]">
-                campus bulletin & planner
-              </span>
-              <span className="text-[#5a4d3a]">·</span>
               <span className="text-xs text-[#a89b87] font-mono tracking-wider uppercase">
                 {dateFormatted}
               </span>
@@ -104,8 +96,8 @@ export const HomeView: React.FC = () => {
             <h1 className="font-editorial text-3xl sm:text-5xl font-black text-[#fbf7ee] tracking-tight leading-[1.15]">
               FLAME <span className="text-[#e25845] italic font-serif">FOMO</span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#b8aa93] font-sans-ui mt-1 max-w-xl">
-              Centralizing fragmented campus events into an actionable, tactile digital planner. Never miss a hackathon, acoustic night, or guest lecture again.
+            <p className="text-sm sm:text-base text-[#b8aa93] font-sans-ui mt-1 max-w-xl font-medium">
+              No more
             </p>
           </div>
 
@@ -114,7 +106,7 @@ export const HomeView: React.FC = () => {
             <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search talks, open mics, games..."
+              placeholder="Search events, clubs, sports..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-[#1b1915] border border-[#3f3528] rounded-sm text-xs text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:border-amber-400"
@@ -151,24 +143,24 @@ export const HomeView: React.FC = () => {
         </div>
       </div>
 
-      {/* 6.1 Priority 1: Don't Forget (Red paper-slip module displaying single most urgent deadline) */}
+      {/* Priority 1: Don't Forget */}
       <DontForget eventsProp={displayedEvents} />
 
-      {/* Priority: Happening Soon (Horizontally scrollable row of upcoming event Polaroids) */}
+      {/* Priority: Happening Soon (Next 7 Days) */}
       <HappeningSoon eventsProp={displayedEvents} />
 
-      {/* 6.1 Your Week: Compact Monday-Friday preview showing event/class counts per day */}
+      {/* Your Week */}
       <YourWeek eventsProp={displayedEvents} />
 
-      {/* Discovery Board Grid */}
+      {/* Here's everything that's happening */}
       <div className="pt-4 border-t border-[#3b3327]">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-100">
-              Campus Discovery Board
+              Here&apos;s everything that&apos;s happening
             </h3>
             <p className="text-xs text-[#a89b87] font-sans-ui mt-0.5">
-              Organic collage of upcoming events pinned to the physical bulletin board.
+              All upcoming events at FLAME.
             </p>
           </div>
 
@@ -176,7 +168,7 @@ export const HomeView: React.FC = () => {
             onClick={() => setCurrentTab('explore')}
             className="text-xs font-semibold text-amber-200 hover:text-amber-100 flex items-center gap-1"
           >
-            <span>View Master Catalogue</span>
+            <span>View all</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

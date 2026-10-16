@@ -97,8 +97,8 @@ export const FloatingPlanWidget: React.FC = () => {
         <div className={`p-4 transition-opacity duration-500 delay-100 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
           <div className="flex items-center justify-between mb-3 border-b border-amber-700/20 pb-2">
             <div>
-              <span className="text-xs text-amber-800 font-handwritten">today&apos;s sticky note</span>
-              <h4 className="font-editorial text-lg font-bold">My Plan Today</h4>
+              <span className="text-xs text-amber-800 font-handwritten">today</span>
+              <h4 className="font-editorial text-lg font-bold">Your Plan Today</h4>
             </div>
           </div>
 
@@ -106,12 +106,12 @@ export const FloatingPlanWidget: React.FC = () => {
             {!isAuthenticated ? (
               <div className="text-center p-4 bg-amber-50/50 rounded border border-amber-200">
                 <p className="text-xs font-bold text-amber-900 mb-1">Sign in required</p>
-                <p className="text-[10px] text-amber-700">Connect your FLAME student email to unlock your personalized daily schedule!</p>
+                <p className="text-[10px] text-amber-700">Sign in with your FLAME email to see your schedule.</p>
               </div>
             ) : timelineItems.length === 0 ? (
               <div className="text-center p-4 bg-amber-50/50 rounded border border-amber-200">
                 <p className="text-xs font-bold text-amber-900 mb-1">Schedule Clear!</p>
-                <p className="text-[10px] text-amber-700">You have no classes or committed events today. Explore the map to find something to do!</p>
+                <p className="text-[10px] text-amber-700">No classes or events scheduled today.</p>
               </div>
             ) : (
               timelineItems.map((item, index) => (

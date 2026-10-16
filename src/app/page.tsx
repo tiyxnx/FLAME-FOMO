@@ -65,12 +65,10 @@ export default function App() {
               FLAME <span className="text-[#e25845] italic">FOMO</span>
             </span>
             <span>·</span>
-            <span>FLAME University Student Discovery & Scheduling Planner</span>
+            <span className="font-medium text-[#d6cbaf]">Made by Tiyana</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px] text-[#9b8d74]">
-            <span className="font-handwritten text-base">crafted with nostalgia & tactile care</span>
-            <span>•</span>
             <span>Pune, Maharashtra</span>
           </div>
         </div>
