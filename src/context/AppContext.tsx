@@ -143,11 +143,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const cleaned = Array.isArray(parsed)
           ? parsed.filter((e) => !dummyIds.includes(e.id))
           : [];
-        setEvents(cleaned);
-        localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(cleaned));
+        const existingIds = new Set(cleaned.map((e) => e.id));
+        const missingSeeds = INITIAL_SEED_EVENTS.filter((e) => !existingIds.has(e.id) && !dummyIds.includes(e.id));
+        const merged = [...cleaned, ...missingSeeds];
+        setEvents(merged);
+        localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(merged));
       } else {
-        setEvents([]);
-        localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify([]));
+        setEvents(INITIAL_SEED_EVENTS);
+        localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(INITIAL_SEED_EVENTS));
       }
 
       const storedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
@@ -220,8 +223,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   favourite_count: typeof ev.favourite_count === 'number' ? ev.favourite_count : fUsers.length,
                 };
               });
-              setEvents(mappedEvents);
-              localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(mappedEvents));
+
+              // Merge any initial seed items missing from Supabase
+              const existingIds = new Set(mappedEvents.map((e) => e.id));
+              const missingSeeds = INITIAL_SEED_EVENTS.filter((e) => !existingIds.has(e.id));
+              const mergedEvents = [...mappedEvents, ...missingSeeds];
+
+              setEvents(mergedEvents);
+              localStorage.setItem(LOCAL_STORAGE_EVENTS_KEY, JSON.stringify(mergedEvents));
               // Dynamic notifications based on actual campus events
               const notifs: NotificationItem[] = mappedEvents
                 .filter((ev) => ev.registration_deadline)
