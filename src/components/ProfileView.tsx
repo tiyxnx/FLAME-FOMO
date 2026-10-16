@@ -251,21 +251,21 @@ export const ProfileView: React.FC = () => {
             <h3 className="font-editorial text-lg font-bold text-amber-100 mb-3">
               Your Year
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
               {ACADEMIC_YEARS.map((yr) => (
                 <button
                   key={yr}
                   type="button"
                   onClick={() => setAcademicYear(yr)}
-                  className={`p-3 rounded-sm border text-center transition-all ${
+                  className={`p-2.5 rounded-sm border text-center transition-all ${
                     academicYear === yr
                       ? 'bg-[#c93b2b] text-white border-red-700 shadow-md font-bold'
                       : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:border-neutral-500'
                   }`}
                 >
-                  <div className="font-editorial text-lg">{yr}</div>
-                  <div className="text-[10px] uppercase opacity-70">
-                    {yr === 'All' ? 'Community' : `Year ${yr.replace('UG', '')}`}
+                  <div className="font-editorial text-base sm:text-lg">{yr}</div>
+                  <div className="text-[9px] uppercase opacity-75">
+                    {yr === 'All' ? 'Everyone' : yr.startsWith('PG') ? `PG ${yr.replace('PG', '')}` : `UG ${yr.replace('UG', '')}`}
                   </div>
                 </button>
               ))}

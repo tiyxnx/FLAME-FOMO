@@ -10,7 +10,7 @@ export const EVENT_CATEGORIES: EventCategory[] = [
   'Community welfare',
 ];
 
-export const ACADEMIC_YEARS: AcademicYear[] = ['UG1', 'UG2', 'UG3', 'UG4', 'All'];
+export const ACADEMIC_YEARS: AcademicYear[] = ['UG1', 'UG2', 'UG3', 'UG4', 'PG1', 'PG2', 'All'];
 
 export const VENUE_ZONES: VenueZone[] = [
   'Academics',

@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Users,
   Edit3,
+  Trash2,
   MessageSquare
 } from 'lucide-react';
 import { 
@@ -42,6 +43,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     openAuthModal,
     openEventDetail,
     openEditEvent,
+    deleteEvent,
     openEventFeedback,
   } = useApp();
 
@@ -66,7 +68,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     isAuthenticated &&
     user?.flame_email &&
     event.submitted_by &&
-    event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim()
+    (event.submitted_by.toLowerCase().trim() === user.flame_email.toLowerCase().trim() ||
+     event.submitted_by.toLowerCase().trim() === user.flame_email.split('@')[0].toLowerCase().trim())
   );
   const canEdit = isAuthor || isAdmin;
   const isTentative = Boolean(
@@ -328,18 +331,32 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
             </button>
           )}
 
-          {/* Quick Edit (Only shown to event author or admin) */}
+          {/* Quick Edit & Remove (Only shown to event author or admin) */}
           {canEdit && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                openEditEvent(event);
-              }}
-              title="Edit Your Event"
-              className="p-2 rounded-full bg-amber-400 text-amber-950 hover:bg-amber-300 transition-transform active:scale-90 shadow-md"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEditEvent(event);
+                }}
+                title="Edit Your Event"
+                className="p-2 rounded-full bg-amber-400 text-amber-950 hover:bg-amber-300 transition-transform active:scale-90 shadow-md cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm(`Are you sure you want to remove "${event.event_name}"?`)) {
+                    deleteEvent(event.id);
+                  }
+                }}
+                title="Remove Your Event"
+                className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-transform active:scale-90 shadow-md cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           )}
         </div>
       </div>

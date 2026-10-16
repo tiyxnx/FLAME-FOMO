@@ -47,6 +47,18 @@ const CURATED_PRESETS = [
   { label: '🌌 Stargazing', url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80' },
 ];
 
+const COHORT_OPTIONS = [
+  'Open to All Students',
+  'UG1',
+  'UG2',
+  'UG3',
+  'UG4',
+  'PG1',
+  'PG2',
+  'UG Only (UG1 - UG4)',
+  'PG Only (PG1 - PG2)',
+];
+
 export const CreateEventModal: React.FC = () => {
   const { 
     isCreateEventOpen, 
@@ -774,13 +786,22 @@ export const CreateEventModal: React.FC = () => {
               <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
                 Cohort / Eligibility
               </label>
-              <input
-                type="text"
-                placeholder="e.g. Open to All or UG2 & UG3 only"
+              <select
                 value={requirementsEligibility}
                 onChange={(e) => setRequirementsEligibility(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-              />
+                className="w-full px-3.5 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs font-semibold text-neutral-900 focus:outline-none focus:border-amber-500"
+              >
+                {!COHORT_OPTIONS.includes(requirementsEligibility) && requirementsEligibility && (
+                  <option value={requirementsEligibility}>
+                    {requirementsEligibility}
+                  </option>
+                )}
+                {COHORT_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

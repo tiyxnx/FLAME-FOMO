@@ -100,7 +100,7 @@ export const HomeView: React.FC = () => {
             <h1 className="font-editorial text-3xl sm:text-5xl font-black text-[#fbf7ee] tracking-tight leading-[1.15] flex flex-wrap items-baseline gap-2.5 sm:gap-3.5">
               <span>FLAME <span className="text-[#e25845] italic font-serif">FOMO</span></span>
               <span className="text-xl sm:text-3xl font-sans-ui font-bold text-[#f5d688] tracking-normal drop-shadow-sm">
-                — No more
+                (no more)
               </span>
             </h1>
           </div>

@@ -209,21 +209,21 @@ export const OnboardingModal: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5 pt-3">
               {ACADEMIC_YEARS.map((year) => (
                 <button
                   key={year}
                   type="button"
                   onClick={() => setAcademicYear(year)}
-                  className={`p-4 rounded-sm border-2 text-center transition-all ${
+                  className={`p-3 rounded-sm border-2 text-center transition-all ${
                     academicYear === year
-                      ? 'bg-[#c93b2b] text-amber-100 border-[#991b1b] shadow-md scale-102'
+                      ? 'bg-[#c93b2b] text-amber-100 border-[#991b1b] shadow-md scale-102 font-bold'
                       : 'bg-white text-neutral-800 border-[#d9ceb7] hover:border-neutral-500'
                   }`}
                 >
-                  <div className="font-editorial text-xl font-bold">{year}</div>
+                  <div className="font-editorial text-lg font-bold">{year}</div>
                   <div className="text-[10px] uppercase font-bold opacity-80 mt-1">
-                    {year === 'All' ? 'Community' : `Year ${year.replace('UG', '')}`}
+                    {year === 'All' ? 'Everyone' : year.startsWith('PG') ? `PG ${year.replace('PG', '')}` : `UG ${year.replace('UG', '')}`}
                   </div>
                 </button>
               ))}

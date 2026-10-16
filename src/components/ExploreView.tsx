@@ -14,7 +14,8 @@ import {
   Sparkles, 
   Check, 
   X,
-  Compass 
+  Compass,
+  UserCheck
 } from 'lucide-react';
 
 export const ExploreView: React.FC = () => {
@@ -32,6 +33,7 @@ export const ExploreView: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [timeFilter, setTimeFilter] = useState<'All' | 'Today' | 'Tomorrow' | 'This Week' | 'Past'>('All');
   const [fitsMyScheduleOnly, setFitsMyScheduleOnly] = useState(false);
+  const [viewMyEventsOnly, setViewMyEventsOnly] = useState(false);
 
   const [todayStr, setTodayStr] = useState('2026-10-07');
   const [tomorrowStr, setTomorrowStr] = useState('2026-10-08');
@@ -46,17 +48,47 @@ export const ExploreView: React.FC = () => {
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+  // Check if current user is author of an event
+  const isUserAuthor = (evt: EventItem) => {
+    if (!isAuthenticated || !user?.flame_email || !evt.submitted_by) return false;
+    const email = user.flame_email.toLowerCase().trim();
+    const username = email.split('@')[0];
+    const sub = evt.submitted_by.toLowerCase().trim();
+    return sub === email || sub === username;
+  };
+
+  // Events submitted by the authenticated user
+  const userSubmittedEvents = useMemo(() => {
+    return events.filter(isUserAuthor);
+  }, [events, isAuthenticated, user]);
+
+  const hasPostedEvents = userSubmittedEvents.length > 0;
+
   // Filter events
   const filteredEvents = useMemo(() => {
     return events.filter((evt) => {
-      // 0. 2-Day Auto-Expiry Rule: Remove from all events after 2 days of happening unless favourited
-      if (timeFilter !== 'Past') {
+      const isOwn = isUserAuthor(evt);
+      const isOver = evt.status === 'Completed' || (todayStr ? evt.date < todayStr : false);
+
+      // 1. My Events vs All Events visibility rule:
+      if (viewMyEventsOnly) {
+        // In My Events: only show user's own events (both active & past so author can manage/view them)
+        if (!isOwn) return false;
+      } else {
+        // In All Events: "don't show their own events if they're over"
+        if (isOwn && isOver) {
+          return false;
+        }
+      }
+
+      // 2. 2-Day Auto-Expiry Rule: Remove from all events after 2 days of happening unless favourited
+      if (timeFilter !== 'Past' && !viewMyEventsOnly) {
         if (!isEventActive(evt, favouriteEventIds)) {
           return false;
         }
       }
 
-      // 1. Search Query
+      // 3. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = evt.event_name.toLowerCase().includes(q);
@@ -69,7 +101,7 @@ export const ExploreView: React.FC = () => {
         }
       }
 
-      // 2. Category Filter
+      // 4. Category Filter
       if (selectedCategory !== 'All') {
         const eventCats = Array.isArray(evt.categories) && evt.categories.length > 0
           ? evt.categories
@@ -78,12 +110,12 @@ export const ExploreView: React.FC = () => {
         if (!matchCat) return false;
       }
 
-      // 3. Time Filter
+      // 5. Time Filter
       if (timeFilter === 'Today' && evt.date !== todayStr) return false;
       if (timeFilter === 'Tomorrow' && evt.date !== tomorrowStr) return false;
       if (timeFilter === 'Past' && evt.date >= todayStr) return false;
 
-      // 4. "Fits My Schedule" toggle
+      // 6. "Fits My Schedule" toggle
       if (fitsMyScheduleOnly && isAuthenticated && user) {
         const evtDate = new Date(evt.date);
         const evtDay = dayNames[evtDate.getDay()];
@@ -127,7 +159,7 @@ export const ExploreView: React.FC = () => {
 
       return b.date.localeCompare(a.date);
     });
-  }, [events, searchQuery, selectedCategory, timeFilter, fitsMyScheduleOnly, isAuthenticated, user, todayStr, tomorrowStr, savedEventIds, favouriteEventIds]);
+  }, [events, searchQuery, selectedCategory, timeFilter, fitsMyScheduleOnly, isAuthenticated, user, todayStr, tomorrowStr, savedEventIds, favouriteEventIds, viewMyEventsOnly]);
 
   const handleFitsScheduleToggle = () => {
     if (!isAuthenticated) {
@@ -140,25 +172,61 @@ export const ExploreView: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 select-none">
       
-      {/* Editorial Title */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <span className="stamp-urgent text-xs bg-amber-950/60 border-amber-500 text-amber-200">
-            All Events
-          </span>
-          <span className="text-xs text-[#a89b87] font-handwritten text-base">
-            everything in one place
-          </span>
+      {/* Editorial Title & View Switch */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="stamp-urgent text-xs bg-amber-950/60 border-amber-500 text-amber-200">
+              {viewMyEventsOnly ? 'My Events' : 'All Events'}
+            </span>
+            <span className="text-xs text-[#a89b87] font-handwritten text-base">
+              {viewMyEventsOnly ? 'events you created & manage' : 'everything in one place'}
+            </span>
+          </div>
+          <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#f5ebd7] mt-1">
+            {viewMyEventsOnly ? 'My Events' : 'Explore All Events'}
+          </h2>
+          <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5">
+            {viewMyEventsOnly
+              ? `You have posted ${userSubmittedEvents.length} ${userSubmittedEvents.length === 1 ? 'event' : 'events'} on FLAME FOMO. Edit or delete them anytime.`
+              : 'Browse and filter all events happening at FLAME.'}
+          </p>
         </div>
-        <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#f5ebd7] mt-1">
-          Explore All Events
-        </h2>
-        <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5">
-          Browse and filter all events happening at FLAME.
-        </p>
+
+        {/* "My Events" Tab Toggle (Only shown if user has posted on website) */}
+        {hasPostedEvents && (
+          <div className="flex items-center gap-1.5 bg-[#1b1814] p-1.5 rounded-sm border border-[#3e3428] shrink-0 self-start sm:self-center shadow-lg">
+            <button
+              onClick={() => setViewMyEventsOnly(false)}
+              className={`px-3.5 py-1.5 rounded-xs text-xs font-bold transition-all ${
+                !viewMyEventsOnly
+                  ? 'bg-amber-300 text-neutral-950 shadow-sm'
+                  : 'text-[#c4b59d] hover:text-white'
+              }`}
+            >
+              All Events
+            </button>
+            <button
+              onClick={() => setViewMyEventsOnly(true)}
+              className={`px-3.5 py-1.5 rounded-xs text-xs font-bold transition-all flex items-center gap-1.5 ${
+                viewMyEventsOnly
+                  ? 'bg-[#c93b2b] text-white shadow-sm ring-1 ring-red-400'
+                  : 'text-[#c4b59d] hover:text-white'
+              }`}
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>My Events</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                viewMyEventsOnly ? 'bg-red-950/80 text-amber-200' : 'bg-neutral-800 text-neutral-300'
+              }`}>
+                {userSubmittedEvents.length}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Top-Anchored Filter Bar as specified in read.md Section 6.2 */}
+      {/* Top-Anchored Filter Bar */}
       <div className="bg-[#221e19] border border-[#3e3428] rounded-sm p-4 shadow-xl mb-8 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           
@@ -231,17 +299,25 @@ export const ExploreView: React.FC = () => {
 
         {/* Quick pill count summary */}
         <div className="flex items-center justify-between text-xs text-[#a89b87] pt-2 border-t border-[#312a20]">
-          <span>
-            Showing <strong className="text-amber-200 font-mono">{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span>
+              Showing <strong className="text-amber-200 font-mono">{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'}
+            </span>
+            {viewMyEventsOnly && (
+              <span className="text-[10px] bg-red-950/80 text-amber-200 border border-red-500/40 px-2 py-0.5 rounded-full font-bold">
+                My Events Only
+              </span>
+            )}
+          </div>
 
-          {(searchQuery || selectedCategory !== 'All' || timeFilter !== 'All' || fitsMyScheduleOnly) && (
+          {(searchQuery || selectedCategory !== 'All' || timeFilter !== 'All' || fitsMyScheduleOnly || viewMyEventsOnly) && (
             <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedCategory('All');
                 setTimeFilter('All');
                 setFitsMyScheduleOnly(false);
+                setViewMyEventsOnly(false);
               }}
               className="text-[#f3da90] hover:underline flex items-center gap-1"
             >
@@ -252,18 +328,23 @@ export const ExploreView: React.FC = () => {
         </div>
       </div>
 
-      {/* Flexible Masonry / Collage Grid as specified in read.md Section 6.2 */}
+      {/* Flexible Masonry / Collage Grid */}
       {filteredEvents.length === 0 ? (
         <EmptyStateScrapbook
-          title="No Events Found"
-          subtitle="Try loosening your search or category filters, or check out a spontaneous campus prompt below!"
+          title={viewMyEventsOnly ? "No Events Found in My Events" : "No Events Found"}
+          subtitle={
+            viewMyEventsOnly
+              ? "You haven't posted any events matching these search or filter criteria."
+              : "Try loosening your search or category filters, or check out a spontaneous campus prompt below!"
+          }
           actionButton={{
-            label: "Reset All Filters",
+            label: viewMyEventsOnly ? "Show All Events" : "Reset All Filters",
             onClick: () => {
               setSearchQuery('');
               setSelectedCategory('All');
               setTimeFilter('All');
               setFitsMyScheduleOnly(false);
+              setViewMyEventsOnly(false);
             },
           }}
         />
