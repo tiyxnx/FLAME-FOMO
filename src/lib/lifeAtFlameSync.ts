@@ -118,68 +118,12 @@ export async function syncLifeAtFlameAll(): Promise<{
   items: EventItem[];
   error?: string;
 }> {
-  try {
-    const [calEvents, clubApps, flagships] = await Promise.all([
-      fetchLifeAtFlameCalendarEvents(),
-      fetchLifeAtFlameClubApplications(),
-      fetchLifeAtFlameFlagshipEvents(),
-    ]);
-
-    const allItems: EventItem[] = [...calEvents, ...flagships, ...clubApps];
-
-    // If Supabase is configured, upsert each item into Supabase events table
-    if (isSupabaseConfigured() && allItems.length > 0) {
-      try {
-        const records = allItems.map((item) => ({
-          id: item.id,
-          event_name: item.event_name,
-          category: item.category,
-          date: item.date,
-          time_start_end: item.time_start_end,
-          time_start: item.time_start || null,
-          time_end: item.time_end || null,
-          venue_zone: item.venue_zone,
-          room_specific: item.room_specific || null,
-          organizer: item.organizer,
-          description: item.description,
-          registration_deadline: item.registration_deadline || null,
-          registration_link: item.registration_link || null,
-          requirements_eligibility: item.requirements_eligibility || null,
-          event_image: item.event_image || null,
-          status: item.status,
-          submitted_by: item.submitted_by || 'lifeatflame-sync',
-        }));
-
-        const { error } = await supabase
-          .from('events')
-          .upsert(records, { onConflict: 'id' });
-
-        if (error) {
-          console.warn('[LifeAtFlameSync] Supabase upsert error (continuing with client sync):', error.message);
-        }
-      } catch (dbErr: any) {
-        console.warn('[LifeAtFlameSync] Supabase write failed:', dbErr.message);
-      }
-    }
-
-    const eventsCount = calEvents.length + flagships.length;
-    const applicationsCount = clubApps.length;
-
-    return {
-      success: true,
-      totalSynced: allItems.length,
-      eventsCount,
-      applicationsCount,
-      items: allItems,
-    };
-  } catch (err: any) {
-    return {
-      success: false,
-      totalSynced: 0,
-      eventsCount: 0,
-      applicationsCount: 0,
-      items: [],
-      error: err.message || 'Unknown sync error',
-    };
-  }
+  return {
+    success: false,
+    totalSynced: 0,
+    eventsCount: 0,
+    applicationsCount: 0,
+    items: [],
+    error: 'Life@FLAME sync has been disabled',
+  };
 }

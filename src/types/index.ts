@@ -115,3 +115,37 @@ export interface MapCoordinates {
   x: number; // percentage 0-100 from left
   y: number; // percentage 0-100 from top
 }
+
+export type CampusVenueCategory = 'Classrooms' | 'Auditoriums / Halls' | 'Sports' | 'Others';
+
+export interface CampusLocation {
+  id: string;
+  name: string;
+  category: CampusVenueCategory;
+  building: string;
+  floor?: string;
+  zone: VenueZone;
+  x: number; // 0-100% on illustrated map
+  y: number; // 0-100% on illustrated map
+  description?: string;
+  hubNodeId: string; // anchor node for campus walkway graph
+}
+
+export interface CampusRouteStep {
+  instruction: string;
+  landmark?: string;
+  distanceMeters: number;
+}
+
+export interface CampusRouteResult {
+  fromLocation: CampusLocation;
+  toLocation: CampusLocation;
+  distanceMeters: number;
+  walkTimeMinutes: number;
+  stepsCount: number;
+  paceDescription: string;
+  steps: CampusRouteStep[];
+  pathCoordinates: { x: number; y: number }[];
+  googleMapsUrl: string;
+}
+

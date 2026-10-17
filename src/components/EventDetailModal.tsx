@@ -26,7 +26,8 @@ import {
   AlertTriangle,
   Ticket,
   MessageSquare,
-  Phone
+  Phone,
+  Navigation
 } from 'lucide-react';
 import { getGoogleCalendarUrl } from '@/lib/googleCalendar';
 
@@ -375,11 +376,25 @@ export const EventDetailModal: React.FC = () => {
 
           <div className="flex items-center gap-2 text-neutral-800">
             <MapPin className="w-4 h-4 text-[#c93b2b] shrink-0" />
-            <div>
+            <div className="flex-1 min-w-0">
               <span className="text-neutral-500 text-[10px] uppercase font-bold block">Venue</span>
-              <span className="font-semibold text-sm">
-                {event.venue_zone} {event.room_specific ? `· ${event.room_specific}` : ''}
-              </span>
+              <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                <span className="font-semibold text-sm">
+                  {event.venue_zone} {event.room_specific ? `· ${event.room_specific}` : ''}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeEventDetail();
+                    setCurrentTab('campus-map');
+                  }}
+                  className="px-2 py-0.5 rounded text-[10px] bg-red-100 hover:bg-red-200 text-red-800 font-bold flex items-center gap-1 transition-colors"
+                  title="View building and walking route on Campus Map"
+                >
+                  <Navigation className="w-2.5 h-2.5" />
+                  <span>Campus Wayfinder</span>
+                </button>
+              </div>
             </div>
           </div>
 

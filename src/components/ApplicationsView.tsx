@@ -50,10 +50,7 @@ export const ApplicationsView: React.FC = () => {
     openCreateEvent, 
     openEditEvent,
     openEventDetail,
-    isUserAuthor,
-    isSyncingLifeAtFlame,
-    syncLifeAtFlameNow,
-    lastLifeAtFlameSync
+    isUserAuthor
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,7 +175,7 @@ export const ApplicationsView: React.FC = () => {
             {/* Verified Deadlines Status Banner */}
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-medium text-[11px]">
-                <span className={`w-1.5 h-1.5 rounded-full ${isSyncingLifeAtFlame ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 Verified Active Calls
               </span>
               <span className="text-[#a89b87] text-[11px]">
