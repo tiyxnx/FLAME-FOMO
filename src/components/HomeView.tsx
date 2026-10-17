@@ -162,7 +162,7 @@ export const HomeView: React.FC = () => {
       <HappeningSoon eventsProp={displayedEvents} />
 
       {/* Your Week */}
-      <YourWeek eventsProp={displayedEvents} />
+      <YourWeek eventsProp={events} />
 
       {/* Here's everything that's happening */}
       <div className="pt-4 border-t border-[#3b3327]">
