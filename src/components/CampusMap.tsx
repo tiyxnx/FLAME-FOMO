@@ -227,12 +227,12 @@ export const CampusMap: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    <div className="max-w-7xl mx-auto py-5 px-3 sm:px-6">
+    <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6">
       
       {/* ============================================================ */}
       {/* 1. CLEAN HEADER WITH VIEW TOGGLES                            */}
       {/* ============================================================ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-[#3d362b]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2.5 border-b border-[#3d362b]">
         <div>
           <div className="flex items-center gap-2">
             <span className="stamp-urgent text-[10px] bg-red-950/70 border-red-500 text-red-200 uppercase">
@@ -242,7 +242,7 @@ export const CampusMap: React.FC = () => {
               18.5233° N, 73.7317° E
             </span>
           </div>
-          <h1 className="font-editorial text-2xl sm:text-3xl font-black text-[#fbf7ee] mt-0.5 tracking-tight">
+          <h1 className="font-editorial text-xl sm:text-2xl font-black text-[#fbf7ee] mt-0.5 tracking-tight">
             Campus Wayfinder &amp; <span className="text-amber-400 font-serif italic">Master Map</span>
           </h1>
         </div>
@@ -287,303 +287,291 @@ export const CampusMap: React.FC = () => {
       </div>
 
       {/* ============================================================ */}
-      {/* 2. "MY PLAN" HERO BANNER: SELECT ANY EVENT YOU'RE GOING TO   */}
+      {/* 2 & 3: SIDE-BY-SIDE: "MY PLAN" & "WAYFINDER CONTROLS"        */}
       {/* ============================================================ */}
-      {planItemsWithLocations.length > 0 && selectedPlanItem ? (
-        <div className="mb-4 p-3.5 sm:p-4 bg-gradient-to-r from-[#2a1c0d] via-[#1f1912] to-[#171410] border-2 border-amber-500/70 rounded-xl shadow-xl">
-          {/* Header row with event dropdown selector */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#3d3224]">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-400 text-neutral-950 uppercase flex items-center gap-1 shadow-sm">
-                <Sparkles className="w-3 h-3 text-neutral-950" />
-                <span>My Plan ({planItemsWithLocations.length} Events)</span>
-              </span>
-              <span className="text-xs text-[#a89982] hidden sm:inline">
-                Select any event to chart walking route:
-              </span>
-            </div>
-
-            {/* Quick dropdown to pick ANY event */}
-            <div className="flex items-center gap-2">
-              <label htmlFor="plan-event-select" className="text-[11px] text-[#c7bc9f] font-medium shrink-0">
-                Switch Event:
-              </label>
-              <select
-                id="plan-event-select"
-                value={selectedPlanItem.event.id}
-                onChange={(e) => handleSelectPlanEvent(e.target.value)}
-                className="bg-[#14120e] border border-amber-500/60 text-amber-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 font-sans-ui max-w-[280px] truncate"
-              >
-                {planItemsWithLocations.map((item, idx) => (
-                  <option key={`select-opt-${item.event.id}`} value={item.event.id}>
-                    #{idx + 1}: {item.event.event_name} ({item.event.time_start || item.event.time_start_end})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Active Event Showcase */}
-          <div className="pt-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center shrink-0 text-amber-300 shadow-md">
-                <Calendar className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#382b1c] text-amber-300 border border-amber-500/40">
-                    Active Destination
-                  </span>
-                  <span className="text-xs text-amber-200/90 font-medium">
-                    {selectedPlanItem.event.date} · {selectedPlanItem.event.time_start_end}
-                  </span>
-                </div>
-                <h2 className="text-base sm:text-lg font-bold text-[#fdfaf3] mt-0.5 leading-snug">
-                  {selectedPlanItem.event.event_name}
-                </h2>
-                <div className="flex items-center gap-2 text-xs text-[#b8ab96] mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-red-400" />
-                  <span>
-                    {selectedPlanItem.location.building} · {selectedPlanItem.location.name}
-                    {selectedPlanItem.location.officialNumber ? ` (Map #${selectedPlanItem.location.officialNumber})` : ''}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Walking summary pill & Action */}
-            <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-              {activeRoute && destinationLocationId === selectedPlanItem.location.id && (
-                <div className="px-3 py-1.5 bg-amber-950/80 border border-amber-400/60 rounded-lg text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                  <Footprints className="w-3.5 h-3.5" />
-                  <span>{activeRoute.walkTimeMinutes} min walk ({activeRoute.distanceMeters}m)</span>
-                </div>
-              )}
-              <button
-                onClick={() => setDestinationLocationId(selectedPlanItem.location.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  destinationLocationId === selectedPlanItem.location.id
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'bg-amber-400 hover:bg-amber-300 text-neutral-950'
-                }`}
-              >
-                <Navigation className="w-3.5 h-3.5" />
-                <span>{destinationLocationId === selectedPlanItem.location.id ? 'Route Active' : 'Show Route'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Interactive Event Cards: Click ANY event you're going to! */}
-          {planItemsWithLocations.length > 1 && (
-            <div className="mt-3.5 pt-3 border-t border-[#3d3224]">
-              <div className="text-[11px] text-[#a89982] font-semibold mb-2 flex items-center justify-between">
-                <span>All Events You&apos;re Going To (Tap any to route):</span>
-                <span className="font-mono text-[10px] text-amber-400">
-                  {planItemsWithLocations.findIndex((p) => p.event.id === selectedPlanItem.event.id) + 1} of {planItemsWithLocations.length} active
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 mb-3 items-stretch">
+        
+        {/* ============================================================ */}
+        {/* LEFT COLUMN: "MY PLAN" HERO CARD                             */}
+        {/* ============================================================ */}
+        <div className="p-3.5 sm:p-4 bg-gradient-to-r from-[#2a1c0d] via-[#1f1912] to-[#171410] border-2 border-amber-500/70 rounded-xl shadow-xl flex flex-col justify-between">
+          <div>
+            {/* Header row with event dropdown selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#3d3224]">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-400 text-neutral-950 uppercase flex items-center gap-1 shadow-sm">
+                  <Sparkles className="w-3 h-3 text-neutral-950" />
+                  <span>My Plan {planItemsWithLocations.length > 0 ? `(${planItemsWithLocations.length} Events)` : ''}</span>
+                </span>
+                <span className="text-xs text-[#a89982] hidden sm:inline">
+                  Select event to route:
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {planItemsWithLocations.map((item, idx) => {
-                  const isSelected = selectedPlanItem.event.id === item.event.id;
-                  return (
+
+              {planItemsWithLocations.length > 0 && selectedPlanItem && (
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="plan-event-select" className="text-[11px] text-[#c7bc9f] font-medium shrink-0">
+                    Switch:
+                  </label>
+                  <select
+                    id="plan-event-select"
+                    value={selectedPlanItem.event.id}
+                    onChange={(e) => handleSelectPlanEvent(e.target.value)}
+                    className="bg-[#14120e] border border-amber-500/60 text-amber-200 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400 font-sans-ui max-w-[210px] truncate"
+                  >
+                    {planItemsWithLocations.map((item, idx) => (
+                      <option key={`select-opt-${item.event.id}`} value={item.event.id}>
+                        #{idx + 1}: {item.event.event_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Active Event Showcase or Empty Tip */}
+            {selectedPlanItem ? (
+              <div className="pt-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400 flex items-center justify-center shrink-0 text-amber-300 shadow-sm mt-0.5">
+                      <Calendar className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#382b1c] text-amber-300 border border-amber-500/40">
+                          Active Destination
+                        </span>
+                        <span className="text-[11px] text-amber-200/90 font-medium">
+                          {selectedPlanItem.event.date} · {selectedPlanItem.event.time_start_end}
+                        </span>
+                      </div>
+                      <h2 className="text-base font-bold text-[#fdfaf3] mt-0.5 leading-snug">
+                        {selectedPlanItem.event.event_name}
+                      </h2>
+                      <div className="flex items-center gap-1.5 text-xs text-[#b8ab96] mt-0.5">
+                        <MapPin className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                        <span className="truncate">
+                          {selectedPlanItem.location.building} · {selectedPlanItem.location.name}
+                          {selectedPlanItem.location.officialNumber ? ` (Map #${selectedPlanItem.location.officialNumber})` : ''}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Route Status / Walk Pill */}
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    {activeRoute && destinationLocationId === selectedPlanItem.location.id && (
+                      <div className="px-2.5 py-1 bg-amber-950/80 border border-amber-400/60 rounded-lg text-xs font-bold text-amber-300 flex items-center gap-1">
+                        <Footprints className="w-3.5 h-3.5" />
+                        <span>{activeRoute.walkTimeMinutes} min ({activeRoute.distanceMeters}m)</span>
+                      </div>
+                    )}
                     <button
-                      key={item.event.id}
-                      onClick={() => handleSelectPlanEvent(item.event.id)}
-                      className={`text-left p-2.5 rounded-lg border transition-all flex items-start gap-2 cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#332617] border-amber-400 shadow-md ring-1 ring-amber-400/50'
-                          : 'bg-[#181511] hover:bg-[#251f18] border-[#382f23] text-neutral-300'
+                      onClick={() => setDestinationLocationId(selectedPlanItem.location.id)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                        destinationLocationId === selectedPlanItem.location.id
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-amber-400 hover:bg-amber-300 text-neutral-950'
                       }`}
                     >
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5 ${
-                        isSelected ? 'bg-amber-400 text-neutral-950' : 'bg-[#2b251d] text-[#a89982]'
-                      }`}>
-                        #{idx + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-xs text-[#fbf7ee] truncate">
-                          {item.event.event_name}
-                        </div>
-                        <div className="text-[10px] text-amber-200/80 truncate mt-0.5">
-                          {item.location.name} {item.location.officialNumber ? `(#${item.location.officialNumber})` : ''} · {item.event.time_start || item.event.time_start_end}
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 border border-emerald-500/40 px-1.5 py-0.5 rounded shrink-0">
-                          Active
-                        </span>
-                      )}
+                      <Navigation className="w-3 h-3" />
+                      <span>{destinationLocationId === selectedPlanItem.location.id ? 'Route Active' : 'Show Route'}</span>
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="mb-4 p-3 bg-[#1c1813] border border-[#3d3427] rounded-xl flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-[#b8ab96]">
-            <Calendar className="w-4 h-4 text-amber-400" />
-            <span>
-              Tip: Tap <strong>&ldquo;I&apos;m Going&rdquo;</strong> on any event in Explore, and it will appear here so you can select and route directly to it!
-            </span>
-          </div>
-          <button
-            onClick={() => {
-              setDestinationLocationId('hall-shantiniketan-auditorium');
-              setOriginLocationId('other-vivekananda-library');
-            }}
-            className="px-2.5 py-1 rounded bg-[#2a241b] hover:bg-[#383023] text-amber-200 border border-[#4d402f] font-medium shrink-0"
-          >
-            Explore Campus Axis
-          </button>
-        </div>
-      )}
-
-      {/* ============================================================ */}
-      {/* 3. SIMPLE WAYFINDING ROUTE CONTROLS                          */}
-      {/* ============================================================ */}
-      <div className="mb-4 p-3.5 bg-[#171410] border border-[#382f23] rounded-xl shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr,auto] gap-2.5 items-center">
-          
-          {/* Origin: Current Location */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span>Where are you right now? (Current Location)</span>
-            </label>
-            <select
-              value={originLocationId}
-              onChange={(e) => setOriginLocationId(e.target.value)}
-              className="w-full bg-[#12100d] border border-[#473c2c] text-[#fbf7ee] text-xs rounded-lg p-2.5 focus:outline-none focus:border-emerald-500 font-sans-ui"
-            >
-              <optgroup label="Popular Starting Locations">
-                <option value="other-west-housing">🏠 West Housing (My Room / Blocks 41)</option>
-                <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
-                <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
-                <option value="room-apj001">🏛️ APJ Abdul Kalam (#2)</option>
-                <option value="other-main-entrance">🚪 Main Campus Entrance (#46)</option>
-                <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
-                <option value="other-south-housing">🏠 South Housing Blocks (#42)</option>
-                <option value="other-juice-press">🥤 Juice Press (#28 West Housing)</option>
-              </optgroup>
-              <optgroup label="Classrooms & Halls">
-                {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Classrooms').map((loc) => (
-                  <option key={`orig-${loc.id}`} value={loc.id}>
-                    {loc.name} · {loc.building} {loc.officialNumber ? `(#${loc.officialNumber})` : ''}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="All Other Campus Venues">
-                {ALL_CAMPUS_LOCATIONS.filter((l) => l.category !== 'Classrooms').map((loc) => (
-                  <option key={`orig-all-${loc.id}`} value={loc.id}>
-                    {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} · {loc.building}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-          </div>
-
-          {/* Swap Button */}
-          <div className="hidden md:flex justify-center pt-4">
-            <button
-              onClick={handleSwapRoute}
-              title="Swap Start & Destination"
-              className="p-2 bg-[#252019] hover:bg-[#362e24] text-amber-300 rounded-full border border-[#4d402f] transition-transform active:scale-90"
-            >
-              <ArrowLeftRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Destination: Where are you going */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-red-400 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-400" />
-              <span>Where do you want to go? (Destination)</span>
-            </label>
-            <select
-              value={destinationSelectValue}
-              onChange={(e) => handleDestinationChange(e.target.value)}
-              className="w-full bg-[#12100d] border border-[#473c2c] text-[#fbf7ee] text-xs rounded-lg p-2.5 focus:outline-none focus:border-red-500 font-sans-ui"
-            >
-              {planItemsWithLocations.length > 0 && (
-                <optgroup label={`⭐ Events You're Going To (${planItemsWithLocations.length})`}>
-                  {planItemsWithLocations.map((item, idx) => (
-                    <option key={`dest-plan-${item.event.id}`} value={`plan-event:${item.event.id}`}>
-                      ⭐ #{idx + 1}: {item.event.event_name} — {item.location.name} ({item.event.time_start || item.event.time_start_end})
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-              <optgroup label="Popular Destinations">
-                <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
-                <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
-                <option value="room-apj001">🏛️ APJ001 (#2 APJ Abdul Kalam)</option>
-                <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
-                <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
-                <option value="other-juice-press">🥤 Juice Press (#28 West Housing)</option>
-                <option value="other-hashtag">🥐 Hashtag Cafe (#29 Chandragupta)</option>
-                <option value="sports-cricket-ground">🏏 Cricket Ground (#19)</option>
-                <option value="sports-football-field">⚽ Football Ground (#20)</option>
-                <option value="other-charlies">☕ Charlies Cafe (#33 in APJ #2)</option>
-              </optgroup>
-              <optgroup label="Classrooms & Academic Blocks">
-                {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Classrooms').map((loc) => (
-                  <option key={`dest-${loc.id}`} value={loc.id}>
-                    {loc.name} · {loc.building} {loc.officialNumber ? `(#${loc.officialNumber})` : ''}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="All Other Campus Venues">
-                {ALL_CAMPUS_LOCATIONS.filter((l) => l.category !== 'Classrooms').map((loc) => (
-                  <option key={`dest-all-${loc.id}`} value={loc.id}>
-                    {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} · {loc.building}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-          </div>
-
-          {/* Simple Walking Summary Pill */}
-          <div className="flex items-center gap-2 pt-2 md:pt-4">
-            {activeRoute && (
-              <div className="w-full sm:w-auto px-3.5 py-2.5 bg-[#251f16] border border-amber-500/40 rounded-lg text-amber-200 text-xs font-bold flex items-center justify-between sm:justify-start gap-2 whitespace-nowrap shadow-sm">
-                <div className="flex items-center gap-1.5">
-                  <Footprints className="w-4 h-4 text-amber-400" />
-                  <span>{activeRoute.walkTimeMinutes} min walk ({activeRoute.distanceMeters}m)</span>
+                  </div>
                 </div>
-                <a
-                  href={activeRoute.googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-amber-400 hover:text-amber-300 ml-1 flex items-center gap-0.5 text-[11px] underline"
-                  title="Open in Google Maps"
+
+                {/* Quick event pills if multiple events */}
+                {planItemsWithLocations.length > 1 && (
+                  <div className="mt-3 pt-2.5 border-t border-[#3d3224]">
+                    <div className="text-[10px] text-[#8c7e68] font-medium mb-1.5">Tap Any Event to Chart Route:</div>
+                    <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] pb-0.5">
+                      {planItemsWithLocations.map((item, idx) => {
+                        const isSelected = selectedPlanItem.event.id === item.event.id;
+                        return (
+                          <button
+                            key={item.event.id}
+                            onClick={() => handleSelectPlanEvent(item.event.id)}
+                            className={`px-2 py-1 rounded text-[11px] whitespace-nowrap transition-colors flex items-center gap-1 shrink-0 ${
+                              isSelected
+                                ? 'bg-amber-400 text-neutral-950 font-bold shadow-xs'
+                                : 'bg-[#16130f] hover:bg-[#282117] text-[#c9bca6] border border-[#3e3427]'
+                            }`}
+                          >
+                            <span>#{idx + 1} {item.event.event_name.slice(0, 16)}...</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="pt-4 text-xs text-[#b8ab96] leading-relaxed">
+                <p>
+                  No events added to your plan yet. Tap <strong>&ldquo;I&apos;m Going&rdquo;</strong> on any event in Explore, and its live walking directions will automatically appear here!
+                </p>
+                <button
+                  onClick={() => {
+                    setDestinationLocationId('hall-shantiniketan-auditorium');
+                    setOriginLocationId('other-west-housing');
+                  }}
+                  className="mt-3 px-3 py-1.5 bg-[#251f16] hover:bg-[#332b20] text-amber-200 border border-[#4d402f] rounded-lg text-xs font-semibold"
                 >
-                  <span>Google Maps</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                  Set Route to Shantiniketan Auditorium
+                </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* 1-Tap Quick Origin Chips */}
-        <div className="mt-2.5 pt-2 border-t border-[#292218] flex items-center gap-1.5 overflow-x-auto text-[11px]">
-          <span className="text-[#8c7e6a] shrink-0 font-medium">1-Tap Location:</span>
-          {quickCurrentSpots.map((spot) => (
-            <button
-              key={spot.id}
-              onClick={() => setOriginLocationId(spot.id)}
-              className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-colors flex items-center gap-1 ${
-                originLocationId === spot.id
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400 font-bold'
-                  : 'bg-[#1e1a14] hover:bg-[#2b241c] text-[#c7bc9f] border border-[#3a3023]'
-              }`}
-            >
-              <span>{spot.label}</span>
-            </button>
-          ))}
+        {/* ============================================================ */}
+        {/* RIGHT COLUMN: ROUTE CONTROLS WITH SIMPLE ROAD INSTRUCTIONS   */}
+        {/* ============================================================ */}
+        <div className="p-3.5 sm:p-4 bg-[#171410] border border-[#382f23] rounded-xl shadow-md flex flex-col justify-between">
+          <div>
+            {/* Origin & Destination Selectors */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] gap-2 items-center">
+              
+              {/* Origin */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span>Current Location (Start)</span>
+                </label>
+                <select
+                  value={originLocationId}
+                  onChange={(e) => setOriginLocationId(e.target.value)}
+                  className="w-full bg-[#12100d] border border-[#473c2c] text-[#fbf7ee] text-xs rounded-lg p-2 focus:outline-none focus:border-emerald-500 font-sans-ui"
+                >
+                  <optgroup label="Popular Starting Locations">
+                    <option value="other-west-housing">🏠 West Housing (My Room / Blocks 41)</option>
+                    <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
+                    <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
+                    <option value="room-apj001">🏛️ APJ Abdul Kalam (#2)</option>
+                    <option value="other-main-entrance">🚪 Main Campus Entrance (#46)</option>
+                    <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
+                    <option value="other-south-housing">🏠 South Housing Blocks (#42)</option>
+                    <option value="other-juice-press">🥤 Juice Press (#28 West Housing)</option>
+                  </optgroup>
+                  <optgroup label="All Classrooms & Venues">
+                    {ALL_CAMPUS_LOCATIONS.map((loc) => (
+                      <option key={`orig-${loc.id}`} value={loc.id}>
+                        {loc.name} · {loc.building} {loc.officialNumber ? `(#${loc.officialNumber})` : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+
+              {/* Swap Button */}
+              <div className="flex sm:flex-col justify-center pt-2 sm:pt-4">
+                <button
+                  onClick={handleSwapRoute}
+                  title="Swap Start & Destination"
+                  className="p-1.5 bg-[#252019] hover:bg-[#362e24] text-amber-300 rounded-full border border-[#4d402f] transition-transform active:scale-90"
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Destination */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-red-400 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-red-400" />
+                  <span>Destination (Going to)</span>
+                </label>
+                <select
+                  value={destinationSelectValue}
+                  onChange={(e) => handleDestinationChange(e.target.value)}
+                  className="w-full bg-[#12100d] border border-[#473c2c] text-[#fbf7ee] text-xs rounded-lg p-2 focus:outline-none focus:border-red-500 font-sans-ui"
+                >
+                  {planItemsWithLocations.length > 0 && (
+                    <optgroup label={`⭐ Events You're Going To (${planItemsWithLocations.length})`}>
+                      {planItemsWithLocations.map((item, idx) => (
+                        <option key={`dest-plan-${item.event.id}`} value={`plan-event:${item.event.id}`}>
+                          ⭐ #{idx + 1}: {item.event.event_name} — {item.location.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  <optgroup label="Popular Destinations">
+                    <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
+                    <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
+                    <option value="room-apj001">🏛️ APJ001 (#2 APJ Abdul Kalam)</option>
+                    <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
+                    <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
+                    <option value="other-juice-press">🥤 Juice Press (#28 West Housing)</option>
+                    <option value="other-hashtag">🥐 Hashtag Cafe (#29 Chandragupta)</option>
+                    <option value="sports-cricket-ground">🏏 Cricket Ground (#19)</option>
+                    <option value="sports-football-field">⚽ Football Ground (#20)</option>
+                    <option value="other-charlies">☕ Charlies Cafe (#33 in APJ #2)</option>
+                  </optgroup>
+                  <optgroup label="All Other Campus Venues">
+                    {ALL_CAMPUS_LOCATIONS.map((loc) => (
+                      <option key={`dest-${loc.id}`} value={loc.id}>
+                        {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} · {loc.building}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+
+            {/* 1-Tap Quick Origin Chips */}
+            <div className="mt-2 pt-1.5 border-t border-[#292218] flex items-center gap-1 overflow-x-auto text-[11px]">
+              <span className="text-[#8c7e6a] shrink-0 font-medium text-[10px]">1-Tap:</span>
+              {quickCurrentSpots.map((spot) => (
+                <button
+                  key={spot.id}
+                  onClick={() => setOriginLocationId(spot.id)}
+                  className={`px-2 py-0.5 rounded-full whitespace-nowrap transition-colors text-[10px] flex items-center gap-1 ${
+                    originLocationId === spot.id
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400 font-bold'
+                      : 'bg-[#1e1a14] hover:bg-[#2b241c] text-[#c7bc9f] border border-[#3a3023]'
+                  }`}
+                >
+                  <span>{spot.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Simple Road Instructions */}
+            {activeRoute && (
+              <div className="mt-2.5 pt-2 border-t border-[#2d251a]">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="font-bold text-amber-200 flex items-center gap-1.5 text-[11px]">
+                    <Footprints className="w-3.5 h-3.5 text-amber-400" />
+                    <span>How to Go ({activeRoute.walkTimeMinutes} min walk · {activeRoute.distanceMeters}m)</span>
+                  </span>
+                  <a
+                    href={activeRoute.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-400 hover:text-amber-300 text-[11px] underline flex items-center gap-0.5 font-medium"
+                  >
+                    <span>Google Maps</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                <div className="space-y-1 text-[11px] text-[#cfc2ae] bg-[#12100d] p-2 rounded-lg border border-[#3a3023]">
+                  {activeRoute.steps.slice(0, 4).map((step, sIdx) => (
+                    <div key={sIdx} className="flex items-start gap-1.5 leading-snug">
+                      <span className="font-mono text-amber-400 font-bold shrink-0">{sIdx + 1}.</span>
+                      <span>{step.instruction}</span>
+                    </div>
+                  ))}
+                  <div className="text-[10px] text-emerald-400 font-medium pt-1 border-t border-[#231e16] flex items-center gap-1">
+                    <span>🛣️</span>
+                    <span>Strictly follow paved campus roads. Walking across cricket/sports turf is prohibited.</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
       </div>
 
       {/* ============================================================ */}

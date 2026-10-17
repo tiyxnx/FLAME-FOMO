@@ -872,13 +872,13 @@ export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string 
     u: 'hub_apj_kalam', 
     v: 'hub_library_promenade', 
     meters: 65, 
-    note: 'Follow the paved, tree-shaded promenade south-west toward Vivekananda Library (#3)' 
+    note: 'Follow the paved, tree-shaded promenade between APJ Abdul Kalam (#2) and Vivekananda Library (#3)' 
   },
   { 
     u: 'hub_apj_kalam', 
     v: 'hub_vks_north', 
     meters: 120, 
-    note: 'Follow the eastern loop path past Butterfly Garden (#36) towards Vikram Sarabhai Centre (#1) and North Housing (#40)' 
+    note: 'Follow the paved eastern perimeter drive toward Vikram Sarabhai Centre (#1) and North Housing (#40)' 
   },
   { 
     u: 'hub_library_promenade', 
@@ -890,13 +890,13 @@ export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string 
     u: 'hub_library_promenade', 
     v: 'hub_sports_track', 
     meters: 140, 
-    note: 'Follow the northern sports corridor west toward the Football Turf (#20) and Running Track (#21)' 
+    note: 'Follow the paved northern sports road toward the Football Turf (#20) and Running Track (#21)' 
   },
   { 
     u: 'hub_library_plaza', 
     v: 'hub_cricket_pavilion', 
     meters: 45, 
-    note: 'Walk east to the Cricket Ground (#19) spectator viewing area. Note: Walking across the cricket grass pitch is strictly prohibited.' 
+    note: 'Follow the paved perimeter path to Cricket Pavilion (#19). (Note: Walking across the cricket grass pitch is prohibited)' 
   },
 
   // Central Library & Dining Quad connections
@@ -904,19 +904,19 @@ export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string 
     u: 'hub_library_plaza', 
     v: 'hub_aahar_quad', 
     meters: 65, 
-    note: 'Walk south past FLAME Plaza (#43) into the Aahar Dining Quad (#25)' 
+    note: 'Walk along the paved central walkway south into Aahar Dining Quad (#25)' 
   },
   { 
     u: 'hub_aahar_quad', 
     v: 'hub_shantiniketan', 
     meters: 75, 
-    note: 'Cross the open southern plaza from Aahar directly to Shantiniketan Cultural Complex (#49–54)' 
+    note: 'Follow the paved south walkway from Aahar directly to Shantiniketan Cultural Complex (#49–54)' 
   },
   { 
     u: 'hub_aahar_quad', 
     v: 'hub_flame_kund', 
     meters: 45, 
-    note: 'Step across the terrace from Aahar toward the FLAME Kund water steps (#44) and Kalidas Centre (#4)' 
+    note: 'Follow the paved terrace path toward FLAME Kund (#44) and Kalidas Centre (#4)' 
   },
 
   // FLAME Kund & Academic Spine connections
@@ -924,19 +924,19 @@ export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string 
     u: 'hub_flame_kund', 
     v: 'hub_academic_east', 
     meters: 60, 
-    note: 'Follow the shaded academic colonnade into Chanakya (#6), Raman (#7), and Kabir Studio (#5)' 
+    note: 'Follow the paved shaded academic colonnade into Chanakya (#6) and Raman (#7)' 
   },
   { 
     u: 'hub_academic_east', 
     v: 'hub_academic_west', 
     meters: 70, 
-    note: 'Continue along the central academic lane from Raman to Aryabhatta (#13) and J.C. Bose (#10)' 
+    note: 'Follow the paved central academic road toward Aryabhatta (#13) and J.C. Bose (#10)' 
   },
   { 
     u: 'hub_academic_west', 
     v: 'hub_chandragupta', 
     meters: 60, 
-    note: 'Take the paved path into the Chandragupta Collaborative Development Centre (#12) and Hashtag Cafe (#29)' 
+    note: 'Follow the paved road into Chandragupta Centre (#12) and Hashtag Cafe (#29)' 
   },
 
   // Sports Complex & Track connections
@@ -944,19 +944,19 @@ export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string 
     u: 'hub_sports_track', 
     v: 'hub_arjuna_complex', 
     meters: 80, 
-    note: 'Walk north alongside the grandstand directly to Arjuna Sports Complex (#18) main entrance and pool' 
+    note: 'Follow the paved grandstand road north directly into Arjuna Sports Complex (#18)' 
   },
   { 
     u: 'hub_sports_track', 
     v: 'hub_sports_courts', 
     meters: 70, 
-    note: 'Step west across to the all-weather tennis (#23) and volleyball (#24) courts' 
+    note: 'Follow the paved road along the perimeter of the Tennis (#23) & Volleyball (#24) courts' 
   },
   { 
     u: 'hub_academic_west', 
     v: 'hub_sports_track', 
     meters: 155, 
-    note: 'Take the northern stairs up from Aryabhatta towards the Football Ground (#20) and Track (#21)' 
+    note: 'Take the paved walkway and steps north from Aryabhatta towards the Football Ground (#20)' 
   },
 
   // Residential Housing connections
@@ -964,31 +964,31 @@ export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string 
     u: 'hub_sports_courts', 
     v: 'hub_west_housing', 
     meters: 135, 
-    note: 'Follow the western paved road up to the West Housing blocks (41-A to 41-P)' 
+    note: 'Follow the paved western perimeter road between West Housing (#41) and the sports courts' 
   },
   { 
     u: 'hub_chandragupta', 
     v: 'hub_west_housing', 
     meters: 165, 
-    note: 'Take the scenic hillside pathway west from Chandragupta toward West Housing' 
+    note: 'Follow the paved hillside road connecting Chandragupta (#12) and West Housing (#41)' 
   },
   { 
     u: 'hub_academic_west', 
     v: 'hub_south_housing', 
     meters: 145, 
-    note: 'Walk south past Flower Valley (#39) and Nakshatra Garden (#37) toward South Housing (#42)' 
+    note: 'Follow the paved south road past Flower Valley (#39) toward South Housing (#42)' 
   },
   { 
     u: 'hub_flame_kund', 
     v: 'hub_south_housing', 
     meters: 140, 
-    note: 'Head south past Darshini Cafe along the stone walkway toward East/South Housing (#42) and Infirmary (#47)' 
+    note: 'Follow the paved stone walkway south toward East/South Housing (#42) and Infirmary (#47)' 
   },
   { 
     u: 'hub_shantiniketan', 
     v: 'hub_south_housing', 
     meters: 150, 
-    note: 'Walk southwest along the perimeter road from Shantiniketan toward South Housing' 
+    note: 'Follow the paved perimeter road connecting Shantiniketan (#49) and South Housing (#42)' 
   },
 
   // Main Entrance connections
@@ -996,13 +996,13 @@ export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string 
     u: 'hub_shantiniketan', 
     v: 'hub_main_entrance', 
     meters: 175, 
-    note: 'Follow the main campus access road east to the FLAME Entrance Gate (#46) and ATM (#48)' 
+    note: 'Follow the main paved entrance road east to the FLAME Entrance Gate (#46) and ATM (#48)' 
   },
   { 
     u: 'hub_main_entrance', 
     v: 'hub_vks_north', 
     meters: 210, 
-    note: 'Follow the main eastern drive north towards VKS Executive Education (#1) and North Housing (#40)' 
+    note: 'Follow the main eastern drive north towards VKS (#1) and North Housing (#40)' 
   },
 ];
 
@@ -3051,17 +3051,17 @@ export function calculateCampusRoute(fromId: string, toId: string): CampusRouteR
     paceDescription = '🏃 Cross-campus 5–7 min walk • Head out now to make it on time!';
   }
 
-  // Build step-by-step human directions
+  // Build step-by-step human directions (crisp and road-oriented)
   const steps: CampusRouteStep[] = [];
 
-  // Step 1: Departure
+  // Step 1: Start
   steps.push({
-    instruction: `Depart from ${from.name} (${from.insideBuilding || `${from.building}${from.floor ? `, ${from.floor}` : ''}`}).`,
+    instruction: `Start at ${from.name} (${from.building}).`,
     landmark: from.building,
     distanceMeters: 15,
   });
 
-  // Step 2...N: Waypoint instructions
+  // Step 2...N: Waypoint instructions along designated paved roads
   if (hubResult.notes.length > 0) {
     const stepDistance = Math.round((totalMeters - 30) / Math.max(1, hubResult.notes.length));
     hubResult.notes.forEach((note) => {
@@ -3072,14 +3072,14 @@ export function calculateCampusRoute(fromId: string, toId: string): CampusRouteR
     });
   } else if (isSameBuilding) {
     steps.push({
-      instruction: `Both locations are inside ${from.building} (Official Building #${from.officialNumber || 2}). Follow indoor signage to ${to.name}.`,
+      instruction: `Both locations are inside ${from.building} (Building #${from.officialNumber || 2}). Follow indoor corridor signage to ${to.name}.`,
       distanceMeters: 25,
     });
   }
 
   // Final Step: Arrival
   steps.push({
-    instruction: `Arrive at ${to.name} in ${to.insideBuilding || `${to.building} (${to.floor || 'Ground Level'})`}. Look for door signage.`,
+    instruction: `Arrive at ${to.name} (${to.building}).`,
     landmark: to.name,
     distanceMeters: 15,
   });
