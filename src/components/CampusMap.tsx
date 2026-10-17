@@ -208,7 +208,7 @@ export const CampusMap: React.FC = () => {
 
   // Quick 1-tap origins
   const quickCurrentSpots = [
-    { label: '🏠 West Housing (My Room)', id: 'other-west-housing' },
+    { label: '🏠 West Housing (Blocks L–S)', id: 'other-west-housing' },
     { label: '📚 Vivekananda Library', id: 'other-vivekananda-library' },
     { label: '🍽️ Aahar Dining Quad', id: 'other-aahar' },
     { label: '🏛️ APJ Abdul Kalam', id: 'room-apj001' },
@@ -358,16 +358,16 @@ export const CampusMap: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Dedicated Walk Status Bar & Route Action (No clipping or overflow) */}
+                {/* Dedicated Walk Time Badge & Pin Action */}
                 <div className="flex items-center justify-between gap-2 p-2 bg-[#14110d]/90 rounded-lg border border-[#3a3023]">
                   {activeRoute && destinationLocationId === selectedPlanItem.location.id ? (
                     <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 truncate">
                       <Footprints className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span className="truncate">{activeRoute.walkTimeMinutes} min walk ({activeRoute.distanceMeters}m)</span>
+                      <span className="truncate">~{activeRoute.walkTimeMinutes} min walk ({activeRoute.distanceMeters}m)</span>
                     </div>
                   ) : (
                     <span className="text-[11px] text-[#a89982] truncate">
-                      Tap to view walking route
+                      Tap to view walk time
                     </span>
                   )}
                   
@@ -379,8 +379,8 @@ export const CampusMap: React.FC = () => {
                         : 'bg-amber-400 hover:bg-amber-300 text-neutral-950'
                     }`}
                   >
-                    <Navigation className="w-3 h-3" />
-                    <span>{destinationLocationId === selectedPlanItem.location.id ? 'Route Active' : 'Show Route'}</span>
+                    <MapPin className="w-3 h-3" />
+                    <span>{destinationLocationId === selectedPlanItem.location.id ? 'Pin Selected' : 'Show on Map'}</span>
                   </button>
                 </div>
 
@@ -429,10 +429,17 @@ export const CampusMap: React.FC = () => {
         </div>
 
         {/* ============================================================ */}
-        {/* RIGHT COLUMN: ROUTE CONTROLS WITH SIMPLE ROAD INSTRUCTIONS   */}
+        {/* RIGHT COLUMN: WALK TIME ESTIMATOR & PIN CONTROLS             */}
         {/* ============================================================ */}
         <div className="p-3.5 sm:p-4 bg-[#171410] border border-[#382f23] rounded-xl shadow-md flex flex-col justify-between overflow-hidden min-w-0">
           <div>
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#2d251a]">
+              <span className="text-xs font-bold text-[#fbf7ee] flex items-center gap-1.5">
+                <Footprints className="w-4 h-4 text-amber-400" />
+                <span>Campus Walk Time Estimator</span>
+              </span>
+              <span className="text-[11px] text-[#8c7e6a]">Pedestrian Pace</span>
+            </div>
             {/* Origin & Destination Selectors */}
             <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] gap-2 items-center">
               
@@ -447,8 +454,18 @@ export const CampusMap: React.FC = () => {
                   onChange={(e) => setOriginLocationId(e.target.value)}
                   className="w-full bg-[#12100d] border border-[#473c2c] text-[#fbf7ee] text-xs rounded-lg p-2 focus:outline-none focus:border-emerald-500 font-sans-ui"
                 >
+                  <optgroup label="West Housing Residences (Blocks L to S)">
+                    <option value="other-west-housing">🏠 West Housing (General / Blocks L–S)</option>
+                    <option value="housing-west-block-l">🏠 West Housing - Block L</option>
+                    <option value="housing-west-block-m">🏠 West Housing - Block M</option>
+                    <option value="housing-west-block-n">🏠 West Housing - Block N</option>
+                    <option value="housing-west-block-o">🏠 West Housing - Block O</option>
+                    <option value="housing-west-block-p">🏠 West Housing - Block P</option>
+                    <option value="housing-west-block-q">🏠 West Housing - Block Q</option>
+                    <option value="housing-west-block-r">🏠 West Housing - Block R</option>
+                    <option value="housing-west-block-s">🏠 West Housing - Block S</option>
+                  </optgroup>
                   <optgroup label="Popular Starting Locations">
-                    <option value="other-west-housing">🏠 West Housing (My Room / Blocks 41)</option>
                     <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
                     <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
                     <option value="room-apj001">🏛️ APJ Abdul Kalam (#2)</option>
@@ -498,6 +515,17 @@ export const CampusMap: React.FC = () => {
                       ))}
                     </optgroup>
                   )}
+                  <optgroup label="West Housing Residences (Blocks L to S)">
+                    <option value="other-west-housing">🏠 West Housing (General / Blocks L–S)</option>
+                    <option value="housing-west-block-l">🏠 West Housing - Block L</option>
+                    <option value="housing-west-block-m">🏠 West Housing - Block M</option>
+                    <option value="housing-west-block-n">🏠 West Housing - Block N</option>
+                    <option value="housing-west-block-o">🏠 West Housing - Block O</option>
+                    <option value="housing-west-block-p">🏠 West Housing - Block P</option>
+                    <option value="housing-west-block-q">🏠 West Housing - Block Q</option>
+                    <option value="housing-west-block-r">🏠 West Housing - Block R</option>
+                    <option value="housing-west-block-s">🏠 West Housing - Block S</option>
+                  </optgroup>
                   <optgroup label="Popular Destinations">
                     <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
                     <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
@@ -539,36 +567,45 @@ export const CampusMap: React.FC = () => {
               ))}
             </div>
 
-            {/* Simple Road Instructions */}
+            {/* Clean Walk Time & Distance Display */}
             {activeRoute && (
-              <div className="mt-2.5 pt-2 border-t border-[#2d251a]">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-amber-200 flex items-center gap-1.5 text-[11px]">
-                    <Footprints className="w-3.5 h-3.5 text-amber-400" />
-                    <span>How to Go ({activeRoute.walkTimeMinutes} min walk · {activeRoute.distanceMeters}m)</span>
-                  </span>
+              <div className="mt-2.5 pt-2 border-t border-[#2d251a] space-y-2">
+                <div className="flex items-center justify-between p-2.5 bg-[#13100c] rounded-xl border border-amber-500/30 gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-400/80 flex items-center justify-center shrink-0 text-amber-300">
+                      <Footprints className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-base font-extrabold text-amber-300">
+                          ~{activeRoute.walkTimeMinutes} min walk
+                        </span>
+                        <span className="text-xs text-[#a89982] font-mono">
+                          ({activeRoute.distanceMeters}m · ~{activeRoute.stepsCount} steps)
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#c7bc9f] mt-0.5 truncate">
+                        {activeRoute.paceDescription}
+                      </p>
+                    </div>
+                  </div>
+
                   <a
                     href={activeRoute.googleMapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-amber-400 hover:text-amber-300 text-[11px] underline flex items-center gap-0.5 font-medium"
+                    className="px-2.5 py-1.5 bg-[#251f16] hover:bg-[#332a1e] text-amber-300 border border-[#4d402f] rounded-lg text-xs font-semibold flex items-center gap-1 shrink-0 transition-colors"
+                    title="Open FLAME in Google Maps for live GPS"
                   >
-                    <span>Google Maps</span>
+                    <span className="hidden sm:inline">Google Maps</span>
+                    <span className="sm:hidden">Maps</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
 
-                <div className="space-y-1 text-[11px] text-[#cfc2ae] bg-[#12100d] p-2 rounded-lg border border-[#3a3023]">
-                  {activeRoute.steps.slice(0, 4).map((step, sIdx) => (
-                    <div key={sIdx} className="flex items-start gap-1.5 leading-snug">
-                      <span className="font-mono text-amber-400 font-bold shrink-0">{sIdx + 1}.</span>
-                      <span>{step.instruction}</span>
-                    </div>
-                  ))}
-                  <div className="text-[10px] text-emerald-400 font-medium pt-1 border-t border-[#231e16] flex items-center gap-1">
-                    <span>🛣️</span>
-                    <span>Strictly follow paved campus roads. Walking across cricket/sports turf is prohibited.</span>
-                  </div>
+                <div className="text-[10px] text-[#8c7e6a] flex items-center gap-1.5 px-1">
+                  <span>ℹ️</span>
+                  <span>Estimated walking time along campus pathways. Walking across sports pitches is prohibited.</span>
                 </div>
               </div>
             )}
@@ -643,64 +680,7 @@ export const CampusMap: React.FC = () => {
               draggable={false}
             />
 
-            {/* SVG Walking Route Layer */}
-            {activeRoute && activeRoute.pathCoordinates.length > 1 && (
-              <svg
-                className="absolute inset-0 w-full h-full pointer-events-none z-20"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                <defs>
-                  <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="50%" stopColor="#f59e0b" />
-                    <stop offset="100%" stopColor="#ef4444" />
-                  </linearGradient>
-                  <filter id="routeGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="0" stdDeviation="0.8" floodColor="#f59e0b" floodOpacity="0.85" />
-                  </filter>
-                </defs>
 
-                {/* Base Shadow Line */}
-                <polyline
-                  points={activeRoute.pathCoordinates.map((pt) => `${pt.x},${pt.y}`).join(' ')}
-                  fill="none"
-                  stroke="#12100d"
-                  strokeWidth="2.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-
-                {/* Animated Glowing Walking Route */}
-                <polyline
-                  points={activeRoute.pathCoordinates.map((pt) => `${pt.x},${pt.y}`).join(' ')}
-                  fill="none"
-                  stroke="url(#routeGrad)"
-                  strokeWidth="1.3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeDasharray="2.2, 1.4"
-                  className="animate-pulse"
-                  filter="url(#routeGlow)"
-                />
-
-                {/* Path Nodes */}
-                {activeRoute.pathCoordinates.map((pt, idx) => {
-                  if (idx === 0 || idx === activeRoute.pathCoordinates.length - 1) return null;
-                  return (
-                    <circle
-                      key={`wp-${idx}`}
-                      cx={pt.x}
-                      cy={pt.y}
-                      r="0.75"
-                      fill="#fef3c7"
-                      stroke="#b45309"
-                      strokeWidth="0.25"
-                    />
-                  );
-                })}
-              </svg>
-            )}
 
             {/* Interactive Building Hotspots (1–54) */}
             {mapRenderType === 'illustrated' && OFFICIAL_CAMPUS_BUILDINGS.map((building) => {
@@ -836,8 +816,11 @@ export const CampusMap: React.FC = () => {
               >
                 <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500 text-white font-black text-xs shadow-2xl ring-4 ring-red-300/60 hover:scale-110 transition-transform">
                   <span>B</span>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2.5 py-1 bg-[#12100d]/95 text-red-300 text-xs font-bold rounded shadow-lg whitespace-nowrap border border-red-500 pointer-events-none">
-                    DEST: {activeRoute.toLocation.name}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 px-2.5 py-1 bg-[#12100d]/95 text-red-300 text-xs font-bold rounded shadow-lg whitespace-nowrap border border-red-500 pointer-events-none flex items-center gap-1.5">
+                    <span>DEST: {activeRoute.toLocation.name}</span>
+                    <span className="text-amber-300 font-mono text-[10px] bg-red-950/80 px-1.5 py-0.5 rounded border border-red-500/50">
+                      🚶 ~{activeRoute.walkTimeMinutes} min
+                    </span>
                   </div>
                 </div>
               </div>
