@@ -125,21 +125,69 @@ export const CampusMap: React.FC = () => {
     }));
   }, [activePlanEvents]);
 
-  // First upcoming event on the user's plan
-  const nextPlanItem = planItemsWithLocations[0] || null;
+  // Selected plan event ID (enables selecting ANY event you are going to)
+  const [selectedPlanEventId, setSelectedPlanEventId] = useState<string | null>(null);
+
+  // Sync selectedPlanEventId when plan items change
+  useEffect(() => {
+    if (planItemsWithLocations.length > 0) {
+      if (!selectedPlanEventId || !planItemsWithLocations.some((p) => p.event.id === selectedPlanEventId)) {
+        setSelectedPlanEventId(planItemsWithLocations[0].event.id);
+      }
+    } else {
+      setSelectedPlanEventId(null);
+    }
+  }, [planItemsWithLocations, selectedPlanEventId]);
+
+  // The actively chosen plan event (or fallback to the first one)
+  const selectedPlanItem = useMemo(() => {
+    if (!planItemsWithLocations.length) return null;
+    return planItemsWithLocations.find((p) => p.event.id === selectedPlanEventId) || planItemsWithLocations[0];
+  }, [planItemsWithLocations, selectedPlanEventId]);
 
   // Origin (Where the student is right now) & Destination
   const [originLocationId, setOriginLocationId] = useState<string>('other-west-housing');
   const [destinationLocationId, setDestinationLocationId] = useState<string>(() => {
-    return nextPlanItem ? nextPlanItem.location.id : 'hall-shantiniketan-auditorium';
+    return planItemsWithLocations[0]?.location.id || 'hall-shantiniketan-auditorium';
   });
 
-  // Automatically sync destination to next plan event when available
+  // Automatically sync destination when selectedPlanItem changes
   useEffect(() => {
-    if (nextPlanItem) {
-      setDestinationLocationId(nextPlanItem.location.id);
+    if (selectedPlanItem) {
+      setDestinationLocationId(selectedPlanItem.location.id);
     }
-  }, [nextPlanItem?.event.id]);
+  }, [selectedPlanItem?.event.id]);
+
+  // Handle switching plan event
+  const handleSelectPlanEvent = (eventId: string) => {
+    const item = planItemsWithLocations.find((p) => p.event.id === eventId);
+    if (item) {
+      setSelectedPlanEventId(item.event.id);
+      setDestinationLocationId(item.location.id);
+    }
+  };
+
+  // Handle destination select change
+  const handleDestinationChange = (val: string) => {
+    if (val.startsWith('plan-event:')) {
+      const evtId = val.replace('plan-event:', '');
+      handleSelectPlanEvent(evtId);
+      return;
+    }
+    setDestinationLocationId(val);
+    const matchPlan = planItemsWithLocations.find((p) => p.location.id === val);
+    if (matchPlan) {
+      setSelectedPlanEventId(matchPlan.event.id);
+    }
+  };
+
+  // Value for the destination select box
+  const destinationSelectValue = useMemo(() => {
+    if (selectedPlanItem && destinationLocationId === selectedPlanItem.location.id) {
+      return `plan-event:${selectedPlanItem.event.id}`;
+    }
+    return destinationLocationId;
+  }, [selectedPlanItem, destinationLocationId]);
 
   // Selected building details modal / card
   const [selectedBuilding, setSelectedBuilding] = useState<OfficialBuilding | null>(null);
@@ -239,77 +287,136 @@ export const CampusMap: React.FC = () => {
       </div>
 
       {/* ============================================================ */}
-      {/* 2. "MY PLAN" HERO BANNER: The First Thing That Shows Up!    */}
+      {/* 2. "MY PLAN" HERO BANNER: SELECT ANY EVENT YOU'RE GOING TO   */}
       {/* ============================================================ */}
-      {nextPlanItem ? (
+      {planItemsWithLocations.length > 0 && selectedPlanItem ? (
         <div className="mb-4 p-3.5 sm:p-4 bg-gradient-to-r from-[#2a1c0d] via-[#1f1912] to-[#171410] border-2 border-amber-500/70 rounded-xl shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Header row with event dropdown selector */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#3d3224]">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-400 text-neutral-950 uppercase flex items-center gap-1 shadow-sm">
+                <Sparkles className="w-3 h-3 text-neutral-950" />
+                <span>My Plan ({planItemsWithLocations.length} Events)</span>
+              </span>
+              <span className="text-xs text-[#a89982] hidden sm:inline">
+                Select any event to chart walking route:
+              </span>
+            </div>
+
+            {/* Quick dropdown to pick ANY event */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="plan-event-select" className="text-[11px] text-[#c7bc9f] font-medium shrink-0">
+                Switch Event:
+              </label>
+              <select
+                id="plan-event-select"
+                value={selectedPlanItem.event.id}
+                onChange={(e) => handleSelectPlanEvent(e.target.value)}
+                className="bg-[#14120e] border border-amber-500/60 text-amber-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 font-sans-ui max-w-[280px] truncate"
+              >
+                {planItemsWithLocations.map((item, idx) => (
+                  <option key={`select-opt-${item.event.id}`} value={item.event.id}>
+                    #{idx + 1}: {item.event.event_name} ({item.event.time_start || item.event.time_start_end})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Active Event Showcase */}
+          <div className="pt-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center shrink-0 text-amber-300 shadow-md">
-                <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+                <Calendar className="w-5 h-5 text-amber-400" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-400 text-neutral-950 uppercase">
-                    Next on Your Plan
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#382b1c] text-amber-300 border border-amber-500/40">
+                    Active Destination
                   </span>
                   <span className="text-xs text-amber-200/90 font-medium">
-                    {nextPlanItem.event.date} · {nextPlanItem.event.time_start_end}
+                    {selectedPlanItem.event.date} · {selectedPlanItem.event.time_start_end}
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold text-[#fdfaf3] mt-0.5 leading-snug">
-                  {nextPlanItem.event.event_name}
+                  {selectedPlanItem.event.event_name}
                 </h2>
                 <div className="flex items-center gap-2 text-xs text-[#b8ab96] mt-0.5">
                   <MapPin className="w-3.5 h-3.5 text-red-400" />
                   <span>
-                    {nextPlanItem.location.building} · {nextPlanItem.location.name}
-                    {nextPlanItem.location.officialNumber ? ` (Map #${nextPlanItem.location.officialNumber})` : ''}
+                    {selectedPlanItem.location.building} · {selectedPlanItem.location.name}
+                    {selectedPlanItem.location.officialNumber ? ` (Map #${selectedPlanItem.location.officialNumber})` : ''}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Quick action to route & walking summary */}
+            {/* Walking summary pill & Action */}
             <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-              {activeRoute && destinationLocationId === nextPlanItem.location.id && (
+              {activeRoute && destinationLocationId === selectedPlanItem.location.id && (
                 <div className="px-3 py-1.5 bg-amber-950/80 border border-amber-400/60 rounded-lg text-xs font-bold text-amber-300 flex items-center gap-1.5">
                   <Footprints className="w-3.5 h-3.5" />
                   <span>{activeRoute.walkTimeMinutes} min walk ({activeRoute.distanceMeters}m)</span>
                 </div>
               )}
               <button
-                onClick={() => setDestinationLocationId(nextPlanItem.location.id)}
+                onClick={() => setDestinationLocationId(selectedPlanItem.location.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  destinationLocationId === nextPlanItem.location.id
+                  destinationLocationId === selectedPlanItem.location.id
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'bg-amber-400 hover:bg-amber-300 text-neutral-950'
                 }`}
               >
                 <Navigation className="w-3.5 h-3.5" />
-                <span>{destinationLocationId === nextPlanItem.location.id ? 'Route Active' : 'Show Route'}</span>
+                <span>{destinationLocationId === selectedPlanItem.location.id ? 'Route Active' : 'Show Route'}</span>
               </button>
             </div>
           </div>
 
-          {/* If there are more upcoming events on their plan, show quick pills */}
+          {/* Interactive Event Cards: Click ANY event you're going to! */}
           {planItemsWithLocations.length > 1 && (
-            <div className="mt-3 pt-2.5 border-t border-[#3d3224] flex items-center gap-2 overflow-x-auto text-xs">
-              <span className="text-[11px] text-[#a89982] shrink-0 font-medium">Upcoming Plan Stops:</span>
-              {planItemsWithLocations.slice(1).map((item, idx) => (
-                <button
-                  key={item.event.id}
-                  onClick={() => setDestinationLocationId(item.location.id)}
-                  className={`px-2.5 py-1 rounded text-[11px] whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-                    destinationLocationId === item.location.id
-                      ? 'bg-red-500/30 text-red-200 border border-red-400 font-bold'
-                      : 'bg-[#1b1712] hover:bg-[#2e261c] text-[#d6cbaf] border border-[#3e3427]'
-                  }`}
-                >
-                  <Calendar className="w-3 h-3 text-amber-400" />
-                  <span>{idx + 2}. {item.event.event_name.slice(0, 24)}... ({item.event.time_start || 'Upcoming'})</span>
-                </button>
-              ))}
+            <div className="mt-3.5 pt-3 border-t border-[#3d3224]">
+              <div className="text-[11px] text-[#a89982] font-semibold mb-2 flex items-center justify-between">
+                <span>All Events You&apos;re Going To (Tap any to route):</span>
+                <span className="font-mono text-[10px] text-amber-400">
+                  {planItemsWithLocations.findIndex((p) => p.event.id === selectedPlanItem.event.id) + 1} of {planItemsWithLocations.length} active
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {planItemsWithLocations.map((item, idx) => {
+                  const isSelected = selectedPlanItem.event.id === item.event.id;
+                  return (
+                    <button
+                      key={item.event.id}
+                      onClick={() => handleSelectPlanEvent(item.event.id)}
+                      className={`text-left p-2.5 rounded-lg border transition-all flex items-start gap-2 cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#332617] border-amber-400 shadow-md ring-1 ring-amber-400/50'
+                          : 'bg-[#181511] hover:bg-[#251f18] border-[#382f23] text-neutral-300'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5 ${
+                        isSelected ? 'bg-amber-400 text-neutral-950' : 'bg-[#2b251d] text-[#a89982]'
+                      }`}>
+                        #{idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-xs text-[#fbf7ee] truncate">
+                          {item.event.event_name}
+                        </div>
+                        <div className="text-[10px] text-amber-200/80 truncate mt-0.5">
+                          {item.location.name} {item.location.officialNumber ? `(#${item.location.officialNumber})` : ''} · {item.event.time_start || item.event.time_start_end}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 border border-emerald-500/40 px-1.5 py-0.5 rounded shrink-0">
+                          Active
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -318,7 +425,7 @@ export const CampusMap: React.FC = () => {
           <div className="flex items-center gap-2 text-[#b8ab96]">
             <Calendar className="w-4 h-4 text-amber-400" />
             <span>
-              Tip: Tap <strong>&ldquo;I&apos;m Going&rdquo;</strong> on any event in Explore, and its live walking directions will automatically appear here!
+              Tip: Tap <strong>&ldquo;I&apos;m Going&rdquo;</strong> on any event in Explore, and it will appear here so you can select and route directly to it!
             </span>
           </div>
           <button
@@ -395,15 +502,17 @@ export const CampusMap: React.FC = () => {
               <span>Where do you want to go? (Destination)</span>
             </label>
             <select
-              value={destinationLocationId}
-              onChange={(e) => setDestinationLocationId(e.target.value)}
+              value={destinationSelectValue}
+              onChange={(e) => handleDestinationChange(e.target.value)}
               className="w-full bg-[#12100d] border border-[#473c2c] text-[#fbf7ee] text-xs rounded-lg p-2.5 focus:outline-none focus:border-red-500 font-sans-ui"
             >
-              {nextPlanItem && (
-                <optgroup label="⭐ Your Next Plan Event">
-                  <option value={nextPlanItem.location.id}>
-                    ⭐ {nextPlanItem.event.event_name} ({nextPlanItem.location.name})
-                  </option>
+              {planItemsWithLocations.length > 0 && (
+                <optgroup label={`⭐ Events You're Going To (${planItemsWithLocations.length})`}>
+                  {planItemsWithLocations.map((item, idx) => (
+                    <option key={`dest-plan-${item.event.id}`} value={`plan-event:${item.event.id}`}>
+                      ⭐ #{idx + 1}: {item.event.event_name} — {item.location.name} ({item.event.time_start || item.event.time_start_end})
+                    </option>
+                  ))}
                 </optgroup>
               )}
               <optgroup label="Popular Destinations">
@@ -666,31 +775,42 @@ export const CampusMap: React.FC = () => {
             })}
 
             {/* Active Plan Event Pins (Events that ended are REMOVED!) */}
-            {planItemsWithLocations.map((item, idx) => (
-              <div
-                key={`plan-pin-${item.event.id}`}
-                style={{
-                  position: 'absolute',
-                  left: `${item.location.x}%`,
-                  top: `${item.location.y}%`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-                className="z-30 pointer-events-auto"
-              >
-                <button
-                  onClick={() => {
-                    setDestinationLocationId(item.location.id);
+            {planItemsWithLocations.map((item, idx) => {
+              const isSelected = selectedPlanItem?.event.id === item.event.id;
+              return (
+                <div
+                  key={`plan-pin-${item.event.id}`}
+                  style={{
+                    position: 'absolute',
+                    left: `${item.location.x}%`,
+                    top: `${item.location.y}%`,
+                    transform: 'translate(-50%, -50%)',
                   }}
-                  className="group relative flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-neutral-950 font-black text-[10px] shadow-2xl ring-2 ring-amber-200 hover:scale-125 transition-transform"
-                  title={`Plan Event: ${item.event.event_name}`}
+                  className="z-30 pointer-events-auto"
                 >
-                  <span>⭐</span>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-amber-950/90 text-amber-200 text-[10px] font-bold rounded shadow-lg whitespace-nowrap border border-amber-400/50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                    {item.event.event_name}
-                  </div>
-                </button>
-              </div>
-            ))}
+                  <button
+                    onClick={() => handleSelectPlanEvent(item.event.id)}
+                    className={`group relative flex items-center justify-center rounded-full font-black transition-all cursor-pointer ${
+                      isSelected
+                        ? 'w-7 h-7 sm:w-8 sm:h-8 bg-amber-400 text-neutral-950 text-xs shadow-2xl ring-4 ring-amber-300 ring-offset-2 ring-offset-black scale-110 z-40'
+                        : 'w-6 h-6 bg-amber-500/90 hover:bg-amber-400 text-neutral-950 text-[10px] shadow-lg ring-2 ring-amber-200 hover:scale-125 z-30'
+                    }`}
+                    title={`Plan Event #${idx + 1}: ${item.event.event_name}`}
+                  >
+                    <span>⭐{idx + 1}</span>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-[#12100d]/95 text-amber-200 text-xs font-bold rounded-lg shadow-2xl whitespace-nowrap border border-amber-400/80 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                      <div className="text-white font-extrabold flex items-center gap-1">
+                        <span>#{idx + 1}: {item.event.event_name}</span>
+                        {isSelected && <span className="text-[9px] text-emerald-400 font-mono">(Active)</span>}
+                      </div>
+                      <div className="text-[10px] text-amber-300 font-medium">
+                        {item.location.name} {item.location.officialNumber ? `(#${item.location.officialNumber})` : ''} · {item.event.time_start || item.event.time_start_end}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              );
+            })}
 
             {/* Origin Pin (Green 'A') */}
             {activeRoute && (
