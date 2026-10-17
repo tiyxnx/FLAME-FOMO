@@ -69,7 +69,7 @@ export const ChatBotModal: React.FC = () => {
       const welcome: ChatMessage = {
         id: 'msg-welcome',
         sender: 'bot',
-        text: `hello **${studentName}**! what's up? 🔥\n\ni'm **fomo bot**. ask me anything about events, club comps, your classes, or what you've got saved.\n\nwhat are you looking for?`,
+        text: `hello **${studentName}**! what's up? 🔥\n\ni'm **fomo bot**. ask me anything about events, club comps, your classes, or what you've got saved.\n\nlooking for smth to do rn?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages([welcome]);
@@ -101,14 +101,83 @@ export const ChatBotModal: React.FC = () => {
     const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     const todayStr = now.toISOString().split('T')[0];
 
-    // Helper: test if query contains whole word or phrase
-    const hasWord = (word: string) => new RegExp(`\\b${word}\\b`, 'i').test(q);
+    // College Slang & Short-form Dictionary
+    const SLANG_MAP: Record<string, string> = {
+      'rn': 'right now',
+      'smth': 'something',
+      'sth': 'something',
+      'tmrw': 'tomorrow',
+      '2mrw': 'tomorrow',
+      'ydy': 'yesterday',
+      'wknd': 'weekend',
+      'wkd': 'weekend',
+      'abt': 'about',
+      'bc': 'because',
+      'bcoz': 'because',
+      'cuz': 'because',
+      'cos': 'because',
+      'u': 'you',
+      'ur': 'your',
+      'r': 'are',
+      'pls': 'please',
+      'plz': 'please',
+      'idk': "i don't know",
+      'tbh': 'to be honest',
+      'ngl': 'not gonna lie',
+      'imo': 'in my opinion',
+      'imho': 'in my humble opinion',
+      'fyi': 'for your information',
+      'hmu': 'hit me up',
+      'comp': 'competition',
+      'comps': 'competitions',
+      'fav': 'favourite',
+      'favs': 'favourites',
+      'faves': 'favourites',
+      'tt': 'timetable',
+      'sched': 'schedule',
+      'prof': 'professor',
+      'profs': 'professors',
+      'acad': 'academic',
+      'acads': 'academics',
+      'cult': 'cultural',
+      'reg': 'registration',
+      'regs': 'registrations',
+      'sec': 'second',
+      'min': 'minute',
+      'mins': 'minutes',
+      'wat': 'what',
+      'wut': 'what',
+      'fr': 'for real',
+    };
+
+    // Words with slang expanded for semantic intent matching
+    const qNormalized = q
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .map((w) => SLANG_MAP[w] || w)
+      .join(' ');
+
+    // Helper: test if query or expanded slang contains word
+    const hasWord = (word: string) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'i');
+      return regex.test(q) || regex.test(qNormalized);
+    };
     const hasAnyWord = (words: string[]) => words.some((w) => hasWord(w));
 
     // 0. Explicit User Prompt: "say fomo bot"
     if (q.includes('fomo bot') && (q.includes('say') || q.includes('call yourself') || q.includes('name'))) {
       return {
         text: `got it! i'm **fomo bot** from now on 🔥 ask me anything about events, club comps, your classes, or what's on campus.`
+      };
+    }
+
+    // 0b. Slang & Short-form Inquiry / Training
+    if (
+      q.includes('slang') || q.includes('short form') || q.includes('shortform') || q.includes('abbreviation') ||
+      ((hasWord('rn') || hasWord('smth')) && (q.includes('teach') || q.includes('learn') || q.includes('know') || q.includes('understand')))
+    ) {
+      return {
+        text: `bet! i know student slang like **rn** (right now), **smth** (something), **tmrw** (tomorrow), **wknd**, **bc**, **tt** (timetable), **comps**, and more. hit me with whatever abbreviations u use lol.`
       };
     }
 
@@ -222,10 +291,12 @@ export const ChatBotModal: React.FC = () => {
       };
     }
 
-    // 12. FREE TIME / "I'M FREE RN WHAT TO DO" / BORED
+    // 12. FREE TIME / "I'M FREE RN WHAT TO DO" / "SMTH TO DO RN" / BORED
     if (
+      (hasWord('rn') && (hasWord('free') || hasWord('smth') || hasWord('do') || hasWord('happening') || hasWord('plans'))) ||
       q.includes('free rn') || q.includes('free right now') || q.includes('free now') ||
-      (q.includes('free') && (q.includes('what to do') || q.includes('what should i do') || q.includes('am i free'))) ||
+      q.includes('smth to do') || q.includes('something to do') ||
+      (hasWord('free') && (q.includes('what to do') || q.includes('what should i do') || q.includes('am i free'))) ||
       hasWord('bored') || q.includes('nothing to do') || q.includes('kill time') || q.includes('pass time')
     ) {
       const currentClass = user?.academic_timetable?.find(
@@ -238,11 +309,11 @@ export const ChatBotModal: React.FC = () => {
 
       let scheduleNote = '';
       if (currentClass) {
-        scheduleNote = `heads up, you've got **${currentClass.courseName}** in ${currentClass.room || 'Academics'} until ${currentClass.timeEnd}.\n\n`;
+        scheduleNote = `heads up, you've got **${currentClass.courseName}** in ${currentClass.room || 'Academics'} until ${currentClass.timeEnd} rn.\n\n`;
       } else if (nextClass) {
-        scheduleNote = `you're free right now! next class is **${nextClass.courseName}** at **${nextClass.timeStart}** (${nextClass.room || 'Academics'}).\n\n`;
+        scheduleNote = `you're free rn! next class is **${nextClass.courseName}** at **${nextClass.timeStart}** (${nextClass.room || 'Academics'}).\n\n`;
       } else {
-        scheduleNote = `you're totally free right now, no classes left today!\n\n`;
+        scheduleNote = `you're totally free rn, no classes left today!\n\n`;
       }
 
       // Check events happening today or soon
@@ -257,14 +328,14 @@ export const ChatBotModal: React.FC = () => {
         };
       } else if (upcomingThisWeek.length > 0) {
         return {
-          text: `${scheduleNote}nothing starting right this second, but check out what's coming up this week:\n\n` +
+          text: `${scheduleNote}nothing starting rn, but check out what's coming up this week or tmrw:\n\n` +
             upcomingThisWeek.map(e => `* **${e.event_name}** on **${e.date}** (${e.time_start_end}) at **${e.venue_zone}**`).join('\n') +
             `\n\nor you could hit badminton/gym at **Arjuna Centre** or chill at the **Plaza**.`,
           referencedEventIds: upcomingThisWeek.map(e => e.id)
         };
       } else {
         return {
-          text: `${scheduleNote}no events right now! you could hit **Arjuna Centre** for badminton or gym, or chill at the **Plaza**.`,
+          text: `${scheduleNote}no events rn! you could hit **Arjuna Centre** for badminton or gym, or chill at the **Plaza**.`,
         };
       }
     }
@@ -516,7 +587,7 @@ export const ChatBotModal: React.FC = () => {
 
     // 23. NATURAL FALLBACK
     return {
-      text: `i couldn't find anything specifically matching that right now! you can browse all upcoming fests and club activities on the Explore tab, or ask me about your classes, film comps, sports at Arjuna, or what to do when you're free.`
+      text: `i couldn't find anything specifically matching that rn! you can browse all upcoming fests and club activities on the Explore tab, or ask me about your classes, film comps, sports at Arjuna, or smth to do when you're free.`
     };
   };
 
