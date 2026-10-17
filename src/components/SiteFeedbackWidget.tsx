@@ -66,9 +66,9 @@ export const SiteFeedbackWidget: React.FC = () => {
 
   return (
     <>
-      {/* Floating Scrapbook Bookmark Tab pinned on the right edge above the plus button */}
+      {/* Floating Scrapbook Bookmark Tab pinned in the middle on the right side */}
       <div 
-        className="fixed right-0 bottom-24 sm:bottom-28 z-40 select-none flex items-center pointer-events-none"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 select-none flex items-center pointer-events-none"
       >
         {/* Hover Tooltip / Teaser Banner on Desktop */}
         <div 
