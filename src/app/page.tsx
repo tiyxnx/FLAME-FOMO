@@ -22,6 +22,8 @@ import { InAppReminder } from '@/components/InAppReminder';
 import { FloatingPlanWidget } from '@/components/FloatingPlanWidget';
 import { EventFeedbackModal } from '@/components/EventFeedbackModal';
 import { SiteFeedbackWidget } from '@/components/SiteFeedbackWidget';
+import { ChatBotModal } from '@/components/ChatBotModal';
+import { FloatingChatBotLauncher } from '@/components/FloatingChatBotLauncher';
 
 export default function App() {
   const { currentTab, isAuthenticated, openAuthModal } = useApp();
@@ -45,6 +47,9 @@ export default function App() {
       {/* Persistent Floating Action Button for Event Creation (Hidden for Guests) */}
       <FloatingActionButton />
 
+      {/* Persistent Floating FOMO AI Bot Launcher */}
+      <FloatingChatBotLauncher />
+
       {/* Persistent Floating Feedback Widget (Site Suggestions & Bug Reports) */}
       <SiteFeedbackWidget />
 
@@ -54,6 +59,7 @@ export default function App() {
       <CreateEventModal />
       <EventDetailModal />
       <EventFeedbackModal />
+      <ChatBotModal />
       <ClashModal />
       <ExternalRegModal />
       <InAppReminder />

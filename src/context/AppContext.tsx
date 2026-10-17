@@ -105,6 +105,11 @@ interface AppContextType {
   closeSiteFeedback: () => void;
   submitSiteFeedback: (submission: Omit<SiteFeedbackSubmission, 'id' | 'created_at'>) => Promise<boolean>;
 
+  // AI Campus Chatbot Modal
+  isChatBotOpen: boolean;
+  openChatBot: () => void;
+  closeChatBot: () => void;
+
   // User Actions
   loginAsGuest: () => void;
   loginWithGoogle: () => Promise<void>;
@@ -152,6 +157,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isEventFeedbackModalOpen, setIsEventFeedbackModalOpen] = useState(false);
   const [selectedEventForFeedback, setSelectedEventForFeedback] = useState<EventItem | null>(null);
   const [isSiteFeedbackOpen, setIsSiteFeedbackOpen] = useState(false);
+  const [isChatBotOpen, setIsChatBotOpen] = useState(false);
+
+  const openChatBot = () => setIsChatBotOpen(true);
+  const closeChatBot = () => setIsChatBotOpen(false);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [myCreatedEventIds, setMyCreatedEventIds] = useState<string[]>([]);
@@ -1322,6 +1331,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openSiteFeedback,
         closeSiteFeedback,
         submitSiteFeedback,
+        isChatBotOpen,
+        openChatBot,
+        closeChatBot,
         loginAsGuest,
         loginWithGoogle,
         loginWithFlameEmail,

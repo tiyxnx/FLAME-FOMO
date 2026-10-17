@@ -34,6 +34,7 @@ export const Header: React.FC = () => {
     events,
     openOnboarding,
     openSiteFeedback,
+    openChatBot,
   } = useApp();
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -154,8 +155,18 @@ export const Header: React.FC = () => {
             </button>
           </nav>
 
-          {/* Right Header Controls: Notification Bell & User Profile */}
+          {/* Right Header Controls: Ask AI, Notification Bell & User Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Ask AI / FOMO Bot Launcher */}
+            <button
+              onClick={openChatBot}
+              title="Ask FOMO Bot: Campus AI Concierge"
+              className="px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-[#2a241c] hover:bg-[#382f24] text-amber-300 border border-amber-600/50 shadow-xs flex items-center gap-1.5 transition-all hover:scale-102 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline font-bold">Ask AI</span>
+            </button>
+
             {/* Notification Bell */}
             <div className="relative">
               <button
