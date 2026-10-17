@@ -65,12 +65,11 @@ export const ChatBotModal: React.FC = () => {
   useEffect(() => {
     if (isChatBotOpen && messages.length === 0) {
       const studentName = user?.name ? user.name.split(' ')[0] : 'there';
-      const cohortName = user?.academic_year || 'FLAME Scholar';
       
       const welcome: ChatMessage = {
         id: 'msg-welcome',
         sender: 'bot',
-        text: `Hey **${studentName}** (${cohortName})! 🔥 I'm **FOMO Bot**, your personal campus AI concierge.\n\nI have complete, live knowledge of all upcoming events, club competitions, campus venues (like Juice Press #28 & Arjuna Centre), plus your personal classes and saved plans!\n\nWhat can I find for you today?`,
+        text: `yo **${studentName}**! what's up? 🔥\n\ni'm the campus bot. ask me anything about events, club comps, your classes, or what you've got saved.\n\nwhat are you looking for?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages([welcome]);
@@ -92,7 +91,7 @@ export const ChatBotModal: React.FC = () => {
   if (!isChatBotOpen) return null;
 
   // ---------------------------------------------------------------------------
-  // SMART LOCAL CAMPUS REASONING ENGINE
+  // SMART LOCAL CAMPUS REASONING ENGINE (Casual & Chill)
   // Handles all specific queries instantly with 0ms latency and 100% accuracy
   // ---------------------------------------------------------------------------
   const answerWithLocalEngine = (query: string): { text: string; referencedEventIds?: string[] } => {
@@ -104,7 +103,6 @@ export const ChatBotModal: React.FC = () => {
 
     // 1. "I'm free rn what to do?" / "free right now" / "free rn" / "what to do"
     if (q.includes('free rn') || q.includes('free right now') || q.includes('free now') || (q.includes('free') && q.includes('what to do')) || q.includes('bored')) {
-      // Check timetable
       const currentClass = user?.academic_timetable?.find(
         (cls) => cls.day === currentDay && currentTime >= cls.timeStart && currentTime <= cls.timeEnd
       );
@@ -115,11 +113,11 @@ export const ChatBotModal: React.FC = () => {
 
       let scheduleNote = '';
       if (currentClass) {
-        scheduleNote = `⚠️ *Note: According to your timetable, you have **${currentClass.courseName}** in ${currentClass.room || 'Academics'} until ${currentClass.timeEnd}.*\n\n`;
+        scheduleNote = `heads up, you've got **${currentClass.courseName}** in ${currentClass.room || 'Academics'} until ${currentClass.timeEnd}.\n\n`;
       } else if (nextClass) {
-        scheduleNote = `🎉 **You have no classes right now!** Your next class is **${nextClass.courseName}** at **${nextClass.timeStart}** (${nextClass.room || 'Academics'}).\n\n`;
+        scheduleNote = `you're free right now! next class is **${nextClass.courseName}** at **${nextClass.timeStart}** (${nextClass.room || 'Academics'}).\n\n`;
       } else {
-        scheduleNote = `🎉 **You have no classes right now!** You're completely free for the rest of today.\n\n`;
+        scheduleNote = `you're totally free right now, no classes left today!\n\n`;
       }
 
       // Check events happening today or soon
@@ -128,21 +126,20 @@ export const ChatBotModal: React.FC = () => {
 
       if (todayEvents.length > 0) {
         return {
-          text: `${scheduleNote}Here's what's happening on campus today:\n\n` +
-            todayEvents.map(e => `* **${e.event_name}** at ${e.time_start_end} in **${e.venue_zone}${e.room_specific ? ` · ${e.room_specific}` : ''}** (${e.category})`).join('\n') +
-            `\n\nOr take a break and grab a fresh juice at **Juice Press (#28)** near West Housing!`,
+          text: `${scheduleNote}here's what's happening around campus today:\n\n` +
+            todayEvents.map(e => `* **${e.event_name}** at ${e.time_start_end} in **${e.venue_zone}${e.room_specific ? ` · ${e.room_specific}` : ''}** (${e.category})`).join('\n'),
           referencedEventIds: todayEvents.map(e => e.id)
         };
       } else if (upcomingThisWeek.length > 0) {
         return {
-          text: `${scheduleNote}There are no official events starting right this hour, but here are upcoming campus events happening soon:\n\n` +
+          text: `${scheduleNote}nothing starting right this second, but check out what's coming up this week:\n\n` +
             upcomingThisWeek.map(e => `* **${e.event_name}** on **${e.date}** (${e.time_start_end}) at **${e.venue_zone}**`).join('\n') +
-            `\n\n💡 **Spontaneous campus ideas:**\n* Grab an iced drink at **Juice Press (#28)** at the base of West Housing.\n* Head to **Arjuna Centre for Sports** for badminton or gym.\n* Chill with friends at **FLAME Plaza**!`,
+            `\n\nor you could hit badminton/gym at **Arjuna Centre** or chill at the **Plaza**.`,
           referencedEventIds: upcomingThisWeek.map(e => e.id)
         };
       } else {
         return {
-          text: `${scheduleNote}No events happening right now! I recommend heading to **Juice Press (#28)** for smoothies, or the **Arjuna Centre** for badminton or a workout!`,
+          text: `${scheduleNote}no events right now! you could hit **Arjuna Centre** for badminton or gym, or chill at the **Plaza**.`,
         };
       }
     }
@@ -156,11 +153,11 @@ export const ChatBotModal: React.FC = () => {
 
       if (filmEvents.length > 0) {
         const listStr = filmEvents.map((e) => 
-          `🎬 **${e.event_name}**\n* **Organizer:** ${e.organizer}\n* **Date:** ${e.date} (${e.time_start_end})\n* **Deadline:** ${e.registration_deadline || 'Open'}\n* **Eligibility:** ${e.requirements_eligibility || 'Open to All'}\n* **Venue:** ${e.venue_zone}`
+          `🎬 **${e.event_name}**\n* **By:** ${e.organizer}\n* **When:** ${e.date} (${e.time_start_end})\n* **Deadline:** ${e.registration_deadline || 'Open'}\n* **Eligibility:** ${e.requirements_eligibility || 'Open to All'}\n* **Where:** ${e.venue_zone}`
         ).join('\n\n');
 
         return {
-          text: `Here are the top film, video, and creative challenges active right now on campus:\n\n${listStr}\n\nTap any card below for the full rules or registration link!`,
+          text: `here are the creative and film challenges going on right now:\n\n${listStr}\n\ntap any card below to check out the details or register!`,
           referencedEventIds: filmEvents.map((e) => e.id)
         };
       }
@@ -170,7 +167,7 @@ export const ChatBotModal: React.FC = () => {
     if (q.includes('next event') || (q.includes('going') && (q.includes('event') || q.includes('what') || q.includes('where')))) {
       if (!isAuthenticated || !user) {
         return {
-          text: `You're currently browsing as a guest! Sign in with your **@flame.edu.in** email so I can check your personal RSVP list.`
+          text: `sign in with your @flame.edu.in email first so i can see your personal rsvp list!`
         };
       }
 
@@ -180,7 +177,7 @@ export const ChatBotModal: React.FC = () => {
 
       if (goingEvts.length === 0) {
         return {
-          text: `You haven't marked **"I'm Going"** on any upcoming events yet! You can tap **Going** on any event polaroid card on the Home or Explore feed to build your plan.`
+          text: `you haven't marked "I'm Going" on any upcoming events yet! tap **Going** on any event card on the board to add it to your plan.`
         };
       }
 
@@ -188,7 +185,7 @@ export const ChatBotModal: React.FC = () => {
       const othersCount = goingEvts.length - 1;
 
       return {
-        text: `📍 **Your next event is:**\n\n### **${nextEvt.event_name}**\n* 📅 **Date:** ${nextEvt.date}\n* ⏰ **Time:** ${nextEvt.time_start_end}\n* 📍 **Venue:** **${nextEvt.venue_zone}**${nextEvt.room_specific ? ` · ${nextEvt.room_specific}` : ''}\n* 👥 **Organized by:** ${nextEvt.organizer}\n\n${othersCount > 0 ? `You also have **${othersCount} other event${othersCount > 1 ? 's' : ''}** on your going list!` : "You're all set!"}`,
+        text: `📍 your next event is **${nextEvt.event_name}** on **${nextEvt.date}** at **${nextEvt.time_start_end}** in **${nextEvt.venue_zone}**${nextEvt.room_specific ? ` (${nextEvt.room_specific})` : ''} by ${nextEvt.organizer}.${othersCount > 0 ? `\n\nyou've also got **${othersCount} more event${othersCount > 1 ? 's' : ''}** on your going list.` : ''}`,
         referencedEventIds: [nextEvt.id]
       };
     }
@@ -197,7 +194,7 @@ export const ChatBotModal: React.FC = () => {
     if (q.includes('saved') || q.includes('bookmark') || (q.includes('events') && q.includes('save'))) {
       if (!isAuthenticated || !user) {
         return {
-          text: `Please sign in with your FLAME email to view your saved bookmarks!`
+          text: `sign in with your flame email to check your saved bookmarks!`
         };
       }
 
@@ -205,14 +202,13 @@ export const ChatBotModal: React.FC = () => {
 
       if (savedEvts.length === 0) {
         return {
-          text: `You haven't saved any events yet! Click the **Bookmark / Save** icon on any event card to keep it in your personal vault.`
+          text: `you don't have any saved events right now. hit the **Bookmark / Save** icon on any card to save it for later.`
         };
       }
 
       return {
-        text: `📌 You have saved **${savedEvts.length} event${savedEvts.length > 1 ? 's' : ''}**:\n\n` +
-          savedEvts.map((e) => `* **${e.event_name}** (${e.category}) — ${e.date} at ${e.venue_zone}${e.registration_deadline ? ` · Deadline: ${e.registration_deadline.split(' ')[0]}` : ''}`).join('\n') +
-          `\n\nTap any card below to view or manage them!`,
+        text: `you've saved **${savedEvts.length} event${savedEvts.length > 1 ? 's' : ''}**:\n\n` +
+          savedEvts.map((e) => `* **${e.event_name}** (${e.category}) — ${e.date} at ${e.venue_zone}${e.registration_deadline ? ` (deadline: ${e.registration_deadline.split(' ')[0]})` : ''}`).join('\n'),
         referencedEventIds: savedEvts.map((e) => e.id)
       };
     }
@@ -222,7 +218,6 @@ export const ChatBotModal: React.FC = () => {
       const favEvents = events.filter((e) => favouriteEventIds.includes(e.id));
 
       if (favEvents.length === 0) {
-        // Fallback to user.category_preferences
         const userPrefs = user?.category_preferences || [];
         if (userPrefs.length > 0) {
           const matchedByPref = events.filter((e) => 
@@ -231,18 +226,17 @@ export const ChatBotModal: React.FC = () => {
           ).slice(0, 4);
 
           return {
-            text: `You haven't starred any specific events with the ⭐ icon yet, but based on your **interest mapping (${userPrefs.join(', ')})**, here are recommended campus events:\n\n` +
+            text: `you haven't starred any events yet, but based on your **interests (${userPrefs.join(', ')})**, check these out:\n\n` +
               matchedByPref.map(e => `* **${e.event_name}** (${e.category}) on ${e.date}`).join('\n'),
             referencedEventIds: matchedByPref.map(e => e.id)
           };
         }
 
         return {
-          text: `You haven't favourited (starred ⭐) any events yet! Star events you love on the board, and I'll recommend similar upcoming workshops, sports leagues, and exhibitions.`
+          text: `you haven't starred any events with the ⭐ icon yet! star things you like on the board and i'll suggest similar ones.`
         };
       }
 
-      // Collect categories and organizers from favorites
       const favCategories = new Set<string>();
       favEvents.forEach((e) => {
         if (e.category) favCategories.add(e.category.toLowerCase());
@@ -250,7 +244,7 @@ export const ChatBotModal: React.FC = () => {
       });
 
       const similarEvents = events.filter((e) => {
-        if (favouriteEventIds.includes(e.id)) return false; // don't recommend already starred
+        if (favouriteEventIds.includes(e.id)) return false;
         if (e.status === 'Completed' || e.status === 'Cancelled') return false;
         const eCats = `${e.category} ${(e.categories || []).join(' ')}`.toLowerCase();
         return Array.from(favCategories).some((c) => eCats.includes(c));
@@ -258,33 +252,46 @@ export const ChatBotModal: React.FC = () => {
 
       if (similarEvents.length > 0) {
         return {
-          text: `Based on your starred events (*${favEvents.map(e => e.event_name).slice(0, 2).join(', ')}*), here are similar events you'll love:\n\n` +
-            similarEvents.map(e => `* **${e.event_name}** (${e.category}) on **${e.date}** at **${e.venue_zone}**`).join('\n') +
-            `\n\nThey share the same genres and organizers!`,
+          text: `based on what you starred (*${favEvents.map(e => e.event_name).slice(0, 2).join(', ')}*), you might like these:\n\n` +
+            similarEvents.map(e => `* **${e.event_name}** (${e.category}) on **${e.date}** at **${e.venue_zone}**`).join('\n'),
           referencedEventIds: similarEvents.map(e => e.id)
         };
       } else {
         return {
-          text: `You've starred **${favEvents.length} event${favEvents.length > 1 ? 's' : ''}** (${favEvents.map(e => e.event_name).join(', ')})! All upcoming events matching those exact categories are already in your favorites.`
+          text: `you've starred **${favEvents.length} event${favEvents.length > 1 ? 's' : ''}** (${favEvents.map(e => e.event_name).join(', ')})! you're already caught up on all matching events in those categories.`
         };
       }
     }
 
-    // 6. Juice Press / Location queries
-    if (q.includes('juice press') || (q.includes('juice') && q.includes('where'))) {
+    // 6. Timetable / classes query
+    if (q.includes('class') || q.includes('timetable') || q.includes('schedule')) {
+      const todayClasses = user?.academic_timetable?.filter(c => c.day === currentDay) || [];
+      if (todayClasses.length === 0) {
+        return {
+          text: `you don't have any classes on **${currentDay}**! you're totally free.`
+        };
+      }
       return {
-        text: `🥤 **Juice Press is Spot #28 on the campus map!**\n\n* **Location:** It is located right at the base of **West Housing** (near residential Blocks L through S).\n* **What to expect:** Fresh fruit juices, shakes, quick snacks, and a popular student hangout spot.\n* **Directions:** Walk along the paved West hillside road down from the Academic block or Plaza.`,
+        text: `here are your classes for today (**${currentDay}**):\n\n` +
+          todayClasses.map(c => `* **${c.courseName}** — ${c.timeStart} to ${c.timeEnd} (${c.room || 'Academics'})`).join('\n')
       };
     }
 
     // 7. Cricket ground rule
     if (q.includes('cricket') || q.includes('ground') || q.includes('pitch')) {
       return {
-        text: `🏏 **Cricket Ground Regulations:**\n\n* **Walking on the cricket ground is STRICTLY FORBIDDEN** at all times to maintain pitch quality and safety.\n* Always use the paved ring roads and peripheral walking paths around the field to reach Arjuna Centre or the housing blocks!`,
+        text: `nah, walking on the cricket ground isn't allowed at all lol. gotta stick to the paved road around it to keep the pitch intact.`,
       };
     }
 
-    // 8. General search across all events
+    // 8. Juice Press (only if specifically asked)
+    if (q.includes('juice press') || (q.includes('juice') && q.includes('where'))) {
+      return {
+        text: `juice press is spot #28 near west housing (blocks L through S).`,
+      };
+    }
+
+    // 9. General search across all events
     const matchedEvents = events.filter((e) => {
       const fullText = `${e.event_name} ${e.description} ${e.category} ${e.organizer} ${e.venue_zone}`.toLowerCase();
       return fullText.includes(q);
@@ -292,15 +299,15 @@ export const ChatBotModal: React.FC = () => {
 
     if (matchedEvents.length > 0) {
       return {
-        text: `Found **${matchedEvents.length} campus event${matchedEvents.length > 1 ? 's' : ''}** matching "${query}":\n\n` +
+        text: `found **${matchedEvents.length} event${matchedEvents.length > 1 ? 's' : ''}** for "${query}":\n\n` +
           matchedEvents.map(e => `* **${e.event_name}** (${e.category})\n  📅 ${e.date} (${e.time_start_end}) · 📍 ${e.venue_zone}`).join('\n\n'),
         referencedEventIds: matchedEvents.map(e => e.id)
       };
     }
 
-    // 9. Default friendly fallback
+    // 10. Default friendly fallback
     return {
-      text: `I'm here to help with anything FLAME campus related! You can ask me:\n\n* ⚡ **"I'm free rn, what to do?"**\n* 🎬 **"Film competitions coming up?"**\n* 📅 **"What's the next event I'm going to?"**\n* 📌 **"What events have I saved?"**\n* ⭐ **"Recommend events similar to my favourites"**\n* 🥤 **"Where is Juice Press?"**\n* 🗺️ **"Can I walk across the cricket ground?"**`
+      text: `hit me with whatever you need: events coming up, club comps, your classes, or what's on your schedule.`
     };
   };
 
@@ -457,7 +464,7 @@ export const ChatBotModal: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-[#a89b87] font-sans-ui">
-                Your AI Campus Concierge &amp; Schedule Advisor
+                your campus buddy
               </p>
             </div>
           </div>
@@ -482,49 +489,49 @@ export const ChatBotModal: React.FC = () => {
         {/* Quick Suggestion Chips */}
         <div className="px-4 py-2 bg-[#1a1713] border-b border-[#332a20] flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
           <span className="text-[10px] font-bold text-[#8c7e68] uppercase tracking-wider shrink-0 font-mono">
-            Quick Ask:
+            Ask:
           </span>
           <button
             onClick={() => handleSendMessage("I'm free rn what to do?")}
             className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
           >
             <Zap className="w-3 h-3 text-amber-400" />
-            <span>I&apos;m free rn, what to do?</span>
+            <span>free rn what to do?</span>
           </button>
           <button
             onClick={() => handleSendMessage("I wanna take part in some film comp soon what are my options?")}
             className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
           >
             <Film className="w-3 h-3 text-amber-400" />
-            <span>Film competitions soon?</span>
+            <span>any film comps soon?</span>
           </button>
           <button
             onClick={() => handleSendMessage("What's the next event I'm going to?")}
             className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
           >
             <Calendar className="w-3 h-3 text-amber-400" />
-            <span>Next event I&apos;m going to</span>
+            <span>next event i&apos;m going to</span>
           </button>
           <button
             onClick={() => handleSendMessage("What all events have I saved?")}
             className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
           >
             <Bookmark className="w-3 h-3 text-amber-400" />
-            <span>Events I&apos;ve saved</span>
+            <span>events i saved</span>
           </button>
           <button
             onClick={() => handleSendMessage("Are there any events similar to the ones I've favourited/starred?")}
             className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
           >
             <Star className="w-3 h-3 text-amber-400" />
-            <span>Similar to my favourites</span>
+            <span>similar to what i starred</span>
           </button>
           <button
-            onClick={() => handleSendMessage("Where is Juice Press and how to get there?")}
+            onClick={() => handleSendMessage("Do I have any classes today?")}
             className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
           >
-            <MapPin className="w-3 h-3 text-amber-400" />
-            <span>Where is Juice Press?</span>
+            <Clock className="w-3 h-3 text-amber-400" />
+            <span>my classes today</span>
           </button>
         </div>
 
