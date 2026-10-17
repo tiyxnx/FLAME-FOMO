@@ -52,6 +52,7 @@ export const EventDetailModal: React.FC = () => {
     setCurrentTab,
     updateEvent,
     isUserAuthor,
+    canEditEvent,
   } = useApp();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -93,9 +94,9 @@ export const EventDetailModal: React.FC = () => {
     .replace(/\[HAS_INTERVIEW\]/g, '')
     .trim();
 
-  // Allow the author who posted the event (or admin) to edit or delete it
+  // RBAC Permission: Admin can manage any event; Club can manage their own events; Student can manage none
   const isAuthor = isUserAuthor(event);
-  const canManage = isAuthor;
+  const canManage = canEditEvent ? canEditEvent(event) : false;
 
   const savedCount = getEventSavedCount(event, savedEventIds);
   const goingCount = getEventGoingCount(event, goingEventIds);

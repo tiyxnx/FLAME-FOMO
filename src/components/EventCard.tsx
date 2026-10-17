@@ -46,6 +46,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
     deleteEvent,
     openEventFeedback,
     isUserAuthor,
+    canEditEvent,
   } = useApp();
 
   const isSaved = savedEventIds.includes(event.id);
@@ -60,13 +61,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
   const savedCount = getEventSavedCount(event, savedEventIds);
   const goingCount = getEventGoingCount(event, goingEventIds);
   const favCount = getEventFavouriteCount(event, favouriteEventIds);
-  const isAdmin = Boolean(
-    isAuthenticated && 
-    user?.flame_email && 
-    user.flame_email.toLowerCase().trim() === 'tiyana.shah@flame.edu.in'
-  );
+  
+  // RBAC Permission: Admin can edit any; Club can edit their own; Student can edit none
   const isAuthor = isUserAuthor(event);
-  const canEdit = isAuthor || isAdmin;
+  const canEdit = canEditEvent ? canEditEvent(event) : false;
   const isTentative = Boolean(
     event.is_tentative || 
     event.time_start_end?.toLowerCase().includes('tentative') ||

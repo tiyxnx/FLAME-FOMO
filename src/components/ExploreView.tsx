@@ -28,6 +28,7 @@ export const ExploreView: React.FC = () => {
     favouriteEventIds,
     openAuthModal,
     isUserAuthor,
+    canCreateEvents,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -192,8 +193,8 @@ export const ExploreView: React.FC = () => {
           </p>
         </div>
 
-        {/* "My Events" Tab Toggle (Only shown if user has posted on website) */}
-        {hasPostedEvents && (
+        {/* "My Events" Tab Toggle (Only shown if user has posted on website and can create events) */}
+        {hasPostedEvents && canCreateEvents && (
           <div className="flex items-center gap-1.5 bg-[#1b1814] p-1.5 rounded-sm border border-[#3e3428] shrink-0 self-start sm:self-center shadow-lg">
             <button
               onClick={() => setViewMyEventsOnly(false)}

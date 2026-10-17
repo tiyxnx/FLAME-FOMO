@@ -50,7 +50,9 @@ export const ApplicationsView: React.FC = () => {
     openCreateEvent, 
     openEditEvent,
     openEventDetail,
-    isUserAuthor
+    isUserAuthor,
+    canCreateEvents,
+    canEditEvent,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -184,16 +186,18 @@ export const ApplicationsView: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={handleCreateClick}
-              className="px-4 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 rounded-sm font-semibold text-xs sm:text-sm shadow-md flex items-center gap-2 transition-all active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Post an Application</span>
-            </button>
-          </div>
+          {/* Action Button (Strictly for verified Clubs & Admins) */}
+          {canCreateEvents && (
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={handleCreateClick}
+                className="px-4 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 rounded-sm font-semibold text-xs sm:text-sm shadow-md flex items-center gap-2 transition-all active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Post an Application</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Search & Filter Bar */}
@@ -343,7 +347,7 @@ export const ApplicationsView: React.FC = () => {
                     </span>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      {isAuthor && (
+                      {canEditEvent(app) && (
                         <button
                           onClick={() => openEditEvent(app)}
                           className="p-1.5 text-neutral-500 hover:text-neutral-900 bg-white/80 hover:bg-white rounded border border-[#d6cbb0] transition-colors"

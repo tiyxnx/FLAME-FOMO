@@ -28,9 +28,12 @@ export interface ClassScheduleItem {
   room?: string;
 }
 
+export type UserRole = 'admin' | 'club' | 'student';
+
 export interface UserProfile {
   flame_email: string; // Primary key strictly @flame.edu.in
   name: string;
+  role?: UserRole; // 'admin' | 'club' | 'student'
   academic_year: AcademicYear;
   category_preferences: EventCategory[];
   academic_timetable: ClassScheduleItem[];

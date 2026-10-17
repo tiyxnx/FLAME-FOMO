@@ -59,7 +59,9 @@ export const CreateEventModal: React.FC = () => {
     updateEvent, 
     eventToEdit, 
     user,
-    createEventInitialType 
+    createEventInitialType,
+    defaultOrganizerName,
+    canCreateEvents,
   } = useApp();
 
   const [submitError, setSubmitError] = useState<string>('');
@@ -335,7 +337,7 @@ export const CreateEventModal: React.FC = () => {
       setCustomMapPin(null);
       setIsMapPickerOpen(false);
       setLocationCategoryFilter('All');
-      setOrganizer(user?.name ? `${user.name} / Student Org` : 'FLAME Student Initiative');
+      setOrganizer(defaultOrganizerName || (user?.name ? `${user.name} / Student Org` : 'FLAME Student Initiative'));
       setPocName('');
       setPocNumber('');
       setDescription('');
@@ -349,9 +351,9 @@ export const CreateEventModal: React.FC = () => {
       setIsCustomRoom(false);
     }
     setErrorMsg('');
-  }, [eventToEdit, isCreateEventOpen, user, createEventInitialType]);
+  }, [eventToEdit, isCreateEventOpen, user, createEventInitialType, defaultOrganizerName]);
 
-  if (!isCreateEventOpen) return null;
+  if (!isCreateEventOpen || !canCreateEvents) return null;
 
   // Handle File Upload from device (Phone / Laptop)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

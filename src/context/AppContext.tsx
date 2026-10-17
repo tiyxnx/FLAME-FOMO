@@ -18,6 +18,18 @@ import {
   EventPostRateLimitResult,
   isAdminModerator
 } from '@/lib/constants';
+import { 
+  UserRole,
+  getUserRole,
+  isUserAdmin,
+  isUserClubOrganizer,
+  canUserCreateEvents,
+  canUserEditEvent,
+  canUserDeleteEvent,
+  canUserViewEventFeedback,
+  getClubNameForEmail,
+  getOrganizerDefaultName,
+} from '@/lib/permissions';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface ClashInfo {
@@ -29,6 +41,17 @@ interface ClashInfo {
 interface AppContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
+
+  // RBAC Role & Permission flags
+  userRole: UserRole;
+  isAdmin: boolean;
+  isClubOrganizer: boolean;
+  canCreateEvents: boolean;
+  canEditEvent: (event: EventItem) => boolean;
+  canDeleteEvent: (event: EventItem) => boolean;
+  canViewEventFeedback: (event: EventItem) => boolean;
+  clubName?: string;
+  defaultOrganizerName?: string;
   events: EventItem[];
   savedEventIds: string[];
   goingEventIds: string[];
@@ -449,7 +472,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const openCreateEvent = (initialType?: 'event' | 'application' | any) => {
     const cleanType: 'event' | 'application' = initialType === 'application' ? 'application' : 'event';
     if (!user) {
-      openAuthModal(cleanType === 'application' ? 'Sign in with your FLAME email to post applications.' : 'Sign in with your FLAME email to post events.');
+      openAuthModal(cleanType === 'application' ? 'Sign in with an authorized Club or Admin email to post applications.' : 'Sign in with an authorized Club or Admin email to post events.');
+      return;
+    }
+    if (!canUserCreateEvents(user.flame_email)) {
+      alert('Access restricted: Only verified FLAME Clubs, Committees, and Administrators have permission to post events or applications. Student accounts have personal viewing access.');
       return;
     }
     setCreateEventInitialType(cleanType);
@@ -458,6 +485,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const openEditEvent = (evt: EventItem) => {
+    if (!canUserEditEvent(user?.flame_email, evt, myCreatedEventIds.includes(evt.id))) {
+      alert('Access restricted: You do not have permission to edit this event.');
+      return;
+    }
     setEventToEdit(evt);
     setIsCreateEventOpen(true);
   };
@@ -1035,6 +1066,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   ): { success: boolean; error?: string } => {
     const userEmail = user?.flame_email || 'guest@flame.edu.in';
     
+    // RBAC: Only Admin and Clubs can add events
+    if (!canUserCreateEvents(userEmail)) {
+      return { 
+        success: false, 
+        error: 'Access restricted: Only verified FLAME Clubs, Committees, and Administrators can post events or applications. Student accounts have personal viewing access.' 
+      };
+    }
+
     // Check rate limit: All emails except admin/gmail are limited to 2 events per hour
     const rateLimit = checkEventPostRateLimit(userEmail, events);
     if (!rateLimit.allowed) {
@@ -1168,6 +1207,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteEvent = (eventId: string) => {
+    const targetEvent = events.find((e) => e.id === eventId);
+    if (targetEvent && !canUserDeleteEvent(user?.flame_email, targetEvent, myCreatedEventIds.includes(eventId))) {
+      alert('Access restricted: You do not have permission to delete this event.');
+      return;
+    }
     const updated = events.filter((e) => e.id !== eventId);
     saveEventsToStorage(updated);
     if (selectedEventForDetail?.id === eventId) {
@@ -1199,21 +1243,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
+  // RBAC Permission checks based on authenticated user email
+  const userRole: UserRole = getUserRole(user?.flame_email);
+  const isAdmin: boolean = isUserAdmin(user?.flame_email);
+  const isClubOrganizer: boolean = isUserClubOrganizer(user?.flame_email);
+  const canCreateEvents: boolean = canUserCreateEvents(user?.flame_email);
+  const clubName: string | undefined = getClubNameForEmail(user?.flame_email);
+  const defaultOrganizerName: string | undefined = getOrganizerDefaultName(user?.flame_email);
+
+  const canEditEvent = (event: EventItem): boolean => {
+    return canUserEditEvent(user?.flame_email, event, myCreatedEventIds.includes(event.id));
+  };
+
+  const canDeleteEvent = (event: EventItem): boolean => {
+    return canUserDeleteEvent(user?.flame_email, event, myCreatedEventIds.includes(event.id));
+  };
+
+  const canViewEventFeedback = (event: EventItem): boolean => {
+    return canUserViewEventFeedback(user?.flame_email, event);
+  };
+
   const isUserAuthor = (event: EventItem): boolean => {
-    const userEmail = (user?.flame_email || '').toLowerCase().trim();
-    if (!userEmail) return false;
-
-    if (event.submitted_by) {
-      const author = event.submitted_by.toLowerCase().trim();
-      const username = userEmail.split('@')[0];
-      if (author === userEmail || author === username) return true;
-    }
-
-    if (myCreatedEventIds.includes(event.id)) {
-      return true;
-    }
-
-    return false;
+    return canEditEvent(event);
   };
 
   const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
@@ -1223,6 +1274,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         user,
         isAuthenticated: Boolean(user),
+        userRole,
+        isAdmin,
+        isClubOrganizer,
+        canCreateEvents,
+        canEditEvent,
+        canDeleteEvent,
+        canViewEventFeedback,
+        clubName,
+        defaultOrganizerName,
         events,
         savedEventIds: user?.saved_events || [],
         goingEventIds: user?.going_events || [],

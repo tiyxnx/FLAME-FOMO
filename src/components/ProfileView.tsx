@@ -54,6 +54,11 @@ export const ProfileView: React.FC = () => {
     setCurrentTab,
     openOnboarding,
     isUserAuthor,
+    isAdmin,
+    userRole,
+    canCreateEvents,
+    canEditEvent,
+    clubName,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'preferences' | 'saved' | 'submitted'>('preferences');
@@ -80,11 +85,8 @@ export const ProfileView: React.FC = () => {
   // Tab 2: Bookmarked & Going Events
   const bookmarkedEvents = events.filter((e) => savedEventIds.includes(e.id) || goingEventIds.includes(e.id));
 
-  // Tab 3: Events user published
-  const userEmail = (user.flame_email || '').toLowerCase().trim();
-  const isAdmin = userEmail === 'tiyana.shah@flame.edu.in';
-  
-  const submittedEvents = events.filter(isUserAuthor);
+  // Tab 3: Events user published or can manage (Admin manages all, Club manages their own)
+  const submittedEvents = isAdmin ? events : events.filter(isUserAuthor);
 
   const toggleCategory = (cat: EventCategory) => {
     if (preferences.includes(cat)) {
@@ -147,13 +149,25 @@ export const ProfileView: React.FC = () => {
               {user.name.charAt(0)}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-100">
                   {user.name}
                 </h2>
-                <span className="px-2 py-0.5 bg-amber-400/20 text-amber-300 font-mono text-xs rounded border border-amber-400/30">
-                  {user.academic_year}
-                </span>
+                {userRole === 'admin' && (
+                  <span className="px-2 py-0.5 bg-red-950/90 text-red-200 border border-red-500/50 font-mono text-xs rounded font-bold">
+                    🛡️ Admin
+                  </span>
+                )}
+                {userRole === 'club' && (
+                  <span className="px-2 py-0.5 bg-purple-950/90 text-purple-200 border border-purple-500/50 font-mono text-xs rounded font-bold">
+                    🏛️ {clubName || 'Verified Club'}
+                  </span>
+                )}
+                {userRole === 'student' && (
+                  <span className="px-2 py-0.5 bg-amber-400/20 text-amber-300 font-mono text-xs rounded border border-amber-400/30">
+                    {user.academic_year}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[#a89b87] font-mono mt-0.5">{user.flame_email}</p>
               
@@ -163,14 +177,18 @@ export const ProfileView: React.FC = () => {
                   <Bookmark className="w-3.5 h-3.5 text-amber-400" />
                   <strong>{bookmarkedEvents.length}</strong> Saved
                 </span>
-                <span>·</span>
-                <button
-                  onClick={() => setActiveTab('submitted')}
-                  className="flex items-center gap-1 text-amber-200 hover:text-amber-100 hover:underline transition-colors"
-                >
-                  <FileEdit className="w-3.5 h-3.5 text-amber-400" />
-                  <strong>{submittedEvents.length}</strong> {isAdmin ? 'Total Events' : 'Posted Events'}
-                </button>
+                {canCreateEvents && (
+                  <>
+                    <span>·</span>
+                    <button
+                      onClick={() => setActiveTab('submitted')}
+                      className="flex items-center gap-1 text-amber-200 hover:text-amber-100 hover:underline transition-colors"
+                    >
+                      <FileEdit className="w-3.5 h-3.5 text-amber-400" />
+                      <strong>{submittedEvents.length}</strong> {isAdmin ? 'Total Events' : 'Posted Events'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -183,18 +201,20 @@ export const ProfileView: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               <span>Edit Quiz Answers</span>
             </button>
-            <button
-              onClick={() => openCreateEvent()}
-              className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs font-bold rounded-xs shadow flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Post Event</span>
-            </button>
+            {canCreateEvents && (
+              <button
+                onClick={() => openCreateEvent()}
+                className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs font-bold rounded-xs shadow flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Post Event</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* The Three Tabs */}
+      {/* The Tabs */}
       <div className="flex border-b border-[#3d3429] mb-6">
         <button
           onClick={() => setActiveTab('preferences')}
@@ -205,7 +225,7 @@ export const ProfileView: React.FC = () => {
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          <span>1. Schedule & Interests</span>
+          <span>1. Schedule &amp; Interests</span>
         </button>
 
         <button
@@ -220,17 +240,19 @@ export const ProfileView: React.FC = () => {
           <span>2. Saved Events ({bookmarkedEvents.length})</span>
         </button>
 
-        <button
-          onClick={() => setActiveTab('submitted')}
-          className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'submitted'
-              ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
-          }`}
-        >
-          <FileEdit className="w-4 h-4" />
-          <span>3. {isAdmin ? `All Events (${submittedEvents.length})` : `Your Posted Events (${submittedEvents.length})`}</span>
-        </button>
+        {canCreateEvents && (
+          <button
+            onClick={() => setActiveTab('submitted')}
+            className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'submitted'
+                ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
+                : 'border-transparent text-neutral-400 hover:text-neutral-200'
+            }`}
+          >
+            <FileEdit className="w-4 h-4" />
+            <span>3. {isAdmin ? `All Events (${submittedEvents.length})` : `Your Posted Events (${submittedEvents.length})`}</span>
+          </button>
+        )}
       </div>
 
       {/* TAB 1: Edit Preferences & Timetable */}

@@ -5,10 +5,11 @@ import { useApp } from '@/context/AppContext';
 import { Plus, Sparkles } from 'lucide-react';
 
 export const FloatingActionButton: React.FC = () => {
-  const { isAuthenticated, openCreateEvent, currentTab } = useApp();
+  const { isAuthenticated, openCreateEvent, currentTab, canCreateEvents } = useApp();
 
-  // Crucial requirement: hidden for Guest Users, strictly visible for authenticated students
-  if (!isAuthenticated) {
+  // Crucial RBAC requirement: Only Admins and verified Clubs/Committees can add events
+  // Strictly hidden for unauthenticated guests and regular student sign-in accounts
+  if (!isAuthenticated || !canCreateEvents) {
     return null;
   }
 

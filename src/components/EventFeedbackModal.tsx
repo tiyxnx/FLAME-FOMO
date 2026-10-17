@@ -48,10 +48,12 @@ export const EventFeedbackModal: React.FC = () => {
     deleteEventFeedback,
     user,
     isAuthenticated,
-    openAuthModal
+    openAuthModal,
+    canViewEventFeedback,
+    isAdmin,
   } = useApp();
 
-  const isModerator = isAdminModerator(user?.flame_email);
+  const isModerator = isAdmin;
 
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
@@ -348,33 +350,34 @@ export const EventFeedbackModal: React.FC = () => {
             </div>
           )}
 
-          {/* Past Anonymous Student Reviews Feed */}
-          {event.feedback && event.feedback.length > 0 && (
-            <div className="pt-4 border-t border-[#e2d6b5] space-y-2">
-              <h5 className="font-editorial text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center justify-between">
-                <span>Verified Attendee Reviews ({event.feedback.length})</span>
-                <span className="text-[10px] text-amber-700 font-mono">
-                  {isModerator ? '🛡️ Moderator View' : '100% Anonymous'}
-                </span>
-              </h5>
+          {/* Past Student Reviews Feed (Strictly restricted to Admin and the Event's Organizing Club) */}
+          {canViewEventFeedback(event) ? (
+            event.feedback && event.feedback.length > 0 ? (
+              <div className="pt-4 border-t border-[#e2d6b5] space-y-2">
+                <h5 className="font-editorial text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center justify-between">
+                  <span>Student Feedback &amp; Reviews ({event.feedback.length})</span>
+                  <span className="text-[10px] text-amber-700 font-mono">
+                    {isModerator ? '🛡️ Admin Moderator View' : '🏛️ Club Organizer View'}
+                  </span>
+                </h5>
 
-              {/* Moderator Alert Banner (Only shown to admin) */}
-              {isModerator && (
-                <div className="p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-sm text-xs text-purple-950 flex items-start gap-2 shadow-2xs">
-                  <ShieldAlert className="w-4 h-4 text-purple-700 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-purple-900">🛡️ Moderator Visibility Active</span>
-                      <span className="text-[9px] font-mono font-bold bg-purple-200/90 text-purple-900 px-1.5 py-0.5 rounded-2xs uppercase">
-                        Admin Only
-                      </span>
+                {/* Moderator Alert Banner (Only shown to admin) */}
+                {isModerator && (
+                  <div className="p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-sm text-xs text-purple-950 flex items-start gap-2 shadow-2xs">
+                    <ShieldAlert className="w-4 h-4 text-purple-700 shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-purple-900">🛡️ Moderator Visibility Active</span>
+                        <span className="text-[9px] font-mono font-bold bg-purple-200/90 text-purple-900 px-1.5 py-0.5 rounded-2xs uppercase">
+                          Admin Only
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-purple-800 mt-0.5 leading-snug">
+                        Reviews appear as <em>&quot;Anonymous student&quot;</em> to all regular students. Real reviewer emails are visible strictly to you ({user?.flame_email}) for campus safety and moderation.
+                      </p>
                     </div>
-                    <p className="text-[11px] text-purple-800 mt-0.5 leading-snug">
-                      Reviews appear as <em>&quot;Anonymous student&quot;</em> to all regular students. Real reviewer emails are visible strictly to you ({user?.flame_email}) for campus safety and moderation.
-                    </p>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                 {event.feedback.map((fb) => (
@@ -441,7 +444,7 @@ export const EventFeedbackModal: React.FC = () => {
                 ))}
               </div>
             </div>
-          )}
+          ) : null) : null}
 
         </div>
       </div>

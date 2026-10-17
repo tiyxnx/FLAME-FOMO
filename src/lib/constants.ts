@@ -583,20 +583,16 @@ export const isEventActive = (
 // ==============================================================================
 // RATE LIMITING & EXEMPTIONS
 // ==============================================================================
-export const ADMIN_EXEMPT_EMAILS = [
-  'tiyanashah21@gmail.com',
-  'tiyana.shah@flame.edu.in',
-];
+import { ADMIN_EMAILS, isUserAdmin } from './permissions';
+
+export const ADMIN_EXEMPT_EMAILS = ADMIN_EMAILS;
 
 export const isAdminModerator = (email?: string): boolean => {
-  if (!email) return false;
-  const normalized = email.toLowerCase().trim();
-  if (normalized.includes('tiyana')) return true;
-  return ADMIN_EXEMPT_EMAILS.some((admin) => admin.toLowerCase() === normalized);
+  return isUserAdmin(email);
 };
 
 export const isExemptFromEventPostRateLimit = (email?: string): boolean => {
-  return isAdminModerator(email);
+  return isUserAdmin(email);
 };
 
 export const EVENT_POST_RATE_LIMIT = 2; // Maximum 2 events per hour for non-exempt accounts
