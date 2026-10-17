@@ -294,22 +294,22 @@ export const CampusMap: React.FC = () => {
         {/* ============================================================ */}
         {/* LEFT COLUMN: "MY PLAN" HERO CARD                             */}
         {/* ============================================================ */}
-        <div className="p-3.5 sm:p-4 bg-gradient-to-r from-[#2a1c0d] via-[#1f1912] to-[#171410] border-2 border-amber-500/70 rounded-xl shadow-xl flex flex-col justify-between">
+        <div className="p-3.5 sm:p-4 bg-gradient-to-r from-[#2a1c0d] via-[#1f1912] to-[#171410] border-2 border-amber-500/70 rounded-xl shadow-xl flex flex-col justify-between overflow-hidden min-w-0">
           <div>
             {/* Header row with event dropdown selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#3d3224]">
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-400 text-neutral-950 uppercase flex items-center gap-1 shadow-sm">
+            <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#3d3224]">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-400 text-neutral-950 uppercase flex items-center gap-1 shadow-sm shrink-0">
                   <Sparkles className="w-3 h-3 text-neutral-950" />
-                  <span>My Plan {planItemsWithLocations.length > 0 ? `(${planItemsWithLocations.length} Events)` : ''}</span>
+                  <span>My Plan {planItemsWithLocations.length > 0 ? `(${planItemsWithLocations.length})` : ''}</span>
                 </span>
-                <span className="text-xs text-[#a89982] hidden sm:inline">
-                  Select event to route:
+                <span className="text-[11px] text-[#a89982] truncate hidden sm:inline">
+                  Committed Stops
                 </span>
               </div>
 
               {planItemsWithLocations.length > 0 && selectedPlanItem && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 shrink-0">
                   <label htmlFor="plan-event-select" className="text-[11px] text-[#c7bc9f] font-medium shrink-0">
                     Switch:
                   </label>
@@ -317,7 +317,7 @@ export const CampusMap: React.FC = () => {
                     id="plan-event-select"
                     value={selectedPlanItem.event.id}
                     onChange={(e) => handleSelectPlanEvent(e.target.value)}
-                    className="bg-[#14120e] border border-amber-500/60 text-amber-200 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400 font-sans-ui max-w-[210px] truncate"
+                    className="bg-[#14120e] border border-amber-500/60 text-amber-200 text-xs rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400 font-sans-ui max-w-[170px] sm:max-w-[210px] truncate"
                   >
                     {planItemsWithLocations.map((item, idx) => (
                       <option key={`select-opt-${item.event.id}`} value={item.event.id}>
@@ -331,60 +331,63 @@ export const CampusMap: React.FC = () => {
 
             {/* Active Event Showcase or Empty Tip */}
             {selectedPlanItem ? (
-              <div className="pt-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400 flex items-center justify-center shrink-0 text-amber-300 shadow-sm mt-0.5">
-                      <Calendar className="w-4 h-4 text-amber-400" />
+              <div className="pt-2.5 space-y-2.5">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400 flex items-center justify-center shrink-0 text-amber-300 shadow-sm mt-0.5">
+                    <Calendar className="w-4 h-4 text-amber-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#382b1c] text-amber-300 border border-amber-500/40 shrink-0">
+                        Active Destination
+                      </span>
+                      <span className="text-[11px] text-amber-200/90 font-medium truncate">
+                        {selectedPlanItem.event.date} · {selectedPlanItem.event.time_start_end}
+                      </span>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#382b1c] text-amber-300 border border-amber-500/40">
-                          Active Destination
-                        </span>
-                        <span className="text-[11px] text-amber-200/90 font-medium">
-                          {selectedPlanItem.event.date} · {selectedPlanItem.event.time_start_end}
-                        </span>
-                      </div>
-                      <h2 className="text-base font-bold text-[#fdfaf3] mt-0.5 leading-snug">
-                        {selectedPlanItem.event.event_name}
-                      </h2>
-                      <div className="flex items-center gap-1.5 text-xs text-[#b8ab96] mt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                        <span className="truncate">
-                          {selectedPlanItem.location.building} · {selectedPlanItem.location.name}
-                          {selectedPlanItem.location.officialNumber ? ` (Map #${selectedPlanItem.location.officialNumber})` : ''}
-                        </span>
-                      </div>
+                    <h2 className="text-base font-bold text-[#fdfaf3] mt-0.5 leading-snug line-clamp-2">
+                      {selectedPlanItem.event.event_name}
+                    </h2>
+                    <div className="flex items-center gap-1.5 text-xs text-[#b8ab96] mt-0.5 min-w-0">
+                      <MapPin className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                      <span className="truncate">
+                        {selectedPlanItem.location.building} · {selectedPlanItem.location.name}
+                        {selectedPlanItem.location.officialNumber ? ` (Map #${selectedPlanItem.location.officialNumber})` : ''}
+                      </span>
                     </div>
                   </div>
+                </div>
 
-                  {/* Route Status / Walk Pill */}
-                  <div className="shrink-0 flex flex-col items-end gap-1">
-                    {activeRoute && destinationLocationId === selectedPlanItem.location.id && (
-                      <div className="px-2.5 py-1 bg-amber-950/80 border border-amber-400/60 rounded-lg text-xs font-bold text-amber-300 flex items-center gap-1">
-                        <Footprints className="w-3.5 h-3.5" />
-                        <span>{activeRoute.walkTimeMinutes} min ({activeRoute.distanceMeters}m)</span>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => setDestinationLocationId(selectedPlanItem.location.id)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-                        destinationLocationId === selectedPlanItem.location.id
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'bg-amber-400 hover:bg-amber-300 text-neutral-950'
-                      }`}
-                    >
-                      <Navigation className="w-3 h-3" />
-                      <span>{destinationLocationId === selectedPlanItem.location.id ? 'Route Active' : 'Show Route'}</span>
-                    </button>
-                  </div>
+                {/* Dedicated Walk Status Bar & Route Action (No clipping or overflow) */}
+                <div className="flex items-center justify-between gap-2 p-2 bg-[#14110d]/90 rounded-lg border border-[#3a3023]">
+                  {activeRoute && destinationLocationId === selectedPlanItem.location.id ? (
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 truncate">
+                      <Footprints className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span className="truncate">{activeRoute.walkTimeMinutes} min walk ({activeRoute.distanceMeters}m)</span>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-[#a89982] truncate">
+                      Tap to view walking route
+                    </span>
+                  )}
+                  
+                  <button
+                    onClick={() => setDestinationLocationId(selectedPlanItem.location.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                      destinationLocationId === selectedPlanItem.location.id
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                        : 'bg-amber-400 hover:bg-amber-300 text-neutral-950'
+                    }`}
+                  >
+                    <Navigation className="w-3 h-3" />
+                    <span>{destinationLocationId === selectedPlanItem.location.id ? 'Route Active' : 'Show Route'}</span>
+                  </button>
                 </div>
 
                 {/* Quick event pills if multiple events */}
                 {planItemsWithLocations.length > 1 && (
-                  <div className="mt-3 pt-2.5 border-t border-[#3d3224]">
-                    <div className="text-[10px] text-[#8c7e68] font-medium mb-1.5">Tap Any Event to Chart Route:</div>
+                  <div className="pt-2 border-t border-[#3d3224]">
+                    <div className="text-[10px] text-[#8c7e68] font-medium mb-1">Your Events (Tap to switch):</div>
                     <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] pb-0.5">
                       {planItemsWithLocations.map((item, idx) => {
                         const isSelected = selectedPlanItem.event.id === item.event.id;
@@ -428,7 +431,7 @@ export const CampusMap: React.FC = () => {
         {/* ============================================================ */}
         {/* RIGHT COLUMN: ROUTE CONTROLS WITH SIMPLE ROAD INSTRUCTIONS   */}
         {/* ============================================================ */}
-        <div className="p-3.5 sm:p-4 bg-[#171410] border border-[#382f23] rounded-xl shadow-md flex flex-col justify-between">
+        <div className="p-3.5 sm:p-4 bg-[#171410] border border-[#382f23] rounded-xl shadow-md flex flex-col justify-between overflow-hidden min-w-0">
           <div>
             {/* Origin & Destination Selectors */}
             <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] gap-2 items-center">
