@@ -57,8 +57,8 @@ export const CampusMap: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   // Wayfinding Origin & Destination
-  // Default: Start at Charlies Cafe (#33 inside APJ #2) -> Destination: Shantiniketan Auditorium (#49)
-  const [originLocationId, setOriginLocationId] = useState<string>('other-charlies');
+  // Default: Start at Vivekananda Library (#3) -> Destination: Shantiniketan Auditorium (#49)
+  const [originLocationId, setOriginLocationId] = useState<string>('other-vivekananda-library');
   const [destinationLocationId, setDestinationLocationId] = useState<string>('hall-shantiniketan-auditorium');
 
   // Active / Selected Pin or Building Details
@@ -180,15 +180,16 @@ export const CampusMap: React.FC = () => {
 
   // Quick origins chips
   const quickOrigins = [
-    { label: '☕ Charlies (#33 inside APJ)', id: 'other-charlies' },
+    { label: '📚 Library (#3)', id: 'other-vivekananda-library' },
     { label: '🏛️ APJ001 (#2)', id: 'room-apj001' },
     { label: '🍽️ Aahar Dining (#25)', id: 'other-aahar' },
-    { label: '📚 Library (#3)', id: 'other-vivekananda-library' },
-    { label: '🥐 Hashtag (#29 Chandragupta)', id: 'other-hashtag' },
-    { label: '🏆 Arjuna Complex (#18)', id: 'sports-arjuna-complex-main' },
     { label: '🎭 Shantiniketan (#49)', id: 'hall-shantiniketan-auditorium' },
+    { label: '🏆 Arjuna Sports (#18)', id: 'sports-arjuna-complex-main' },
+    { label: '🏛️ Chandragupta (#12)', id: 'other-hashtag' },
+    { label: '🥤 Juice Press (#28)', id: 'other-juice-press' },
     { label: '🏠 West Housing (#41)', id: 'other-west-housing' },
     { label: '🏠 South Housing (#42)', id: 'other-south-housing' },
+    { label: '🚪 Main Entrance (#46)', id: 'other-main-entrance' },
   ];
 
   return (
@@ -213,7 +214,7 @@ export const CampusMap: React.FC = () => {
           </h1>
 
           <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5 max-w-2xl">
-            Integrated official 54-building illustrated map and Google Maps satellite feed. Discover accurate room locations (Charlies inside APJ #2, Hashtag in Chandragupta #12) and turn-by-turn walking routes.
+            Integrated official 54-building master plan and Google Maps satellite feed. Discover classrooms, sports facilities, eateries (Juice Press #28 in West Housing, Hashtag in Chandragupta #12), and turn-by-turn walking routes.
           </p>
         </div>
 
@@ -310,18 +311,19 @@ export const CampusMap: React.FC = () => {
                     onChange={(e) => setOriginLocationId(e.target.value)}
                     className="w-full bg-[#1b1814] border border-[#4d402f] text-[#fbf7ee] text-xs sm:text-sm rounded p-2.5 pr-8 focus:outline-none focus:border-emerald-500 font-sans-ui"
                   >
-                    <optgroup label="Popular Venues & Eateries">
-                      <option value="other-charlies">☕ Charlies Cafe (#33 inside APJ #2)</option>
-                      <option value="room-apj001">🏛️ APJ001 (#2 APJ Abdul Kalam)</option>
-                      <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
+                    <optgroup label="Popular Hubs & Eateries">
                       <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
+                      <option value="room-apj001">🏛️ APJ001 (#2 APJ Abdul Kalam)</option>
+                      <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
+                      <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
+                      <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
+                      <option value="other-juice-press">🥤 Juice Press (#28 West Housing)</option>
                       <option value="other-hashtag">🥐 Hashtag Cafe (#29 in Chandragupta #12)</option>
                       <option value="sports-cricket-ground">🏏 Cricket Ground (#19)</option>
-                      <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
-                      <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
                       <option value="other-south-housing">🏠 East & South Housing (#42)</option>
                       <option value="other-west-housing">🏠 West Housing Blocks (#41)</option>
                       <option value="other-main-entrance">🚪 FLAME Main Entrance Gate (#46)</option>
+                      <option value="other-charlies">☕ Charlies Cafe (#33 in APJ #2)</option>
                     </optgroup>
                     <optgroup label="Classrooms & Academic Blocks">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Classrooms').map((loc) => (
@@ -377,17 +379,18 @@ export const CampusMap: React.FC = () => {
                     onChange={(e) => setDestinationLocationId(e.target.value)}
                     className="w-full bg-[#1b1814] border border-[#4d402f] text-[#fbf7ee] text-xs sm:text-sm rounded p-2.5 pr-8 focus:outline-none focus:border-red-500 font-sans-ui"
                   >
-                    <optgroup label="Popular Venues & Eateries">
+                    <optgroup label="Popular Hubs & Eateries">
                       <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
-                      <option value="other-charlies">☕ Charlies Cafe (#33 inside APJ #2)</option>
+                      <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
                       <option value="room-apj001">🏛️ APJ001 (#2 APJ Abdul Kalam)</option>
                       <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
-                      <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
-                      <option value="other-hashtag">🥐 Hashtag Cafe (#29 in Chandragupta #12)</option>
                       <option value="sports-gymnasium">💪 Gymnasium & Fitness Studio (#18)</option>
                       <option value="sports-swimming-pool">🏊 Half-Olympic Pool (#18)</option>
+                      <option value="other-juice-press">🥤 Juice Press (#28 West Housing)</option>
+                      <option value="other-hashtag">🥐 Hashtag Cafe (#29 in Chandragupta #12)</option>
                       <option value="sports-cricket-ground">🏏 Cricket Ground (#19)</option>
                       <option value="sports-football-field">⚽ Football Ground (#20)</option>
+                      <option value="other-charlies">☕ Charlies Cafe (#33 in APJ #2)</option>
                     </optgroup>
                     <optgroup label="Classrooms (APJ, ARB, Chandragupta, Chanakya, Raman...)">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Classrooms').map((loc) => (
@@ -882,8 +885,8 @@ export const CampusMap: React.FC = () => {
                       <span 
                         key={i} 
                         className={`px-2 py-0.5 rounded text-[10px] font-sans-ui ${
-                          v.includes('Charlies') || v.includes('Hashtag') || v.includes('Cafe')
-                            ? 'bg-amber-500/20 text-amber-200 border border-amber-500/40 font-bold'
+                          v.includes('Cafe') || v.includes('Press') || v.includes('Dining')
+                            ? 'bg-[#2b251d] text-amber-300 border border-amber-600/30'
                             : 'bg-[#26211a] text-[#d6cbaf] border border-[#3e3427]'
                         }`}
                       >
@@ -1053,7 +1056,7 @@ export const CampusMap: React.FC = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by room, Charlies, APJ, Shantiniketan, gym..."
+                    placeholder="Search classrooms (APJ, ARB, CC), Shantiniketan, Library, Juice Press, sports..."
                     className="w-full bg-[#1b1814] border border-[#4d402f] text-neutral-100 text-xs rounded pl-9 pr-8 py-2 focus:outline-none focus:border-amber-400 placeholder-[#7c6f5d]"
                   />
                   {searchQuery && (

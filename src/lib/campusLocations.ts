@@ -54,9 +54,9 @@ export const OFFICIAL_CAMPUS_BUILDINGS: OfficialBuilding[] = [
     y: 31.8,
     satX: 52.0,
     satY: 40.0,
-    description: 'Flagship curved academic building overlooking the cricket pitch. Houses Charlies Cafe (#33), APJ classrooms 001–106, and the APJ Design Lab.',
-    insideVenues: ['Charlies Cafe (#33)', 'APJ001', 'APJ002', 'APJ003', 'APJ004', 'APJ005', 'APJ006', 'APJ101', 'APJ102', 'APJ103', 'APJ104', 'APJ105', 'APJ106', 'Design Lab'],
-    hubNodeId: 'hub_apj_charlies',
+    description: 'Flagship curved academic building overlooking campus grounds. Houses APJ classrooms 001–106, faculty cabins, and the APJ Design Lab (with Charlies Cafe #33 on the ground floor).',
+    insideVenues: ['APJ001', 'APJ002', 'APJ003', 'APJ004', 'APJ005', 'APJ006', 'APJ101', 'APJ102', 'APJ103', 'APJ104', 'APJ105', 'APJ106', 'Design Lab', 'Charlies Cafe (#33)'],
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     number: 3,
@@ -260,9 +260,9 @@ export const OFFICIAL_CAMPUS_BUILDINGS: OfficialBuilding[] = [
     y: 46.4,
     satX: 43.0,
     satY: 11.0,
-    description: 'Full-size natural grass cricket oval with turf wicket and spectator viewing mound facing APJ Abdul Kalam Block.',
-    insideVenues: ['Cricket Oval', 'Practice Batting Nets'],
-    hubNodeId: 'hub_cricket_plaza',
+    description: 'Full-size natural grass cricket oval with central turf wicket, practice nets, and spectator mound. Note: Walking across the grass pitch is strictly prohibited; access via the western spectator promenade.',
+    insideVenues: ['Cricket Spectator Mound', 'Practice Batting Nets'],
+    hubNodeId: 'hub_cricket_pavilion',
   },
   {
     number: 20,
@@ -366,13 +366,13 @@ export const OFFICIAL_CAMPUS_BUILDINGS: OfficialBuilding[] = [
     number: 28,
     name: 'Juice Press',
     category: 'Eateries',
-    x: 61.8,
-    y: 55.6,
-    satX: 50.2,
-    satY: 48.5,
-    description: 'Fresh seasonal fruit juices, cold-pressed cleansers, smoothies, and fruit bowls near FLAME Kund.',
+    x: 42.5,
+    y: 34.1,
+    satX: 18.0,
+    satY: 38.0,
+    description: 'Fresh seasonal fruit juices, cold-pressed cleansers, and smoothies in the West Housing Quad courtyard between Blocks 41-H & 41-G.',
     insideVenues: ['Juice Press Bar'],
-    hubNodeId: 'hub_aahar_quad',
+    hubNodeId: 'hub_west_housing',
   },
   {
     number: 29,
@@ -430,19 +430,19 @@ export const OFFICIAL_CAMPUS_BUILDINGS: OfficialBuilding[] = [
     y: 28.2,
     satX: 53.0,
     satY: 39.0,
-    description: 'The iconic FLAME student cafe located INSIDE APJ Abdul Kalam Block (#2), ground floor east wing. Serving espresso coffee, grilled paninis, ice tea, and rolls overlooking the cricket ground terrace.',
-    insideVenues: ['Charlies Indoor & Terrace Seating'],
-    hubNodeId: 'hub_apj_charlies',
+    description: 'Casual cafe located inside APJ Abdul Kalam Block (#2), ground floor east wing. Serving coffee, sandwiches, and quick snacks.',
+    insideVenues: ['Charlies Seating Counter'],
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     number: 34,
     name: 'Food Truck',
     category: 'Eateries',
-    x: 38.0,
-    y: 32.0,
+    x: 38.3,
+    y: 33.4,
     satX: 15.0,
     satY: 38.0,
-    description: 'Rotating food truck pop-up stationed in the West Housing central quad serving tacos, burgers, and evening snacks.',
+    description: 'Rotating food truck stationed in the West Housing central quad serving tacos, burgers, and evening snacks.',
     insideVenues: ['Food Truck Court'],
     hubNodeId: 'hub_west_housing',
   },
@@ -470,7 +470,7 @@ export const OFFICIAL_CAMPUS_BUILDINGS: OfficialBuilding[] = [
     satY: 18.0,
     description: 'Biodiversity reserve with nectar-rich flowering shrubs attracting indigenous butterflies and birds north of Cricket Ground.',
     insideVenues: ['Butterfly Trail'],
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     number: 37,
@@ -710,23 +710,32 @@ export interface CampusHubNode {
 }
 
 export const CAMPUS_HUB_NODES: Record<string, CampusHubNode> = {
-  hub_apj_charlies: {
-    id: 'hub_apj_charlies',
-    name: 'APJ Abdul Kalam (#2) & Charlies Cafe (#33)',
-    x: 72.5,
-    y: 31.0,
+  hub_apj_kalam: {
+    id: 'hub_apj_kalam',
+    name: 'APJ Abdul Kalam Block (#2)',
+    x: 71.8,
+    y: 31.8,
     satX: 52.0,
     satY: 40.0,
-    description: 'Curved academic block overlooking cricket pitch; houses APJ001–106 and Charlies Cafe (#33) on the ground floor east wing',
+    description: 'Curved academic block overlooking campus grounds; houses APJ classrooms 001–106, faculty offices, and Design Lab',
   },
-  hub_cricket_plaza: {
-    id: 'hub_cricket_plaza',
-    name: 'Cricket Ground (#19) & North Promenade',
-    x: 72.0,
-    y: 43.0,
+  hub_library_promenade: {
+    id: 'hub_library_promenade',
+    name: 'North Promenade & Library Walkway',
+    x: 66.5,
+    y: 36.5,
+    satX: 50.0,
+    satY: 35.0,
+    description: 'Tree-shaded paved pedestrian promenade connecting APJ Abdul Kalam (#2) and Vivekananda Library (#3) along the perimeter of the cricket ground',
+  },
+  hub_cricket_pavilion: {
+    id: 'hub_cricket_pavilion',
+    name: 'Cricket Ground (#19) Spectator Pavilion',
+    x: 69.5,
+    y: 44.5,
     satX: 47.0,
     satY: 20.0,
-    description: 'Shaded pedestrian walkway between Cricket Ground, APJ Abdul Kalam, and Vivekananda Library',
+    description: 'Paved spectator viewing area and practice nets west of the cricket ground. (Note: Walking across the grass cricket pitch is strictly prohibited)',
   },
   hub_library_plaza: {
     id: 'hub_library_plaza',
@@ -744,7 +753,7 @@ export const CAMPUS_HUB_NODES: Record<string, CampusHubNode> = {
     y: 51.0,
     satX: 51.0,
     satY: 48.0,
-    description: 'Main campus dining quad; houses Aahar (#25), Rasoi (#26), and Juice Press (#28)',
+    description: 'Main campus dining quad; houses Aahar (#25) and Rasoi (#26)',
   },
   hub_shantiniketan: {
     id: 'hub_shantiniketan',
@@ -825,7 +834,7 @@ export const CAMPUS_HUB_NODES: Record<string, CampusHubNode> = {
     y: 30.0,
     satX: 12.0,
     satY: 35.0,
-    description: 'West hillside student housing blocks (41-A through 41-P) and Food Truck (#34)',
+    description: 'West hillside student housing blocks (41-A through 41-P), Food Truck (#34), and Juice Press (#28)',
   },
   hub_south_housing: {
     id: 'hub_south_housing',
@@ -858,30 +867,36 @@ export const CAMPUS_HUB_NODES: Record<string, CampusHubNode> = {
 
 // Pedestrian Walkway Graph Connections with realistic walking distances in meters
 export const CAMPUS_EDGES: { u: string; v: string; meters: number; note: string }[] = [
-  // APJ Abdul Kalam & Charlies Cafe connections
+  // APJ Abdul Kalam Block (#2) connections
   { 
-    u: 'hub_apj_charlies', 
-    v: 'hub_cricket_plaza', 
-    meters: 50, 
-    note: 'Step out of APJ Abdul Kalam (#2) / Charlies (#33) directly onto the Cricket Ground (#19) promenade' 
+    u: 'hub_apj_kalam', 
+    v: 'hub_library_promenade', 
+    meters: 65, 
+    note: 'Follow the paved, tree-shaded promenade south-west toward Vivekananda Library (#3)' 
   },
   { 
-    u: 'hub_apj_charlies', 
+    u: 'hub_apj_kalam', 
     v: 'hub_vks_north', 
     meters: 120, 
     note: 'Follow the eastern loop path past Butterfly Garden (#36) towards Vikram Sarabhai Centre (#1) and North Housing (#40)' 
   },
   { 
-    u: 'hub_cricket_plaza', 
+    u: 'hub_library_promenade', 
     v: 'hub_library_plaza', 
-    meters: 65, 
-    note: 'Walk along the paved, tree-shaded promenade between the Cricket Ground and Vivekananda Library (#3)' 
+    meters: 50, 
+    note: 'Walk along the paved promenade into Vivekananda Library (#3) and FLAME Plaza (#43)' 
   },
   { 
-    u: 'hub_cricket_plaza', 
+    u: 'hub_library_promenade', 
     v: 'hub_sports_track', 
-    meters: 150, 
+    meters: 140, 
     note: 'Follow the northern sports corridor west toward the Football Turf (#20) and Running Track (#21)' 
+  },
+  { 
+    u: 'hub_library_plaza', 
+    v: 'hub_cricket_pavilion', 
+    meters: 45, 
+    note: 'Walk east to the Cricket Ground (#19) spectator viewing area. Note: Walking across the cricket grass pitch is strictly prohibited.' 
   },
 
   // Central Library & Dining Quad connections
@@ -1003,7 +1018,6 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
   // ==========================================
 
   // APJ Abdul Kalam Block (#2 on Official Illustrated Map)
-  // NOTE: Charlies Cafe (#33) is located right INSIDE this building on the Ground Floor east wing!
   {
     id: 'room-apj001',
     name: 'APJ001',
@@ -1018,8 +1032,8 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     y: 31.8,
     satX: 51.5,
     satY: 40.0,
-    description: 'Ground-floor multimedia lecture classroom in APJ Abdul Kalam Block (#2). Near Charlies Cafe (#33).',
-    hubNodeId: 'hub_apj_charlies',
+    description: 'Ground-floor multimedia lecture classroom in APJ Abdul Kalam Block (#2).',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj002',
@@ -1036,7 +1050,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 52.0,
     satY: 39.8,
     description: 'Ground-floor lecture classroom with stepped seating in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj003',
@@ -1053,7 +1067,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 52.5,
     satY: 39.5,
     description: 'Spacious lecture hall with interactive audio/visual projection in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj004',
@@ -1069,8 +1083,8 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     y: 31.2,
     satX: 53.0,
     satY: 39.5,
-    description: 'Ground-floor classroom in APJ Abdul Kalam Block (#2), just steps away from Charlies Cafe.',
-    hubNodeId: 'hub_apj_charlies',
+    description: 'Ground-floor discussion classroom in APJ Abdul Kalam Block (#2).',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj005',
@@ -1087,7 +1101,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 53.5,
     satY: 39.2,
     description: 'Discussion-oriented seminar classroom in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj006',
@@ -1104,7 +1118,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 53.8,
     satY: 39.0,
     description: 'Ground-floor seminar room adjacent to the eastern entrance of APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj101',
@@ -1121,7 +1135,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 51.8,
     satY: 40.0,
     description: 'First-floor tiered lecture hall in APJ Abdul Kalam Block (#2) with views over the cricket ground.',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj102',
@@ -1138,7 +1152,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 52.2,
     satY: 39.8,
     description: 'First-floor case-study classroom with dual projectors in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj103',
@@ -1155,7 +1169,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 52.8,
     satY: 39.5,
     description: 'First-floor academic room for business, economics and social science courses in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj104',
@@ -1172,7 +1186,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 53.2,
     satY: 39.3,
     description: 'First-floor lecture hall in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj105',
@@ -1188,8 +1202,8 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     y: 30.2,
     satX: 53.6,
     satY: 39.0,
-    description: 'First-floor lecture room located right above Charlies Cafe in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    description: 'First-floor tiered lecture hall in APJ Abdul Kalam Block (#2).',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj106',
@@ -1206,7 +1220,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 54.0,
     satY: 38.8,
     description: 'Executive seminar and presentation room in APJ Abdul Kalam Block (#2), east wing.',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'room-apj-design-lab',
@@ -1223,7 +1237,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 51.0,
     satY: 40.5,
     description: 'Design thinking studio and prototyping workspace in APJ Abdul Kalam Block (#2).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
 
   // Aryabhatta Block (#13 on Official Illustrated Map)
@@ -2369,8 +2383,8 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     y: 46.4,
     satX: 43.0,
     satY: 11.0,
-    description: 'Full-size natural grass cricket oval (#19) with central turf wicket, practice nets, and spectator mound directly facing APJ Abdul Kalam Block.',
-    hubNodeId: 'hub_cricket_plaza',
+    description: 'Full-size natural grass cricket oval (#19) with central turf wicket, practice nets, and spectator mound. Note: Pedestrian walking across the grass pitch is strictly prohibited; access via the western spectator promenade.',
+    hubNodeId: 'hub_cricket_pavilion',
   },
   {
     id: 'sports-football-field',
@@ -2463,7 +2477,6 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
   // ==========================================
 
   // Charlies Cafe (#33 on Official Illustrated Map)
-  // CRITICAL USER EMPHASIS: Charlies is INSIDE APJ Abdul Kalam (#2)!
   {
     id: 'other-charlies',
     name: 'Charlies Cafe',
@@ -2478,8 +2491,8 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     y: 28.2,
     satX: 53.0,
     satY: 39.0,
-    description: 'The iconic FLAME student cafe located INSIDE APJ Abdul Kalam Block (#2), ground floor east wing. Serving espresso coffee, grilled paninis, ice tea, chicken rolls, and shakes overlooking the cricket ground terrace.',
-    hubNodeId: 'hub_apj_charlies',
+    description: 'Casual eatery located inside APJ Abdul Kalam Block (#2), ground floor east wing. Serving coffee, sandwiches, and quick snacks.',
+    hubNodeId: 'hub_apj_kalam',
   },
 
   // Hashtag Cafe (#29 on Official Illustrated Map)
@@ -2558,17 +2571,17 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     name: 'Juice Press',
     category: 'Others',
     officialCategory: 'Eateries',
-    building: 'Aahar Dining Quad',
-    floor: 'Ground Floor',
+    building: 'West Housing Quad',
+    floor: 'Courtyard Level',
     zone: 'Eateries',
     officialNumber: 28,
-    insideBuilding: 'Aahar Quad (#28), Promenade Kiosk',
-    x: 61.8,
-    y: 55.6,
-    satX: 50.2,
-    satY: 48.5,
-    description: 'Fresh seasonal fruit juices, cold-pressed cleansers, smoothies, and fruit bowls near FLAME Kund (#28).',
-    hubNodeId: 'hub_aahar_quad',
+    insideBuilding: 'West Housing Quad (#28), Courtyard between Blocks 41-H & 41-G',
+    x: 42.5,
+    y: 34.1,
+    satX: 18.0,
+    satY: 38.0,
+    description: 'Fresh seasonal fruit juices, cold-pressed cleansers, smoothies, and fruit bowls in the West Housing courtyard (#28).',
+    hubNodeId: 'hub_west_housing',
   },
   {
     id: 'other-darshini-cafe',
@@ -2630,9 +2643,9 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     floor: 'Outdoor Court',
     zone: 'Eateries',
     officialNumber: 34,
-    insideBuilding: 'West Housing (#41 & #34), Central Quad',
-    x: 38.0,
-    y: 32.0,
+    insideBuilding: 'West Housing (#41 & #34), Courtyard next to 41-E',
+    x: 38.3,
+    y: 33.4,
     satX: 15.0,
     satY: 38.0,
     description: 'Rotating evening food truck in West Housing quad (#34) serving burgers, tacos, and loaded fries.',
@@ -2674,7 +2687,7 @@ export const ALL_CAMPUS_LOCATIONS: CampusLocation[] = [
     satX: 50.0,
     satY: 18.0,
     description: 'Lush biodiversity reserve with nectar-rich flowering shrubs attracting indigenous butterflies and birds (#36).',
-    hubNodeId: 'hub_apj_charlies',
+    hubNodeId: 'hub_apj_kalam',
   },
   {
     id: 'garden-nakshatra',
