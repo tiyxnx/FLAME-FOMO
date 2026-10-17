@@ -198,7 +198,7 @@ export const ChatBotModal: React.FC = () => {
     }
 
     // 0c. Conversational Banter: "nah" / "no" / "not really" / "nothing" / "leave it" / "nvm"
-    const dismissives = ['nah', 'no', 'nope', 'not really', 'nothing', 'leave it', 'nvm', 'nevermind', 'dont want to', 'dont care', 'idc', 'stop', 'nothing much'];
+    const dismissives = ['nah', 'no', 'nope', 'not really', 'nothing', 'leave it', 'nvm', 'nevermind', 'dont want to', 'dont care', 'idc', 'nothing much'];
     if (dismissives.some((d) => q === d || q.startsWith(d + ' ') || q.endsWith(' ' + d))) {
       const replies = [
         "haha fair enough! just chilling then? let me know if u need smth later.",
@@ -207,6 +207,17 @@ export const ChatBotModal: React.FC = () => {
         "gotchu, keeping it lowkey today. let me know if u need anything!"
       ];
       return { text: replies[Math.floor(Math.random() * replies.length)] };
+    }
+
+    // 0c2. Playful Stop / Hush requests: "stop", "lol stop", "stop itttt", "shut up", "shh"
+    if (q.includes('stop') || q.includes('shut up') || q.includes('quiet') || q.includes('shh') || q.includes('chill out')) {
+      const stopReplies = [
+        "haha my bad, i'm quiet! 🤐",
+        "hahaha okay okay, shutting up now lol 🤐",
+        "alright alright, i'm out! hit me up whenever u need smth 🙌",
+        "lol heard! keeping it muted."
+      ];
+      return { text: stopReplies[Math.floor(Math.random() * stopReplies.length)] };
     }
 
     // 0d. Laughter / Keyboard Smash: "sjsjjajaja", "hahaha", "lmao", "lol", "xd"
