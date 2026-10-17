@@ -521,21 +521,24 @@ export const CampusMap: React.FC = () => {
                 className="w-full h-auto block select-none pointer-events-none"
               />
 
-              {/* Campus Major Zone Watermark Labels on Canvas */}
-              <div className="absolute top-[34%] left-[43%] -translate-x-1/2 pointer-events-none opacity-40 text-amber-200 text-[10px] font-mono tracking-widest uppercase font-bold">
+              {/* Campus Major Zone Watermark Labels on Canvas (Aligned with Real Satellite Layout) */}
+              <div className="absolute top-[20%] left-[53%] -translate-x-1/2 pointer-events-none opacity-50 text-amber-200 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
+                VKS (Vikram Sarabhai)
+              </div>
+              <div className="absolute top-[37%] left-[68%] -translate-x-1/2 pointer-events-none opacity-50 text-purple-300 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
+                Shantiniketan
+              </div>
+              <div className="absolute top-[55%] left-[62%] -translate-x-1/2 pointer-events-none opacity-50 text-amber-300 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
                 Academic Spine (APJ &amp; ARB)
               </div>
-              <div className="absolute top-[25%] left-[75%] -translate-x-1/2 pointer-events-none opacity-40 text-emerald-200 text-[10px] font-mono tracking-widest uppercase font-bold">
-                Arjuna Sports Complex
+              <div className="absolute top-[56%] left-[44%] -translate-x-1/2 pointer-events-none opacity-50 text-emerald-300 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
+                Football &amp; Sports Complex
               </div>
-              <div className="absolute top-[63%] left-[33%] -translate-x-1/2 pointer-events-none opacity-40 text-amber-300 text-[10px] font-mono tracking-widest uppercase font-bold">
-                Central Eateries &amp; Plaza
+              <div className="absolute top-[70%] left-[63%] -translate-x-1/2 pointer-events-none opacity-50 text-blue-200 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
+                Chandragupta
               </div>
-              <div className="absolute top-[82%] left-[23%] -translate-x-1/2 pointer-events-none opacity-40 text-neutral-300 text-[10px] font-mono tracking-widest uppercase font-bold">
-                South Housing &amp; Dorms
-              </div>
-              <div className="absolute top-[52%] left-[56%] -translate-x-1/2 pointer-events-none opacity-40 text-purple-300 text-[10px] font-mono tracking-widest uppercase font-bold">
-                Shantiniketan Cultural Hub
+              <div className="absolute top-[90%] left-[47%] -translate-x-1/2 pointer-events-none opacity-50 text-neutral-200 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
+                South Housing &amp; Dining
               </div>
 
               {/* ============================================================ */}

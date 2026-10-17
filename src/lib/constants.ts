@@ -152,49 +152,62 @@ export const VENUE_LOCATIONS_MAP: Record<VenueZone, string[]> = {
   ],
 };
 
-// Approximate zone positions on the 624x441 campus map image (percentage x, y)
+// Zone positions on the FLAME University Google Maps satellite view (percentage x, y)
 export const ZONE_COORDINATES: Record<VenueZone, MapCoordinates> = {
-  Academics: { x: 42, y: 38 },
-  Sports: { x: 78, y: 28 },
-  Eateries: { x: 34, y: 62 },
-  'Flora & Fauna': { x: 18, y: 75 },
-  'Shantiniketan/Recreational': { x: 58, y: 56 },
+  Academics: { x: 62, y: 55 },
+  Sports: { x: 41, y: 64 },
+  Eateries: { x: 50, y: 80 },
+  'Flora & Fauna': { x: 46, y: 92 },
+  'Shantiniketan/Recreational': { x: 66, y: 38 },
 };
 
-// Specific venue sub-coordinates on the illustrated campus map
+// Specific venue sub-coordinates on the real campus map
 export const SPECIFIC_VENUE_COORDINATES: Record<string, MapCoordinates> = {
-  // Academics
-  'Vikram Sarabhai Centre': { x: 40, y: 35 },
-  'APJ Abdul Kalam': { x: 48, y: 32 },
-  'Vivekananda Library': { x: 38, y: 44 },
-  'Kalidas Centre': { x: 52, y: 40 },
-  'Chanakya': { x: 45, y: 42 },
-  'Aryabhatta': { x: 35, y: 33 },
+  // North Campus
+  'Vikram Sarabhai': { x: 53, y: 20 },
+  'VKS': { x: 53, y: 20 },
+  'Cricket Ground': { x: 57, y: 32 },
 
-  // Sports
-  'Arjuna Centre for Sports': { x: 75, y: 24 },
-  'Cricket Ground': { x: 84, y: 32 },
-  'Football Ground': { x: 74, y: 36 },
-  'Track & Field': { x: 80, y: 42 },
-  'Tennis Courts': { x: 68, y: 22 },
+  // Center & North-Center
+  'Shantiniketan': { x: 66, y: 38 },
+  'Vivekananda Library': { x: 62, y: 45 },
+  'APJ Abdul Kalam': { x: 62, y: 54 },
+  'Aryabhatta': { x: 57, y: 55 },
+  'Chanakya': { x: 59, y: 60 },
+  'Ramanujan': { x: 64, y: 50 },
+  'Tagore': { x: 60, y: 51 },
+  'Kalidas Centre': { x: 65, y: 56 },
+  'Kalidas Auditorium': { x: 65, y: 56 },
 
-  // Eateries
-  'Aahar': { x: 32, y: 58 },
-  'Rasoi': { x: 28, y: 64 },
-  'Coffee Nation': { x: 37, y: 66 },
-  'Hashtag': { x: 40, y: 58 },
-  'Blue Tokai Cafe': { x: 30, y: 52 },
+  // South Academic & Chandragupta
+  'Chandragupta': { x: 63, y: 70 },
+  'Sarojini Naidu': { x: 65, y: 60 },
 
-  // Flora & Fauna
-  'Butterfly Garden': { x: 16, y: 72 },
-  'Nakshatra Garden': { x: 24, y: 82 },
-  'Botanical Garden': { x: 12, y: 65 },
+  // West Campus (Sports Arena & Grounds)
+  'Football field': { x: 44, y: 56 },
+  'Athletic Track, Arjuna': { x: 44, y: 56 },
+  'Arjuna Sports Complex': { x: 37, y: 66 },
+  'Arjuna Centre for Sports': { x: 37, y: 66 },
+  'Swimming Pool, Arjuna': { x: 36, y: 67 },
+  'Gym, Arjuna': { x: 38, y: 65 },
+  'Basketball courts': { x: 40, y: 73 },
+  'Tennis Courts': { x: 42, y: 73 },
+  'Pickleball Courts': { x: 39, y: 74 },
+  'Padel Courts': { x: 39, y: 72 },
+  'Squash Courts': { x: 37, y: 65 },
+  'Badminton Courts': { x: 37, y: 67 },
 
-  // Recreational
-  'Auditorium': { x: 54, y: 48 },
-  'FLAME Plaza': { x: 50, y: 58 },
-  'FLAME Kund': { x: 60, y: 62 },
-  'FLAME Lounge': { x: 65, y: 52 },
+  // South Campus (Eateries & Housing)
+  'Aahar': { x: 51, y: 79 },
+  'Rasoi': { x: 50, y: 80 },
+  'Charlies': { x: 48, y: 81 },
+  'Coffee Nation': { x: 52, y: 80 },
+  'Hashtag': { x: 53, y: 78 },
+  'Juice Press': { x: 49, y: 79 },
+  'Convenience Store plaza': { x: 47, y: 82 },
+  'South Housing Area': { x: 45, y: 92 },
+  'S-Block': { x: 47, y: 91 },
+  'Ring Road': { x: 74, y: 66 },
 };
 
 export const FREE_WILL_PROMPTS = [
