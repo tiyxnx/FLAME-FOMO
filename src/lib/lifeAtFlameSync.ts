@@ -76,128 +76,34 @@ async function fetchWithTimeout(url: string, timeoutMs = 8000): Promise<string> 
 }
 
 /**
- * 1. Fetch live events from Life@FLAME Google Apps Script Sports & Campus Calendar
+ * 1. Life@FLAME Google Apps Script Sports & Campus Calendar
+ * Life at FLAME is only informational and official registration links are not out.
+ * Per specification: Do NOT use Life@FLAME for events.
  */
 export async function fetchLifeAtFlameCalendarEvents(): Promise<EventItem[]> {
-  try {
-    const raw = await fetchWithTimeout(LIFE_AT_FLAME_CALENDAR_API);
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data)) return [];
-
-    const events: EventItem[] = data.map((item: any, idx: number) => {
-      const title = (item.title || 'Campus Event').trim();
-      const club = (item.club || 'FLAME Sports Department').trim();
-      const venue = (item.venue || 'Arjuna Sports Complex').trim();
-      const rawDate = item.date ? item.date.split('T')[0] : '2026-10-25';
-      const timeStart = item.start ? String(item.start).trim() : '17:00';
-      const timeEnd = item.end ? String(item.end).trim() : '19:00';
-      const timeStr = `${timeStart} - ${timeEnd}`;
-
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
-      const id = `lifeatflame-sports-${slug}-${rawDate}`;
-
-      const category = mapClubCategory(club);
-      const venueZone = detectVenueZone(venue, club);
-
-      return {
-        id,
-        item_type: 'event' as const,
-        event_name: title,
-        category,
-        categories: [category, 'Competition'],
-        date: rawDate,
-        time_start_end: timeStr,
-        time_start: timeStart,
-        time_end: timeEnd,
-        venue_zone: venueZone,
-        room_specific: venue,
-        organizer: club,
-        description: `Official campus fixture organised by ${club} at ${venue}. Listed on the Life@FLAME Campus Portal.`,
-        registration_deadline: `${rawDate} ${timeStart}`,
-        registration_link: 'https://sites.google.com/flame.edu.in/lifeatflame/sports-2025-26/calendar',
-        requirements_eligibility: 'Open to All [SOURCE: Life@FLAME Portal]',
-        status: 'Upcoming' as const,
-        submitted_by: 'lifeatflame@flame.edu.in',
-        event_image: 'https://lh3.googleusercontent.com/d/1N5RxUBQBv1N1fB3o2moX407xP5ZZNYGO',
-        created_at: new Date().toISOString()
-      };
-    });
-
-    return events;
-  } catch (err) {
-    console.warn('[LifeAtFlameSync] Failed to fetch calendar API:', err);
-    return [];
-  }
-}
-
-/**
- * 2. Fetch live club recruitment applications from Life@FLAME
- * Note: Past semester general recruitment forms on join-clubs are closed / deadlines passed.
- * Only active, currently open applications submitted by clubs will surface.
- */
-export async function fetchLifeAtFlameClubApplications(): Promise<EventItem[]> {
-  // Past general club recruitment Google Forms on the join-clubs page have ended / closed.
-  // Returning empty to avoid surfacing expired applications.
+  // Disabled: Life@FLAME is informational only, not for official event registration
   return [];
 }
 
 /**
- * 3. Fetch Flagship Campus Fests (Kurukshetra, FLAME Fest, Blaze, etc.)
+ * 2. Fetch live club recruitment applications from Life@FLAME
+ * Only active, currently open applications submitted by clubs with verified forms will surface.
+ */
+export async function fetchLifeAtFlameClubApplications(): Promise<EventItem[]> {
+  // General beginning-of-semester recruitment drives have closed.
+  // Active applications submitted with live forms are handled via verified application entries.
+  return [];
+}
+
+/**
+ * 3. Flagship Campus Fests (Kurukshetra, FLAME Fest, Blaze, etc.)
+ * Life at FLAME is purely informational for flagship events; official registration links
+ * are not released yet.
+ * Per specification: Do NOT use Life@FLAME for events.
  */
 export async function fetchLifeAtFlameFlagshipEvents(): Promise<EventItem[]> {
-  try {
-    const rawHtml = await fetchWithTimeout(LIFE_AT_FLAME_FLAGSHIP_URL);
-    const unescaped = rawHtml
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>');
-
-    const regex = /<a[^>]+href="([^"]+)"[^>]*class="event-card"[^>]*>([\s\S]*?)<\/a>/gi;
-    let m;
-    const flagshipEvents: EventItem[] = [];
-
-    const matches = [...unescaped.matchAll(regex)];
-    for (const match of matches) {
-      const link = match[1].trim();
-      const body = match[2];
-      const titleM = body.match(/class="event-title">([^<]+)<\/div>/i);
-      const imgM = body.match(/src="([^"]+)"/i);
-
-      const title = titleM ? titleM[1].trim() : 'Flagship Fest';
-      const img = imgM ? imgM[1].trim() : undefined;
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 35);
-      const id = `lifeatflame-fest-${slug}`;
-
-      flagshipEvents.push({
-        id,
-        item_type: 'event' as const,
-        event_name: title,
-        category: 'Performances' as const,
-        categories: ['Performances', 'Competition'],
-        date: '2026-11-15',
-        time_start_end: 'All Day Flagship Event',
-        time_start: '09:00',
-        time_end: '22:00',
-        venue_zone: 'Shantiniketan/Recreational',
-        room_specific: 'FLAME Campus & Amphitheatre',
-        organizer: 'FLAME Student Council & Cultural Committee',
-        description: `${title} is one of FLAME University's premier annual flagship events, bringing together students, artists, and competitors from across the country. Check the official Life@FLAME page for sub-event schedules and passes.`,
-        registration_deadline: '2026-11-10 23:59',
-        registration_link: link.startsWith('/') ? `https://sites.google.com${link}` : link,
-        requirements_eligibility: 'Open to All Students [SOURCE: Life@FLAME]',
-        status: 'Upcoming' as const,
-        submitted_by: 'lifeatflame@flame.edu.in',
-        event_image: img,
-        created_at: new Date().toISOString()
-      });
-    }
-
-    return flagshipEvents;
-  } catch (err) {
-    console.warn('[LifeAtFlameSync] Failed to fetch flagship events:', err);
-    return [];
-  }
+  // Disabled: Flagship events on Life@FLAME are informational only (no official registration links yet)
+  return [];
 }
 
 /**

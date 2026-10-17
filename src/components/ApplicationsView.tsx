@@ -73,8 +73,8 @@ export const ApplicationsView: React.FC = () => {
     return events.filter((e) => {
       if (e.item_type !== 'application') return false;
       if (e.status === 'Completed' || e.status === 'Registration Closed') return false;
-      // Legacy beginning-of-year recruitment forms on Google Sites are closed/expired
-      if (e.id.startsWith('lifeatflame-app-')) return false;
+      // Life@FLAME portal items are informational only
+      if (e.id.startsWith('lifeatflame-')) return false;
       if (CLOSED_EXPIRED_APP_IDS.has(e.id)) return false;
       // Exclude if registration deadline has passed today
       if (todayStr && e.registration_deadline) {
