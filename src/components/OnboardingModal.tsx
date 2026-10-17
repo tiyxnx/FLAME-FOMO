@@ -9,6 +9,10 @@ import {
 } from '@/types';
 import { 
   ACADEMIC_YEARS, 
+  UG_COHORTS,
+  BDES_COHORTS,
+  PG_COHORTS,
+  MSC_COHORTS,
   EVENT_CATEGORIES, 
   DEFAULT_TIMETABLE_SAMPLE 
 } from '@/lib/constants';
@@ -209,24 +213,110 @@ export const OnboardingModal: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5 pt-3">
-              {ACADEMIC_YEARS.map((year) => (
-                <button
-                  key={year}
-                  type="button"
-                  onClick={() => setAcademicYear(year)}
-                  className={`p-3 rounded-sm border-2 text-center transition-all ${
-                    academicYear === year
-                      ? 'bg-[#c93b2b] text-amber-100 border-[#991b1b] shadow-md scale-102 font-bold'
-                      : 'bg-white text-neutral-800 border-[#d9ceb7] hover:border-neutral-500'
-                  }`}
-                >
-                  <div className="font-editorial text-lg font-bold">{year}</div>
-                  <div className="text-[10px] uppercase font-bold opacity-80 mt-1">
-                    {year === 'All' ? 'Everyone' : year.startsWith('PG') ? `PG ${year.replace('PG', '')}` : `UG ${year.replace('UG', '')}`}
-                  </div>
-                </button>
-              ))}
+            <div className="space-y-3.5 pt-2">
+              {/* Undergraduate (UG) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+                    Undergraduate (UG)
+                  </span>
+                  <span className="text-[10px] text-neutral-500 font-mono">4 Years</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {UG_COHORTS.map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => setAcademicYear(year as AcademicYear)}
+                      className={`py-2 px-2 rounded-xs border-2 text-center transition-all ${
+                        academicYear === year
+                          ? 'bg-[#c93b2b] text-white border-[#991b1b] shadow-md font-bold scale-[1.02]'
+                          : 'bg-white text-neutral-800 border-[#d9ceb7] hover:border-neutral-500'
+                      }`}
+                    >
+                      <div className="font-editorial text-sm font-bold">{year}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bachelor of Design (BDes) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+                    Bachelor of Design (BDes)
+                  </span>
+                  <span className="text-[10px] text-neutral-500 font-mono">Design Program</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {BDES_COHORTS.map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => setAcademicYear(year as AcademicYear)}
+                      className={`py-2 px-2 rounded-xs border-2 text-center transition-all ${
+                        academicYear === year
+                          ? 'bg-[#c93b2b] text-white border-[#991b1b] shadow-md font-bold scale-[1.02]'
+                          : 'bg-white text-neutral-800 border-[#d9ceb7] hover:border-neutral-500'
+                      }`}
+                    >
+                      <div className="font-editorial text-sm font-bold">{year}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Postgraduate (PG) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+                    Postgraduate (PG)
+                  </span>
+                  <span className="text-[10px] text-neutral-500 font-mono">MBA / Postgrad</span>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {PG_COHORTS.map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => setAcademicYear(year as AcademicYear)}
+                      className={`py-2 px-1 rounded-xs border-2 text-center transition-all ${
+                        academicYear === year
+                          ? 'bg-[#c93b2b] text-white border-[#991b1b] shadow-md font-bold scale-[1.02]'
+                          : 'bg-white text-neutral-800 border-[#d9ceb7] hover:border-neutral-500'
+                      }`}
+                    >
+                      <div className="font-editorial text-xs font-bold truncate">{year}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Master of Science (MSc) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+                    Master of Science (MSc)
+                  </span>
+                  <span className="text-[10px] text-neutral-500 font-mono">Economics / Science</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {MSC_COHORTS.map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      onClick={() => setAcademicYear(year as AcademicYear)}
+                      className={`py-2 px-2 rounded-xs border-2 text-center transition-all ${
+                        academicYear === year
+                          ? 'bg-[#c93b2b] text-white border-[#991b1b] shadow-md font-bold scale-[1.02]'
+                          : 'bg-white text-neutral-800 border-[#d9ceb7] hover:border-neutral-500'
+                      }`}
+                    >
+                      <div className="font-editorial text-sm font-bold">{year}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}

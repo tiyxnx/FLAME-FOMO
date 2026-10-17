@@ -1,4 +1,10 @@
-export type AcademicYear = 'UG1' | 'UG2' | 'UG3' | 'UG4' | 'PG1' | 'PG2' | 'All';
+export type AcademicYear = 
+  | 'UG1' | 'UG2' | 'UG3' | 'UG4'
+  | 'BDes 1' | 'BDes 2' | 'BDes 3' | 'BDes 4'
+  | 'PGB1' | 'PGB2' | 'PGC1' | 'PGC2' | 'PGPEI'
+  | 'MSc 1' | 'MSc 2'
+  | 'PG1' | 'PG2'
+  | 'All';
 
 export type EventCategory = 
   | 'Exhibition/stall'

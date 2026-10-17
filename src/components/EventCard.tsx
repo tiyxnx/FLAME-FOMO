@@ -117,32 +117,6 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
   ];
   const tapeBg = tapeStyles[rotationIndex % tapeStyles.length];
 
-  // Category tone styling
-  const getCategoryBadgeColor = (category: string) => {
-    const lower = (category || '').toLowerCase();
-    if (lower.includes('exhibition') || lower.includes('stall')) {
-      return 'bg-rose-100 text-rose-900 border-rose-300';
-    }
-    if (lower.includes('workshop')) {
-      return 'bg-teal-100 text-teal-900 border-teal-300';
-    }
-    if (lower.includes('lecture') || lower.includes('talk')) {
-      return 'bg-cyan-100 text-cyan-900 border-cyan-300';
-    }
-    if (lower.includes('competition')) {
-      return 'bg-amber-100 text-amber-900 border-amber-300';
-    }
-    if (lower.includes('academic')) {
-      return 'bg-blue-100 text-blue-900 border-blue-300';
-    }
-    if (lower.includes('performance')) {
-      return 'bg-purple-100 text-purple-900 border-purple-300';
-    }
-    if (lower.includes('welfare') || lower.includes('community')) {
-      return 'bg-emerald-100 text-emerald-900 border-emerald-300';
-    }
-    return 'bg-neutral-100 text-neutral-800 border-neutral-300';
-  };
 
   const handleActionClick = (e: React.MouseEvent, actionType: 'favourite' | 'going' | 'save') => {
     e.stopPropagation();
@@ -207,37 +181,14 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           </div>
         )}
 
-        {/* Category Badges & Registration Fee pinned to top-left of photo */}
-        <div className="absolute top-2 left-2 z-10 flex flex-wrap items-center gap-1 max-w-[75%]">
-          {(() => {
-            const cats = event.categories && event.categories.length > 0
-              ? event.categories
-              : event.category ? event.category.split(',').map((c) => c.trim()).filter(Boolean) : [];
-            const displayList = cats.length > 0 ? cats : ['General'];
-            return (
-              <>
-                {displayList.slice(0, 2).map((catName) => (
-                  <span
-                    key={catName}
-                    className={`inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-xs border shadow-sm ${getCategoryBadgeColor(catName)}`}
-                  >
-                    {catName}
-                  </span>
-                ))}
-                {displayList.length > 2 && (
-                  <span className="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-xs border bg-neutral-900/80 text-neutral-200 border-neutral-700">
-                    +{displayList.length - 2}
-                  </span>
-                )}
-              </>
-            );
-          })()}
-          {event.registration_fee && (
+        {/* Registration Fee pinned to top-left of photo (if present) */}
+        {event.registration_fee && (
+          <div className="absolute top-2 left-2 z-10">
             <span className="inline-block px-2 py-0.5 text-[10px] font-bold tracking-tight rounded-xs bg-emerald-900/90 text-emerald-100 border border-emerald-600/60 shadow-sm backdrop-blur-2xs">
               {event.registration_fee.toLowerCase() === 'free' ? 'FREE' : `🎟️ ${event.registration_fee}`}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Tentative Badge pinned to top-right of photo */}
         {isTentative && !isCancelled && (

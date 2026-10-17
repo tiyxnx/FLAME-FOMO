@@ -10,7 +10,12 @@ import {
 import { 
   EVENT_CATEGORIES, 
   VENUE_ZONES, 
-  VENUE_LOCATIONS_MAP 
+  VENUE_LOCATIONS_MAP,
+  ALL_COHORTS,
+  UG_COHORTS,
+  BDES_COHORTS,
+  PG_COHORTS,
+  MSC_COHORTS,
 } from '@/lib/constants';
 import { 
   ALL_CAMPUS_LOCATIONS, 
@@ -37,18 +42,6 @@ import {
   LocateFixed
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
-const COHORT_OPTIONS = [
-  'Open to All Students',
-  'UG1',
-  'UG2',
-  'UG3',
-  'UG4',
-  'PG1',
-  'PG2',
-  'UG Only (UG1 - UG4)',
-  'PG Only (PG1 - PG2)',
-];
 
 export const CreateEventModal: React.FC = () => {
   const { 
@@ -100,10 +93,74 @@ export const CreateEventModal: React.FC = () => {
   const [registrationDeadlineTime, setRegistrationDeadlineTime] = useState('23:59');
   const [registrationLink, setRegistrationLink] = useState('');
   const [registrationFee, setRegistrationFee] = useState('');
-  const [requirementsEligibility, setRequirementsEligibility] = useState('Open to All Students');
+  const [selectedCohorts, setSelectedCohorts] = useState<string[]>(['All']);
+  const [customEligibilityNote, setCustomEligibilityNote] = useState('');
   const [eventImage, setEventImage] = useState('');
   const [status, setStatus] = useState<EventStatus>('Upcoming');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const isAllSelected = selectedCohorts.includes('All') || (ALL_COHORTS.length > 0 && ALL_COHORTS.every((c) => selectedCohorts.includes(c)));
+  const isUGSelected = UG_COHORTS.every((c) => selectedCohorts.includes(c));
+  const isBDesSelected = BDES_COHORTS.every((c) => selectedCohorts.includes(c));
+  const isPGSelected = PG_COHORTS.every((c) => selectedCohorts.includes(c));
+  const isMScSelected = MSC_COHORTS.every((c) => selectedCohorts.includes(c));
+
+  const toggleAllCohorts = () => {
+    if (isAllSelected) {
+      setSelectedCohorts([]);
+    } else {
+      setSelectedCohorts(['All']);
+    }
+  };
+
+  const toggleBundle = (bundle: readonly string[]) => {
+    let current = isAllSelected ? [...ALL_COHORTS] : selectedCohorts.filter((c) => c !== 'All');
+    const allInBundlePresent = bundle.every((c) => current.includes(c));
+
+    let next: string[];
+    if (allInBundlePresent) {
+      next = current.filter((c) => !bundle.includes(c));
+    } else {
+      const toAdd = bundle.filter((c) => !current.includes(c));
+      next = [...current, ...toAdd];
+    }
+
+    if (ALL_COHORTS.every((c) => next.includes(c))) {
+      setSelectedCohorts(['All']);
+    } else {
+      setSelectedCohorts(next);
+    }
+  };
+
+  const toggleSingleCohort = (cohort: string) => {
+    let current = isAllSelected ? [...ALL_COHORTS] : selectedCohorts.filter((c) => c !== 'All');
+    let next: string[];
+    if (current.includes(cohort)) {
+      next = current.filter((c) => c !== cohort);
+    } else {
+      next = [...current, cohort];
+    }
+
+    if (ALL_COHORTS.every((c) => next.includes(c))) {
+      setSelectedCohorts(['All']);
+    } else {
+      setSelectedCohorts(next);
+    }
+  };
+
+  const getFormattedEligibility = (): string => {
+    let base = 'Open to All Students';
+    if (!isAllSelected && selectedCohorts.length > 0) {
+      const sorted = ALL_COHORTS.filter((c) => selectedCohorts.includes(c));
+      base = sorted.join(', ');
+    } else if (!isAllSelected && selectedCohorts.length === 0) {
+      base = 'Open to All Students';
+    }
+    if (customEligibilityNote.trim()) {
+      return `${base} (${customEligibilityNote.trim()})`;
+    }
+    return base;
+  };
 
   const toggleCategorySelection = (cat: EventCategory) => {
     if (selectedCategories.includes(cat)) {
@@ -284,17 +341,41 @@ export const CreateEventModal: React.FC = () => {
       setPocNumber(eventToEdit.poc_number || '');
       setDescription(eventToEdit.description);
       setRegistrationLink(eventToEdit.registration_link || '');
-      setRegistrationFee(eventToEdit.registration_fee || '');
-      setRequirementsEligibility(
-        (eventToEdit.requirements_eligibility || '')
-          .replace('[TENTATIVE]', '')
-          .replace(/\[FEE:\s*[^\]]+\]/g, '')
-          .replace(/\[POC_NAME:\s*[^\]]+\]/g, '')
-          .replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '')
-          .replace(/\[MAP_PIN:\s*[^\]]+\]/g, '')
-          .replace(/\[NEAREST_LOC:\s*[^\]]+\]/g, '')
-          .trim() || 'Open to All Students'
-      );
+      const cleanReq = (eventToEdit.requirements_eligibility || '')
+        .replace('[TENTATIVE]', '')
+        .replace(/\[FEE:\s*[^\]]+\]/g, '')
+        .replace(/\[POC_NAME:\s*[^\]]+\]/g, '')
+        .replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '')
+        .replace(/\[MAP_PIN:\s*[^\]]+\]/g, '')
+        .replace(/\[NEAREST_LOC:\s*[^\]]+\]/g, '')
+        .replace(/\[TYPE:\s*[^\]]+\]/g, '')
+        .replace(/\[INTERVIEW:\s*[^\]]+\]/g, '')
+        .replace(/\[HAS_INTERVIEW\]/g, '')
+        .trim();
+
+      if (!cleanReq || cleanReq.toLowerCase().includes('open to all') || cleanReq.toLowerCase() === 'all') {
+        setSelectedCohorts(['All']);
+        setCustomEligibilityNote('');
+      } else if (cleanReq.toLowerCase().includes('ug only')) {
+        setSelectedCohorts([...UG_COHORTS]);
+        setCustomEligibilityNote('');
+      } else if (cleanReq.toLowerCase().includes('pg only')) {
+        setSelectedCohorts([...PG_COHORTS]);
+        setCustomEligibilityNote('');
+      } else {
+        const found = ALL_COHORTS.filter((c) => 
+          new RegExp(`\\b${c.replace(' ', '\\s*')}\\b`, 'i').test(cleanReq) ||
+          cleanReq.toLowerCase().includes(c.toLowerCase())
+        );
+        if (found.length > 0) {
+          setSelectedCohorts(found);
+          const noteMatch = cleanReq.match(/\(([^)]+)\)/);
+          setCustomEligibilityNote(noteMatch ? noteMatch[1].trim() : '');
+        } else {
+          setSelectedCohorts(['All']);
+          setCustomEligibilityNote(cleanReq);
+        }
+      }
       setEventImage(eventToEdit.event_image || '');
       setStatus(eventToEdit.status);
 
@@ -345,7 +426,8 @@ export const CreateEventModal: React.FC = () => {
       setRegistrationDeadlineTime('23:59');
       setRegistrationLink('');
       setRegistrationFee('');
-      setRequirementsEligibility('Open to All Students');
+      setSelectedCohorts(['All']);
+      setCustomEligibilityNote('');
       setEventImage('');
       setStatus('Upcoming');
       setIsCustomRoom(false);
@@ -433,7 +515,8 @@ export const CreateEventModal: React.FC = () => {
       ? `${registrationDeadlineDate} ${registrationDeadlineTime}`.trim()
       : undefined;
 
-    let eligibilityWithFlag = requirementsEligibility.trim();
+    const formattedEligibility = getFormattedEligibility();
+    let eligibilityWithFlag = formattedEligibility.trim();
     if (isTentative && !eligibilityWithFlag.includes('[TENTATIVE]')) {
       eligibilityWithFlag = `${eligibilityWithFlag} [TENTATIVE]`.trim();
     }
@@ -1145,42 +1228,276 @@ export const CreateEventModal: React.FC = () => {
             )}
           </div>
 
-          {/* 4. Organizer & Eligibility */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                {itemType === 'application' ? 'Club / Student Organization' : 'Organizer / Student Club'} <span className="text-[#c93b2b]">*</span>
+          {/* 4. Organizer */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
+              {itemType === 'application' ? 'Club / Student Organization' : 'Organizer / Student Club'} <span className="text-[#c93b2b]">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder={itemType === 'application' ? "e.g. MARKiT, First Cut, Rotaract Club" : "e.g. Student Council or Media Collective"}
+              value={organizer}
+              onChange={(e) => setOrganizer(e.target.value)}
+              className="w-full px-3.5 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
+              required
+            />
+          </div>
+
+          {/* 4a. Cohorts & Eligibility Multi-Select */}
+          <div className="p-3.5 bg-[#fdfaf4] border border-[#d6cbb0] rounded-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800">
+                  Target Cohorts / Eligibility
+                </label>
+                <span className="text-[11px] text-neutral-500">
+                  Select all student cohorts eligible to attend or apply
+                </span>
+              </div>
+              
+              {/* Active Selection Badge */}
+              <div className="text-left sm:text-right">
+                <span className={`inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-xs ${
+                  isAllSelected 
+                    ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' 
+                    : selectedCohorts.length > 0 
+                      ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                      : 'bg-neutral-100 text-neutral-700 border border-neutral-300'
+                }`}>
+                  {isAllSelected 
+                    ? '🌟 Open to All Students' 
+                    : `${selectedCohorts.length} Cohort${selectedCohorts.length === 1 ? '' : 's'} Selected`}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Select Bundle Buttons: All, UG, BDes, PG, MSc */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-[#e2d8c3]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mr-1 font-mono">
+                Quick Select:
+              </span>
+              
+              {/* All Option */}
+              <button
+                type="button"
+                onClick={toggleAllCohorts}
+                className={`px-2.5 py-1 text-xs font-bold rounded-xs border transition-all ${
+                  isAllSelected
+                    ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                    : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                }`}
+              >
+                🌟 All
+              </button>
+
+              {/* UG Option */}
+              <button
+                type="button"
+                onClick={() => toggleBundle(UG_COHORTS)}
+                className={`px-2.5 py-1 text-xs font-bold rounded-xs border transition-all ${
+                  !isAllSelected && isUGSelected
+                    ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                    : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                }`}
+              >
+                🎓 UG
+              </button>
+
+              {/* BDes Option */}
+              <button
+                type="button"
+                onClick={() => toggleBundle(BDES_COHORTS)}
+                className={`px-2.5 py-1 text-xs font-bold rounded-xs border transition-all ${
+                  !isAllSelected && isBDesSelected
+                    ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                    : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                }`}
+              >
+                🎨 BDes
+              </button>
+
+              {/* PG Option */}
+              <button
+                type="button"
+                onClick={() => toggleBundle(PG_COHORTS)}
+                className={`px-2.5 py-1 text-xs font-bold rounded-xs border transition-all ${
+                  !isAllSelected && isPGSelected
+                    ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                    : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                }`}
+              >
+                💼 PG
+              </button>
+
+              {/* MSc Option */}
+              <button
+                type="button"
+                onClick={() => toggleBundle(MSC_COHORTS)}
+                className={`px-2.5 py-1 text-xs font-bold rounded-xs border transition-all ${
+                  !isAllSelected && isMScSelected
+                    ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                    : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                }`}
+              >
+                🔬 MSc
+              </button>
+            </div>
+
+            {/* Individual Cohort Buttons Grid */}
+            <div className="space-y-2.5 pt-1">
+              {/* UG */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 font-mono">
+                    Undergraduate (UG)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleBundle(UG_COHORTS)}
+                    className="text-[10px] text-[#c93b2b] hover:underline font-semibold"
+                  >
+                    {isUGSelected ? 'Deselect UG' : 'Select all UG'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {UG_COHORTS.map((c) => {
+                    const isSelected = isAllSelected || selectedCohorts.includes(c);
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => toggleSingleCohort(c)}
+                        className={`py-1.5 px-1 rounded-xs border text-xs font-bold transition-all text-center ${
+                          isSelected
+                            ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                            : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* BDes */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 font-mono">
+                    Bachelor of Design (BDes)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleBundle(BDES_COHORTS)}
+                    className="text-[10px] text-[#c93b2b] hover:underline font-semibold"
+                  >
+                    {isBDesSelected ? 'Deselect BDes' : 'Select all BDes'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {BDES_COHORTS.map((c) => {
+                    const isSelected = isAllSelected || selectedCohorts.includes(c);
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => toggleSingleCohort(c)}
+                        className={`py-1.5 px-1 rounded-xs border text-xs font-bold transition-all text-center ${
+                          isSelected
+                            ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                            : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* PG */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 font-mono">
+                    Postgraduate (PG)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleBundle(PG_COHORTS)}
+                    className="text-[10px] text-[#c93b2b] hover:underline font-semibold"
+                  >
+                    {isPGSelected ? 'Deselect PG' : 'Select all PG'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {PG_COHORTS.map((c) => {
+                    const isSelected = isAllSelected || selectedCohorts.includes(c);
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => toggleSingleCohort(c)}
+                        className={`py-1.5 px-0.5 rounded-xs border text-xs font-bold transition-all text-center truncate ${
+                          isSelected
+                            ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                            : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* MSc */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 font-mono">
+                    Master of Science (MSc)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleBundle(MSC_COHORTS)}
+                    className="text-[10px] text-[#c93b2b] hover:underline font-semibold"
+                  >
+                    {isMScSelected ? 'Deselect MSc' : 'Select all MSc'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {MSC_COHORTS.map((c) => {
+                    const isSelected = isAllSelected || selectedCohorts.includes(c);
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => toggleSingleCohort(c)}
+                        className={`py-1.5 px-1 rounded-xs border text-xs font-bold transition-all text-center ${
+                          isSelected
+                            ? 'bg-[#c93b2b] text-white border-red-700 shadow-2xs'
+                            : 'bg-white text-neutral-700 border-[#d6cbb0] hover:border-neutral-400'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Optional Custom Note / Condition */}
+            <div className="pt-2 border-t border-[#e2d8c3]">
+              <label className="block text-[11px] font-semibold text-neutral-700 mb-1">
+                Additional Criteria / Team Rules <span className="text-neutral-400 font-normal">(Optional)</span>
               </label>
               <input
                 type="text"
-                placeholder={itemType === 'application' ? "e.g. MARKiT, First Cut, Rotaract Club" : "e.g. Student Council or Media Collective"}
-                value={organizer}
-                onChange={(e) => setOrganizer(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-                required
+                placeholder="e.g. Teams of 2 to 4, Open to all doubles pairs, etc."
+                value={customEligibilityNote}
+                onChange={(e) => setCustomEligibilityNote(e.target.value)}
+                className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#c93b2b]"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Cohort / Eligibility
-              </label>
-              <select
-                value={requirementsEligibility}
-                onChange={(e) => setRequirementsEligibility(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs font-semibold text-neutral-900 focus:outline-none focus:border-amber-500"
-              >
-                {!COHORT_OPTIONS.includes(requirementsEligibility) && requirementsEligibility && (
-                  <option value={requirementsEligibility}>
-                    {requirementsEligibility}
-                  </option>
-                )}
-                {COHORT_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 

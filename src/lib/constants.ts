@@ -10,7 +10,24 @@ export const EVENT_CATEGORIES: EventCategory[] = [
   'Community welfare',
 ];
 
-export const ACADEMIC_YEARS: AcademicYear[] = ['UG1', 'UG2', 'UG3', 'UG4', 'PG1', 'PG2', 'All'];
+export const UG_COHORTS = ['UG1', 'UG2', 'UG3', 'UG4'] as const;
+export const BDES_COHORTS = ['BDes 1', 'BDes 2', 'BDes 3', 'BDes 4'] as const;
+export const PG_COHORTS = ['PGB1', 'PGB2', 'PGC1', 'PGC2', 'PGPEI'] as const;
+export const MSC_COHORTS = ['MSc 1', 'MSc 2'] as const;
+
+export const ALL_COHORTS: string[] = [
+  ...UG_COHORTS,
+  ...BDES_COHORTS,
+  ...PG_COHORTS,
+  ...MSC_COHORTS
+];
+
+export const ACADEMIC_YEARS: AcademicYear[] = [
+  'UG1', 'UG2', 'UG3', 'UG4',
+  'BDes 1', 'BDes 2', 'BDes 3', 'BDes 4',
+  'PGB1', 'PGB2', 'PGC1', 'PGC2', 'PGPEI',
+  'MSc 1', 'MSc 2'
+];
 
 export const VENUE_ZONES: VenueZone[] = [
   'Academics',
