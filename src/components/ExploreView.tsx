@@ -29,6 +29,7 @@ export const ExploreView: React.FC = () => {
     openAuthModal,
     isUserAuthor,
     canCreateEvents,
+    setCurrentTab,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,6 +57,67 @@ export const ExploreView: React.FC = () => {
   }, [events, isUserAuthor]);
 
   const hasPostedEvents = userSubmittedEvents.length > 0;
+
+  const userInterests = useMemo(() => {
+    return user?.category_preferences || [];
+  }, [user?.category_preferences]);
+
+  // Helper: Extract all categories for an event
+  const getEventCategories = (evt: EventItem): string[] => {
+    if (Array.isArray(evt.categories) && evt.categories.length > 0) {
+      return evt.categories;
+    }
+    if (evt.category) {
+      return evt.category.split(',').map((c) => c.trim()).filter(Boolean);
+    }
+    return [];
+  };
+
+  // Helper: Check if event matches user's mapped interests
+  const doesEventMatchUserInterest = (evt: EventItem, interests: string[]): boolean => {
+    if (!interests || interests.length === 0) return false;
+    const cats = getEventCategories(evt);
+    return cats.some((c) =>
+      interests.some((pref) => pref.toLowerCase() === c.toLowerCase())
+    );
+  };
+
+  // Helper: Calculate most urgent upcoming timestamp (registration deadline or event date/time)
+  const getEventSortTimestamp = (evt: EventItem, nowMs: number): number => {
+    let deadlineTime: number | null = null;
+    if (evt.registration_deadline) {
+      const clean = evt.registration_deadline.replace(' ', 'T');
+      const iso = clean.length === 10 ? `${clean}T23:59:59` : (clean.length === 16 ? `${clean}:00` : clean);
+      const d = new Date(iso);
+      if (!isNaN(d.getTime())) {
+        deadlineTime = d.getTime();
+      }
+    }
+
+    let eventDateTime: number | null = null;
+    if (evt.date) {
+      const timeStart = evt.time_start || (evt.time_start_end ? evt.time_start_end.split('-')[0].trim() : '00:00');
+      const validTime = /^\d{2}:\d{2}$/.test(timeStart) ? timeStart : '00:00';
+      const d = new Date(`${evt.date}T${validTime}:00`);
+      if (!isNaN(d.getTime())) {
+        eventDateTime = d.getTime();
+      }
+    }
+
+    // If registration deadline is upcoming, prioritize that urgency
+    if (deadlineTime !== null && deadlineTime >= nowMs) {
+      return deadlineTime;
+    }
+    // Otherwise use event date and time
+    if (eventDateTime !== null) {
+      return eventDateTime;
+    }
+    // Fallback
+    if (deadlineTime !== null) {
+      return deadlineTime;
+    }
+    return Infinity;
+  };
 
   // Filter events
   const filteredEvents = useMemo(() => {
@@ -142,24 +204,43 @@ export const ExploreView: React.FC = () => {
       // 1. Ended events NEVER appear before active events (they go to the bottom)
       if (aCompleted && !bCompleted) return 1;
       if (!aCompleted && bCompleted) return -1;
+      if (aCompleted && bCompleted) {
+        // For past/ended events, sort most recent first
+        return b.date.localeCompare(a.date);
+      }
       
-      // 2. For active events: Order they've been posted (recent ones -> old posted)
-      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      if (timeA && timeB && timeA !== timeB) {
-        return timeB - timeA;
+      // 2. Active Events: Interest mapping prioritization
+      // "For interest mapping, Whatever they select should come before on the explore tab and the others should come after based on the deadline/date of event"
+      const aMatches = doesEventMatchUserInterest(a, userInterests);
+      const bMatches = doesEventMatchUserInterest(b, userInterests);
+
+      if (aMatches && !bMatches) return -1; // Selected interest comes first
+      if (!aMatches && bMatches) return 1;  // Others come after
+
+      // 3. Within each group: Order by upcoming deadline or date of event (closest first)
+      const nowMs = typeof window !== 'undefined' ? Date.now() : 0;
+      const tsA = getEventSortTimestamp(a, nowMs);
+      const tsB = getEventSortTimestamp(b, nowMs);
+
+      if (tsA !== tsB) {
+        return tsA - tsB;
       }
 
-      // Fallback: Preserve events array insertion order (newest first)
-      const indexA = events.indexOf(a);
-      const indexB = events.indexOf(b);
-      if (indexA !== -1 && indexB !== -1 && indexA !== indexB) {
-        return indexA - indexB;
+      // Tie breaker 1: Alphabetical date
+      if (a.date !== b.date) {
+        return a.date.localeCompare(b.date);
       }
 
-      return b.date.localeCompare(a.date);
+      // Tie breaker 2: Time start
+      const timeStartA = a.time_start || (a.time_start_end ? a.time_start_end.split('-')[0].trim() : '');
+      const timeStartB = b.time_start || (b.time_start_end ? b.time_start_end.split('-')[0].trim() : '');
+      if (timeStartA && timeStartB && timeStartA !== timeStartB) {
+        return timeStartA.localeCompare(timeStartB);
+      }
+
+      return a.event_name.localeCompare(b.event_name);
     });
-  }, [events, searchQuery, selectedCategory, timeFilter, fitsMyScheduleOnly, isAuthenticated, user, todayStr, tomorrowStr, savedEventIds, favouriteEventIds, viewMyEventsOnly]);
+  }, [events, searchQuery, selectedCategory, timeFilter, fitsMyScheduleOnly, isAuthenticated, user, userInterests, todayStr, tomorrowStr, savedEventIds, favouriteEventIds, viewMyEventsOnly]);
 
   const handleFitsScheduleToggle = () => {
     if (!isAuthenticated) {
@@ -168,6 +249,23 @@ export const ExploreView: React.FC = () => {
     }
     setFitsMyScheduleOnly(!fitsMyScheduleOnly);
   };
+
+  // Sectioning logic: show interest group & other group when exploring all categories
+  const showInterestSections = 
+    selectedCategory === 'All' && 
+    !viewMyEventsOnly && 
+    timeFilter !== 'Past' && 
+    userInterests.length > 0;
+
+  const interestEvents = useMemo(() => {
+    if (!showInterestSections) return [];
+    return filteredEvents.filter((evt) => doesEventMatchUserInterest(evt, userInterests));
+  }, [filteredEvents, showInterestSections, userInterests]);
+
+  const otherEvents = useMemo(() => {
+    if (!showInterestSections) return filteredEvents;
+    return filteredEvents.filter((evt) => !doesEventMatchUserInterest(evt, userInterests));
+  }, [filteredEvents, showInterestSections, userInterests]);
 
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 select-none">
@@ -309,13 +407,19 @@ export const ExploreView: React.FC = () => {
 
         {/* Quick pill count summary & My Events toolbar button */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#a89b87] pt-2 border-t border-[#312a20]">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span>
               Showing <strong className="text-amber-200 font-mono">{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'}
             </span>
             {viewMyEventsOnly && (
               <span className="text-[10px] bg-red-950/80 text-amber-200 border border-red-500/40 px-2 py-0.5 rounded-full font-bold">
                 My Events Only
+              </span>
+            )}
+            {showInterestSections && interestEvents.length > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] bg-amber-950/70 text-amber-300 border border-amber-600/50 px-2 py-0.5 rounded-full font-semibold">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>Interests prioritized first</span>
               </span>
             )}
           </div>
@@ -375,6 +479,69 @@ export const ExploreView: React.FC = () => {
             },
           }}
         />
+      ) : showInterestSections && interestEvents.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 pt-2">
+          {/* Section 1: Tailored to Your Interests */}
+          <div className="col-span-full pb-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-gradient-to-r from-amber-950/40 via-[#262019] to-transparent border border-amber-500/30 rounded-xs">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-editorial text-sm sm:text-base font-bold text-amber-100">
+                    Tailored to Your Interests
+                  </span>
+                  <span className="text-xs text-[#a89b87]">
+                    ({userInterests.join(', ')})
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] text-amber-300/80 font-mono">
+                  {interestEvents.length} {interestEvents.length === 1 ? 'event' : 'events'} · Earliest deadline first
+                </span>
+                <button
+                  onClick={() => setCurrentTab('profile')}
+                  className="text-[11px] text-amber-400 hover:text-amber-200 underline cursor-pointer"
+                >
+                  Edit interests
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Interest-matched event cards */}
+          {interestEvents.map((evt, idx) => (
+            <EventCard key={evt.id} event={evt} rotationIndex={idx} />
+          ))}
+
+          {/* Section 2 Divider: More Campus Events */}
+          {otherEvents.length > 0 && (
+            <>
+              <div className="col-span-full pt-8 pb-2">
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#3d3326]" />
+                  </div>
+                  <div className="relative bg-[#171512] px-4 text-center">
+                    <div className="flex items-center gap-2 justify-center text-xs font-bold uppercase tracking-wider text-[#d6cbaf] font-mono">
+                      <Compass className="w-3.5 h-3.5 text-amber-400" />
+                      <span>More Campus Events</span>
+                      <span className="text-[10px] text-neutral-500 font-normal lowercase">(all other categories)</span>
+                    </div>
+                    <p className="text-[11px] text-neutral-400 mt-0.5">
+                      Sorted by upcoming deadline &amp; event date
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Other event cards */}
+              {otherEvents.map((evt, idx) => (
+                <EventCard key={evt.id} event={evt} rotationIndex={interestEvents.length + idx} />
+              ))}
+            </>
+          )}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 pt-2">
           {filteredEvents.map((evt, idx) => (
