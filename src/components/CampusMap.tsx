@@ -1,18 +1,16 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
   ALL_CAMPUS_LOCATIONS, 
   calculateCampusRoute, 
-  FLAME_CAMPUS_CENTER,
-  CAMPUS_HUB_NODES
+  FLAME_CAMPUS_CENTER 
 } from '@/lib/campusLocations';
 import { 
   CampusLocation, 
   CampusVenueCategory, 
-  CampusRouteResult, 
-  EventItem 
+  CampusRouteResult 
 } from '@/types';
 import { 
   MapPin, 
@@ -22,19 +20,17 @@ import {
   Search, 
   ArrowLeftRight, 
   ExternalLink, 
-  CheckCircle2, 
   Building2, 
   Coffee, 
   Dumbbell, 
   GraduationCap, 
   Music, 
   LocateFixed, 
-  Info, 
   X,
   Layers,
-  ChevronRight,
   Footprints,
-  Sparkles
+  Sparkles,
+  Check
 } from 'lucide-react';
 
 type MapViewMode = 'wayfinder' | 'directory' | 'my-events';
@@ -57,8 +53,9 @@ export const CampusMap: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Wayfinding Origin & Destination
-  const [originLocationId, setOriginLocationId] = useState<string>('other-south-housing'); // Default: South Housing (Hostels)
-  const [destinationLocationId, setDestinationLocationId] = useState<string>('room-apj001'); // Default: APJ001
+  // Default: Start at Charlies Cafe (#33 inside APJ #2) -> Destination: Shantiniketan Auditorium (#49)
+  const [originLocationId, setOriginLocationId] = useState<string>('other-charlies');
+  const [destinationLocationId, setDestinationLocationId] = useState<string>('hall-shantiniketan-auditorium');
 
   // Active / Selected Pin Details
   const [selectedPinLocation, setSelectedPinLocation] = useState<CampusLocation | null>(null);
@@ -107,7 +104,9 @@ export const CampusMap: React.FC = () => {
         const matchesFloor = (loc.floor || '').toLowerCase().includes(q);
         const matchesCategory = loc.category.toLowerCase().includes(q);
         const matchesDesc = (loc.description || '').toLowerCase().includes(q);
-        return matchesName || matchesBuilding || matchesFloor || matchesCategory || matchesDesc;
+        const matchesInside = (loc.insideBuilding || '').toLowerCase().includes(q);
+        const matchesNum = loc.officialNumber ? `number ${loc.officialNumber} #${loc.officialNumber}`.includes(q) : false;
+        return matchesName || matchesBuilding || matchesFloor || matchesCategory || matchesDesc || matchesInside || matchesNum;
       }
       return true;
     });
@@ -144,11 +143,14 @@ export const CampusMap: React.FC = () => {
 
   // Quick origins chips
   const quickOrigins = [
-    { label: '🏠 South Housing', id: 'other-south-housing' },
-    { label: '🍽️ Aahar Dining', id: 'other-aahar' },
-    { label: '📚 Library', id: 'other-vivekananda-library' },
-    { label: '☕ Charlies', id: 'other-charlies' },
-    { label: '🏆 Arjuna Complex', id: 'sports-arjuna-complex-main' },
+    { label: '☕ Charlies (#33 inside APJ)', id: 'other-charlies' },
+    { label: '🏛️ APJ001 (#2)', id: 'room-apj001' },
+    { label: '🍽️ Aahar Dining (#25)', id: 'other-aahar' },
+    { label: '📚 Library (#3)', id: 'other-vivekananda-library' },
+    { label: '🏠 South Housing (#42)', id: 'other-south-housing' },
+    { label: '🏠 West Housing (#41)', id: 'other-west-housing' },
+    { label: '🏆 Arjuna Complex (#18)', id: 'sports-arjuna-complex-main' },
+    { label: '🎭 Shantiniketan (#49)', id: 'hall-shantiniketan-auditorium' },
   ];
 
   // Helper for Category icons
@@ -175,7 +177,7 @@ export const CampusMap: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="stamp-urgent text-[11px] bg-red-950/70 border-red-500 text-red-200">
-              Campus Cartography &amp; Wayfinding
+              Official Campus Map &amp; Cartography
             </span>
             <span className="text-xs text-[#d6cbaf] font-mono">
               FLAME University Pune (18.5233° N, 73.7317° E)
@@ -183,11 +185,11 @@ export const CampusMap: React.FC = () => {
           </div>
 
           <h1 className="font-editorial text-3xl sm:text-4xl font-black text-[#fbf7ee] mt-1 tracking-tight">
-            Campus Wayfinder &amp; <span className="text-amber-400 font-serif italic">Interactive Map</span>
+            Campus Wayfinder &amp; <span className="text-amber-400 font-serif italic">Master Map</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5 max-w-2xl">
-            Input where you are to calculate walking time, step-by-step route directions, and room locations across all 75+ classrooms, auditoriums, sports arenas, and eateries.
+            Calibrated directly with the official 54-building FLAME campus plan and Google Maps satellite feed. Discover accurate room locations (e.g. Charlies inside APJ #2, Hashtag in Chandragupta #12) and turn-by-turn walking directions.
           </p>
         </div>
 
@@ -232,29 +234,29 @@ export const CampusMap: React.FC = () => {
             </button>
           </div>
 
-          {/* Map Layer Toggle (Illustrated vs Google Satellite) */}
+          {/* Map Layer Switcher: Illustrated Campus Map vs Google Satellite */}
           <div className="flex items-center p-1 bg-[#24201a] border border-[#473d2f] rounded-full text-xs">
             <button
               onClick={() => setMapRenderType('illustrated')}
-              className={`px-2.5 py-1 rounded-full flex items-center gap-1 text-[11px] transition-all ${
+              className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-xs transition-all ${
                 mapRenderType === 'illustrated'
-                  ? 'bg-[#3b3327] text-amber-200 font-semibold'
+                  ? 'bg-amber-500 text-neutral-950 font-bold shadow-xs'
                   : 'text-[#9b8d74] hover:text-[#d6cbaf]'
               }`}
             >
-              <Compass className="w-3 h-3" />
-              <span>Illustrated Map</span>
+              <Compass className="w-3.5 h-3.5" />
+              <span>Illustrated Map (1–54)</span>
             </button>
             <button
               onClick={() => setMapRenderType('google-satellite')}
-              className={`px-2.5 py-1 rounded-full flex items-center gap-1 text-[11px] transition-all ${
+              className={`px-3 py-1 rounded-full flex items-center gap-1.5 text-xs transition-all ${
                 mapRenderType === 'google-satellite'
-                  ? 'bg-[#3b3327] text-amber-200 font-semibold'
+                  ? 'bg-amber-500 text-neutral-950 font-bold shadow-xs'
                   : 'text-[#9b8d74] hover:text-[#d6cbaf]'
               }`}
             >
-              <Layers className="w-3 h-3" />
-              <span>Google Maps</span>
+              <Layers className="w-3.5 h-3.5" />
+              <span>Google Maps Satellite</span>
             </button>
           </div>
         </div>
@@ -275,7 +277,7 @@ export const CampusMap: React.FC = () => {
                 <div className="flex items-center justify-between text-xs">
                   <label className="font-semibold text-emerald-400 flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span>Where are you now? (Current Location)</span>
+                    <span>Where are you now? (Start Point)</span>
                   </label>
                 </div>
                 <div className="relative">
@@ -284,39 +286,44 @@ export const CampusMap: React.FC = () => {
                     onChange={(e) => setOriginLocationId(e.target.value)}
                     className="w-full bg-[#1b1814] border border-[#4d402f] text-[#fbf7ee] text-xs sm:text-sm rounded p-2.5 pr-8 focus:outline-none focus:border-emerald-500 font-sans-ui"
                   >
-                    <optgroup label="Popular Starting Points">
-                      <option value="other-south-housing">🏠 South Housing Area (Hostels)</option>
-                      <option value="other-s-block">🏢 S-Block Hostel</option>
-                      <option value="other-aahar">🍽️ Aahar Main Dining Hall</option>
-                      <option value="other-vivekananda-library">📚 Vivekananda Library</option>
-                      <option value="other-charlies">☕ Charlies & Convenience Plaza</option>
-                      <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex</option>
+                    <optgroup label="Popular Venues & Eateries">
+                      <option value="other-charlies">☕ Charlies Cafe (#33 inside APJ #2)</option>
+                      <option value="room-apj001">🏛️ APJ001 (#2 APJ Abdul Kalam)</option>
+                      <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
+                      <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
+                      <option value="other-hashtag">🥐 Hashtag Cafe (#29 in Chandragupta #12)</option>
+                      <option value="sports-cricket-ground">🏏 Cricket Ground (#19)</option>
+                      <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
+                      <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
+                      <option value="other-south-housing">🏠 South & East Housing (#42)</option>
+                      <option value="other-west-housing">🏠 West Housing Blocks (#41)</option>
+                      <option value="other-main-entrance">🚪 FLAME Main Entrance Gate (#46)</option>
                     </optgroup>
                     <optgroup label="Classrooms & Academic Blocks">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Classrooms').map((loc) => (
                         <option key={`orig-${loc.id}`} value={loc.id}>
-                          {loc.name} · {loc.building} ({loc.floor || 'Ground'})
+                          {loc.name} · {loc.building} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} ({loc.floor || 'Ground'})
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Auditoriums & Halls">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Auditoriums / Halls').map((loc) => (
                         <option key={`orig-${loc.id}`} value={loc.id}>
-                          {loc.name} · {loc.building}
+                          {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Sports Facilities">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Sports').map((loc) => (
                         <option key={`orig-${loc.id}`} value={loc.id}>
-                          {loc.name}
+                          {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''}
                         </option>
                       ))}
                     </optgroup>
-                    <optgroup label="Eateries & Others">
+                    <optgroup label="Eateries, Gardens & Living">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Others').map((loc) => (
                         <option key={`orig-${loc.id}`} value={loc.id}>
-                          {loc.name} · {loc.building}
+                          {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} · {loc.building}
                         </option>
                       ))}
                     </optgroup>
@@ -346,31 +353,43 @@ export const CampusMap: React.FC = () => {
                     onChange={(e) => setDestinationLocationId(e.target.value)}
                     className="w-full bg-[#1b1814] border border-[#4d402f] text-[#fbf7ee] text-xs sm:text-sm rounded p-2.5 pr-8 focus:outline-none focus:border-red-500 font-sans-ui"
                   >
-                    <optgroup label="Classrooms (APJ, Aryabhatta, Chandragupta, etc.)">
+                    <optgroup label="Popular Venues & Eateries">
+                      <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
+                      <option value="other-charlies">☕ Charlies Cafe (#33 inside APJ #2)</option>
+                      <option value="room-apj001">🏛️ APJ001 (#2 APJ Abdul Kalam)</option>
+                      <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
+                      <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
+                      <option value="other-hashtag">🥐 Hashtag Cafe (#29 in Chandragupta #12)</option>
+                      <option value="sports-gymnasium">💪 Gymnasium & Fitness Studio (#18)</option>
+                      <option value="sports-swimming-pool">🏊 Half-Olympic Pool (#18)</option>
+                      <option value="sports-cricket-ground">🏏 Cricket Ground (#19)</option>
+                      <option value="sports-football-field">⚽ Football Ground (#20)</option>
+                    </optgroup>
+                    <optgroup label="Classrooms (APJ, ARB, Chandragupta, Chanakya, Raman...)">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Classrooms').map((loc) => (
                         <option key={`dest-${loc.id}`} value={loc.id}>
-                          {loc.name} · {loc.building} ({loc.floor || 'Ground'})
+                          {loc.name} · {loc.building} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} ({loc.floor || 'Ground'})
                         </option>
                       ))}
                     </optgroup>
-                    <optgroup label="Auditoriums & Halls">
+                    <optgroup label="Auditoriums & Performance Halls">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Auditoriums / Halls').map((loc) => (
                         <option key={`dest-${loc.id}`} value={loc.id}>
-                          {loc.name} · {loc.building}
+                          {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''}
                         </option>
                       ))}
                     </optgroup>
-                    <optgroup label="Sports Facilities">
+                    <optgroup label="Sports Arenas & Courts">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Sports').map((loc) => (
                         <option key={`dest-${loc.id}`} value={loc.id}>
-                          {loc.name}
+                          {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''}
                         </option>
                       ))}
                     </optgroup>
-                    <optgroup label="Eateries, Living & Hubs">
+                    <optgroup label="Eateries, Hostels & Common Areas">
                       {ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Others').map((loc) => (
                         <option key={`dest-${loc.id}`} value={loc.id}>
-                          {loc.name} · {loc.building}
+                          {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} · {loc.building}
                         </option>
                       ))}
                     </optgroup>
@@ -469,8 +488,8 @@ export const CampusMap: React.FC = () => {
               <span className="font-editorial text-sm font-bold text-amber-100">
                 FLAME University Campus Cartography
               </span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#2a241c] border border-[#4d402f] text-neutral-300 font-mono">
-                {mapRenderType === 'illustrated' ? 'Illustrated Master Layout' : 'Google Satellite Feed'}
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#2a241c] border border-[#4d402f] text-amber-300 font-mono font-semibold">
+                {mapRenderType === 'illustrated' ? 'Official 54-Building Illustrated Map' : 'Google Satellite Feed'}
               </span>
             </div>
 
@@ -483,7 +502,7 @@ export const CampusMap: React.FC = () => {
 
           {/* Conditional View: Google Satellite Embed OR Illustrated Canvas */}
           {mapRenderType === 'google-satellite' ? (
-            <div className="relative w-full h-[480px] sm:h-[550px] rounded-xs overflow-hidden border border-[#473d2f] bg-[#1a1714]">
+            <div className="relative w-full h-[520px] sm:h-[620px] rounded-xs overflow-hidden border border-[#473d2f] bg-[#1a1714]">
               <iframe
                 title="Google Maps FLAME University Satellite"
                 src="https://maps.google.com/maps?q=FLAME+University+Lavale+Pune&t=k&z=17&ie=UTF8&iwloc=&output=embed"
@@ -501,44 +520,67 @@ export const CampusMap: React.FC = () => {
                 <p className="text-[11px] text-neutral-400 mt-1 font-mono">
                   Latitude: 18.5233078° N · Longitude: 73.7317384° E
                 </p>
-                <a
-                  href={FLAME_CAMPUS_CENTER.googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1 text-[11px] text-amber-300 hover:underline font-semibold"
-                >
-                  <span>Open Full Screen in Google Maps App</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                <div className="mt-2 flex items-center gap-2">
+                  <a
+                    href={FLAME_CAMPUS_CENTER.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] bg-[#c93b2b] hover:bg-[#b02e20] text-white px-2.5 py-1 rounded font-semibold"
+                  >
+                    <span>Open in Google Maps App</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <button
+                    onClick={() => setMapRenderType('illustrated')}
+                    className="text-[11px] text-amber-300 hover:underline font-medium"
+                  >
+                    &larr; Return to Illustrated Map
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
             /* Illustrated Campus Canvas with SVG Route & Pins */
             <div className="relative w-full overflow-hidden rounded-xs bg-[#24201a] border border-[#473d2f]">
               <img
-                src="/campus-map.png"
-                alt="FLAME Campus Illustrated Map Layout"
+                src="/campus-map-illustrated.jpg"
+                alt="FLAME Campus Official Illustrated Map"
                 className="w-full h-auto block select-none pointer-events-none"
               />
 
-              {/* Campus Major Zone Watermark Labels on Canvas (Aligned with Real Satellite Layout) */}
-              <div className="absolute top-[20%] left-[53%] -translate-x-1/2 pointer-events-none opacity-50 text-amber-200 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
-                VKS (Vikram Sarabhai)
+              {/* Verified Major Campus Zone Badges matching Official Legend Numbers */}
+              <div className="absolute top-[5%] left-[58.5%] -translate-x-1/2 pointer-events-none opacity-80 text-amber-100 bg-neutral-950/70 border border-amber-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #18 ARJUNA SPORTS
               </div>
-              <div className="absolute top-[37%] left-[68%] -translate-x-1/2 pointer-events-none opacity-50 text-purple-300 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
-                Shantiniketan
+              <div className="absolute top-[16%] left-[56%] -translate-x-1/2 pointer-events-none opacity-80 text-emerald-200 bg-neutral-950/70 border border-emerald-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #20 FOOTBALL &amp; #21 TRACK
               </div>
-              <div className="absolute top-[55%] left-[62%] -translate-x-1/2 pointer-events-none opacity-50 text-amber-300 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
-                Academic Spine (APJ &amp; ARB)
+              <div className="absolute top-[26%] left-[73.5%] -translate-x-1/2 pointer-events-none opacity-90 text-amber-300 bg-neutral-950/80 border border-amber-500/60 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #2 APJ &amp; #33 CHARLIES
               </div>
-              <div className="absolute top-[56%] left-[44%] -translate-x-1/2 pointer-events-none opacity-50 text-emerald-300 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
-                Football &amp; Sports Complex
+              <div className="absolute top-[45%] left-[74.5%] -translate-x-1/2 pointer-events-none opacity-80 text-blue-200 bg-neutral-950/70 border border-blue-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #19 CRICKET GROUND
               </div>
-              <div className="absolute top-[70%] left-[63%] -translate-x-1/2 pointer-events-none opacity-50 text-blue-200 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
-                Chandragupta
+              <div className="absolute top-[37.5%] left-[64.5%] -translate-x-1/2 pointer-events-none opacity-80 text-amber-200 bg-neutral-950/70 border border-amber-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #3 LIBRARY &amp; #45 LOUNGE
               </div>
-              <div className="absolute top-[90%] left-[47%] -translate-x-1/2 pointer-events-none opacity-50 text-neutral-200 text-[10px] font-mono tracking-widest uppercase font-bold drop-shadow">
-                South Housing &amp; Dining
+              <div className="absolute top-[51.5%] left-[64.5%] -translate-x-1/2 pointer-events-none opacity-80 text-teal-200 bg-neutral-950/70 border border-teal-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #25 AAHAR DINING
+              </div>
+              <div className="absolute top-[64.5%] left-[69%] -translate-x-1/2 pointer-events-none opacity-80 text-purple-200 bg-neutral-950/70 border border-purple-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #49–54 SHANTINIKETAN
+              </div>
+              <div className="absolute top-[44%] left-[42.5%] -translate-x-1/2 pointer-events-none opacity-80 text-amber-200 bg-neutral-950/70 border border-amber-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #12 CHANDRAGUPTA &amp; #13 ARYABHATTA
+              </div>
+              <div className="absolute top-[25%] left-[18%] -translate-x-1/2 pointer-events-none opacity-80 text-neutral-300 bg-neutral-950/70 border border-neutral-600 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #41 WEST HOUSING
+              </div>
+              <div className="absolute top-[71%] left-[48%] -translate-x-1/2 pointer-events-none opacity-80 text-neutral-300 bg-neutral-950/70 border border-neutral-600 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #42 SOUTH HOUSING
+              </div>
+              <div className="absolute top-[75%] left-[84%] -translate-x-1/2 pointer-events-none opacity-80 text-emerald-300 bg-neutral-950/70 border border-emerald-500/50 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
+                #46 MAIN GATE
               </div>
 
               {/* ============================================================ */}
@@ -627,8 +669,8 @@ export const CampusMap: React.FC = () => {
                       <span className="absolute -inset-1 rounded-full bg-emerald-500/40 animate-ping pointer-events-none" />
                       <span className="relative z-10 font-mono font-black text-white">A</span>
                     </button>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/90 text-emerald-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-emerald-500/40">
-                      START: {activeRoute.fromLocation.name}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-emerald-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-emerald-500/40">
+                      START: {activeRoute.fromLocation.name} {activeRoute.fromLocation.officialNumber ? `(#${activeRoute.fromLocation.officialNumber})` : ''}
                     </div>
                   </div>
 
@@ -649,14 +691,14 @@ export const CampusMap: React.FC = () => {
                       <span className="absolute -inset-1.5 rounded-full bg-red-500/50 animate-ping pointer-events-none" />
                       <span className="relative z-10 font-mono font-black">B</span>
                     </button>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/90 text-red-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-red-500/40">
-                      DEST: {activeRoute.toLocation.name}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-red-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-red-500/40">
+                      DEST: {activeRoute.toLocation.name} {activeRoute.toLocation.officialNumber ? `(#${activeRoute.toLocation.officialNumber})` : ''}
                     </div>
                   </div>
                 </>
               )}
 
-              {/* Directory Mode: Filtered Venue Markers */}
+              {/* Directory Mode: Filtered Venue Markers with Official Map Numbers */}
               {activeTabMode === 'directory' && (
                 filteredLocations.map((loc) => {
                   const isHovered = hoveredLocationId === loc.id;
@@ -679,23 +721,31 @@ export const CampusMap: React.FC = () => {
                         onMouseLeave={() => setHoveredLocationId(null)}
                         className={`group relative flex items-center justify-center transition-all duration-150 cursor-pointer ${
                           isSelected
-                            ? 'w-6 h-6 rounded-full bg-amber-300 text-neutral-950 scale-125 ring-2 ring-red-500 z-40 shadow-xl'
+                            ? 'w-7 h-7 rounded-full bg-amber-400 text-neutral-950 scale-125 ring-2 ring-red-500 z-40 shadow-xl'
                             : isHovered
-                            ? 'w-5 h-5 rounded-full bg-amber-400 text-neutral-900 scale-110 ring-1 ring-white z-35 shadow-md'
-                            : 'w-3.5 h-3.5 rounded-full bg-[#c93b2b] text-white opacity-85 hover:opacity-100 hover:scale-125 ring-1 ring-amber-200/60'
+                            ? 'w-6 h-6 rounded-full bg-amber-300 text-neutral-900 scale-110 ring-2 ring-white z-35 shadow-md'
+                            : 'w-4 h-4 rounded-full bg-[#c93b2b] text-white opacity-90 hover:opacity-100 hover:scale-125 ring-1 ring-amber-200/80 shadow'
                         }`}
                         title={`${loc.name} (${loc.building})`}
                       >
-                        <span className="text-[9px] font-mono font-bold leading-none">
-                          {isSelected ? '📍' : ''}
+                        <span className="text-[9px] font-mono font-black leading-none">
+                          {loc.officialNumber || '•'}
                         </span>
                       </button>
 
                       {/* Mini Tooltip on Hover */}
                       {(isHovered || isSelected) && (
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-[#1a1713] text-[#fbf7ee] text-[11px] font-medium rounded shadow-xl border border-amber-400/80 whitespace-nowrap z-50 pointer-events-none">
+                          {loc.officialNumber && (
+                            <span className="text-[10px] bg-amber-500 text-neutral-950 font-mono font-black px-1 py-0.2 rounded mr-1">
+                              #{loc.officialNumber}
+                            </span>
+                          )}
                           <span className="font-bold text-amber-300">{loc.name}</span>
                           <span className="text-[#a89b87] ml-1">· {loc.building}</span>
+                          {loc.insideBuilding && (
+                            <span className="text-emerald-300 block text-[10px]">{loc.insideBuilding}</span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -732,7 +782,7 @@ export const CampusMap: React.FC = () => {
                         <span className="relative z-10 font-mono font-bold">#{pinNumber}</span>
                       </button>
 
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/90 text-amber-200 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-[#4d402f]">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-amber-200 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-[#4d402f]">
                         #{pinNumber} {event.event_name.slice(0, 18)}...
                       </div>
                     </div>
@@ -747,16 +797,16 @@ export const CampusMap: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-2 text-[11px] text-[#9b8d74]">
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" /> Start (Origin)
+                <span className="w-2 h-2 rounded-full bg-emerald-400" /> Start Point (A)
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-red-400" /> Destination
+                <span className="w-2 h-2 rounded-full bg-red-400" /> Destination (B)
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-400" /> Hub Node
+                <span className="w-2 h-2 rounded-full bg-amber-400" /> Building Number (1–54)
               </span>
             </div>
-            <span>Scale: ~80 meters per walking minute across pedestrian spine</span>
+            <span>Calibrated with Official FLAME Cartography &amp; Google Satellite</span>
           </div>
         </div>
 
@@ -787,16 +837,31 @@ export const CampusMap: React.FC = () => {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <span className="text-[10px] text-[#a89b87] uppercase font-mono block">Arriving at:</span>
-                    <h4 className="font-editorial text-base font-bold text-[#fbf7ee]">
-                      {activeRoute.toLocation.name}
-                    </h4>
-                    <p className="text-xs text-amber-300 mt-0.5 flex items-center gap-1">
-                      <Building2 className="w-3 h-3 text-red-400 shrink-0" />
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {activeRoute.toLocation.officialNumber && (
+                        <span className="px-1.5 py-0.5 rounded bg-amber-500 text-neutral-950 font-mono font-black text-xs">
+                          #{activeRoute.toLocation.officialNumber}
+                        </span>
+                      )}
+                      <h4 className="font-editorial text-base font-bold text-[#fbf7ee]">
+                        {activeRoute.toLocation.name}
+                      </h4>
+                    </div>
+
+                    <p className="text-xs text-amber-300 mt-1 flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5 text-red-400 shrink-0" />
                       <span>{activeRoute.toLocation.building}</span>
                       {activeRoute.toLocation.floor && <span>· {activeRoute.toLocation.floor}</span>}
                     </p>
+
+                    {activeRoute.toLocation.insideBuilding && (
+                      <div className="mt-1.5 text-[11px] text-emerald-300 bg-emerald-950/40 border border-emerald-500/40 rounded px-2 py-1 font-medium flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span>{activeRoute.toLocation.insideBuilding}</span>
+                      </div>
+                    )}
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-red-950/70 border border-red-500/40 text-red-300 font-mono">
+                  <span className="px-2 py-0.5 rounded text-[10px] bg-red-950/70 border border-red-500/40 text-red-300 font-mono shrink-0">
                     {activeRoute.toLocation.category}
                   </span>
                 </div>
@@ -886,7 +951,7 @@ export const CampusMap: React.FC = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by room, hall, sport or building..."
+                    placeholder="Search by room, Charlies, APJ, Shantiniketan, gym..."
                     className="w-full bg-[#1b1814] border border-[#4d402f] text-neutral-100 text-xs rounded pl-9 pr-8 py-2 focus:outline-none focus:border-amber-400 placeholder-[#7c6f5d]"
                   />
                   {searchQuery && (
@@ -935,6 +1000,11 @@ export const CampusMap: React.FC = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
+                            {loc.officialNumber && (
+                              <span className="px-1.5 py-0.2 rounded bg-amber-500 text-neutral-950 font-mono font-black text-[10px]">
+                                #{loc.officialNumber}
+                              </span>
+                            )}
                             {getCategoryIcon(loc.category)}
                             <h4 className="font-editorial text-sm font-bold text-[#f5ebd7] truncate">
                               {loc.name}
@@ -945,6 +1015,12 @@ export const CampusMap: React.FC = () => {
                             <span className="truncate text-amber-200/90 font-medium">{loc.building}</span>
                             {loc.floor && <span>· {loc.floor}</span>}
                           </div>
+
+                          {loc.insideBuilding && (
+                            <p className="text-[10px] text-emerald-300 mt-1 truncate">
+                              📍 {loc.insideBuilding}
+                            </p>
+                          )}
                         </div>
 
                         {/* Quick Route Button */}
@@ -1075,7 +1151,12 @@ export const CampusMap: React.FC = () => {
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1.5">
+                {selectedPinLocation.officialNumber && (
+                  <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-400 text-neutral-950 font-mono">
+                    Official Map #{selectedPinLocation.officialNumber}
+                  </span>
+                )}
                 <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-[#c93b2b] text-amber-100">
                   {selectedPinLocation.category}
                 </span>
@@ -1094,6 +1175,14 @@ export const CampusMap: React.FC = () => {
                   <span className="font-semibold">{selectedPinLocation.building}</span>
                   {selectedPinLocation.floor && <span>· {selectedPinLocation.floor}</span>}
                 </div>
+
+                {selectedPinLocation.insideBuilding && (
+                  <div className="px-2.5 py-1.5 bg-amber-950/40 border border-amber-500/40 rounded text-xs text-amber-200 flex items-center gap-1.5 font-medium">
+                    <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>{selectedPinLocation.insideBuilding}</span>
+                  </div>
+                )}
+
                 {selectedPinLocation.description && (
                   <p className="text-[11px] text-[#b8aa93] mt-2 leading-relaxed bg-[#151310] p-2.5 rounded border border-[#362e24]">
                     {selectedPinLocation.description}
@@ -1108,7 +1197,7 @@ export const CampusMap: React.FC = () => {
                   className="py-1.5 bg-[#2a241b] hover:bg-[#362e24] text-emerald-300 border border-emerald-500/40 rounded text-xs font-semibold flex items-center justify-center gap-1"
                 >
                   <LocateFixed className="w-3 h-3" />
-                  <span>Set as Start (I&apos;m here)</span>
+                  <span>Start (I&apos;m here)</span>
                 </button>
 
                 <button

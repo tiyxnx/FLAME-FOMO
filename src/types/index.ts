@@ -129,6 +129,10 @@ export interface CampusLocation {
   y: number; // 0-100% on illustrated map
   description?: string;
   hubNodeId: string; // anchor node for campus walkway graph
+  officialNumber?: number; // Official 1-54 campus map number
+  satX?: number; // 0-100% on Google satellite map
+  satY?: number; // 0-100% on Google satellite map
+  insideBuilding?: string; // Clear description of interior placement (e.g. "Inside APJ Abdul Kalam (#2), Right Wing")
 }
 
 export interface CampusRouteStep {
