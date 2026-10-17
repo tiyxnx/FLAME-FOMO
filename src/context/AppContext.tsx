@@ -167,7 +167,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (storedEvents) {
         const parsed: EventItem[] = JSON.parse(storedEvents);
         const cleaned = Array.isArray(parsed)
-          ? parsed.filter((e) => !e.id.startsWith('lifeatflame-') && !dummyIds.includes(e.id))
+          ? parsed
+              .filter((e) => !e.id.startsWith('lifeatflame-') && !dummyIds.includes(e.id))
+              .map((e) => (e.id === 'evt-bunkasai-artist-gallery-r2' ? { ...e, item_type: 'event' as const } : e))
           : [];
         const existingIds = new Set(cleaned.map((e) => e.id));
         const missingSeeds = INITIAL_SEED_EVENTS.filter(
