@@ -69,7 +69,7 @@ export const ChatBotModal: React.FC = () => {
       const welcome: ChatMessage = {
         id: 'msg-welcome',
         sender: 'bot',
-        text: `hello **${studentName}**! what's up? 🔥\n\ni'm the campus bot. ask me anything about events, club comps, your classes, or what you've got saved.\n\nwhat are you looking for?`,
+        text: `hello **${studentName}**! what's up? 🔥\n\ni'm **fomo bot**. ask me anything about events, club comps, your classes, or what you've got saved.\n\nwhat are you looking for?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages([welcome]);
@@ -101,8 +101,133 @@ export const ChatBotModal: React.FC = () => {
     const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     const todayStr = now.toISOString().split('T')[0];
 
-    // 1. "I'm free rn what to do?" / "free right now" / "free rn" / "what to do"
-    if (q.includes('free rn') || q.includes('free right now') || q.includes('free now') || (q.includes('free') && q.includes('what to do')) || q.includes('bored')) {
+    // Helper: test if query contains whole word or phrase
+    const hasWord = (word: string) => new RegExp(`\\b${word}\\b`, 'i').test(q);
+    const hasAnyWord = (words: string[]) => words.some((w) => hasWord(w));
+
+    // 0. Explicit User Prompt: "say fomo bot"
+    if (q.includes('fomo bot') && (q.includes('say') || q.includes('call yourself') || q.includes('name'))) {
+      return {
+        text: `got it! i'm **fomo bot** from now on 🔥 ask me anything about events, club comps, your classes, or what's on campus.`
+      };
+    }
+
+    // 1. GREETINGS & CASUAL HELLOS
+    // "hello", "hi", "hey", "sup", "yo", "what's up", "good morning", "good evening", etc.
+    const isGreeting = (
+      q === 'hi' || q === 'hello' || q === 'hey' || q === 'heyy' || q === 'heya' ||
+      q === 'sup' || q === 'wassup' || q === "what's up" || q === 'whats up' || q === 'yo' ||
+      q.startsWith('hello') || q.startsWith('hi ') || q.startsWith('hey ') ||
+      q.includes('good morning') || q.includes('good afternoon') || q.includes('good evening')
+    );
+    if (isGreeting) {
+      return {
+        text: `hello! what's up? i'm **fomo bot**. how's your day going?\n\nlooking for events happening soon, active club comps, or need info on your schedule?`
+      };
+    }
+
+    // 2. CASUAL CHAT: "HOW ARE YOU" / "HOW'S IT GOING"
+    if (
+      q.includes('how are you') || q.includes('how are u') || q.includes("how's it going") ||
+      q.includes('hows it going') || q.includes('how r u') || q.includes("what's going on") ||
+      q.includes('whats good') || q.includes('how do you do')
+    ) {
+      return {
+        text: `all good here! just tracking all the campus events, club competitions, and schedules. how about you? got some free time or looking to hit up an event?`
+      };
+    }
+
+    // 3. BOT IDENTITY & CAPABILITIES: "WHO ARE YOU" / "WHAT CAN YOU DO" / "WHAT ARE YOU"
+    if (
+      q.includes('who are you') || q.includes('who r u') || q.includes('what are you') ||
+      q.includes('what is your name') || q.includes("what's your name") || q.includes('whats your name') ||
+      q === 'fomo bot' || q === 'who made you' || q.includes('what can you do') || q.includes('help') ||
+      q.includes('what do you do') || q === 'about'
+    ) {
+      return {
+        text: `i'm **fomo bot**, your chill campus buddy at FLAME! 🔥\n\nhere's what i can answer:\n* ⚡ **"free rn what to do?"** — checks your timetable & suggests active events or chill spots\n* 📚 **"my classes today"** — breaks down your lectures and halls\n* 🎬 **"film / dance / music / sports comps"** — finds active competitions, dates, and sign-up links\n* 📍 **"next event i'm going to"** — pulls up your RSVPs\n* 📌 **"events i saved"** — shows your bookmarked events\n* ⭐ **"similar to what i starred"** — recommends new stuff based on your interests\n* 🗺️ **campus spots & rules** (like the cricket ground rule!)`
+      };
+    }
+
+    // 4. JOKES / FUNNY
+    if (q.includes('joke') || q.includes('make me laugh') || q.includes('funny') || q.includes('say something funny')) {
+      return {
+        text: `why did the student take the 10-minute detour around the boundary? because security caught them looking at the cricket pitch grass from 50 meters away lol. remember: keep off the pitch grass!`
+      };
+    }
+
+    // 5. APPRECIATION & THANKS
+    if (hasAnyWord(['thanks', 'thank', 'thx', 'ty', 'appreciate', 'cool', 'awesome', 'nice', 'great', 'bet', 'perfect', 'dope'])) {
+      return {
+        text: `anytime! happy to help 🙌 let me know if you need anything else on campus.`
+      };
+    }
+
+    // 6. FAREWELLS
+    if (hasAnyWord(['bye', 'cya', 'goodnight', 'peace']) || q.includes('see ya') || q.includes('good night') || q.includes('catch you later')) {
+      return {
+        text: `catch you later! have a good one 🙌`
+      };
+    }
+
+    // 7. FOOD & DINING
+    if (hasAnyWord(['food', 'hungry', 'eat', 'eating', 'dining', 'mess', 'canteen', 'lunch', 'dinner', 'breakfast', 'snacks', 'cafe', 'cafeteria'])) {
+      return {
+        text: `for food on campus:\n* **FLAME Dining Hall** for the daily buffet (breakfast, lunch, hi-tea, dinner)\n* **FLAME Plaza** for quick bites, snacks, coffee, and hanging out\n* **Tuck shops & cafes** scattered around the central campus area.`
+      };
+    }
+
+    // 8. SPORTS, GYM & ARJUNA CENTRE
+    if (
+      hasAnyWord(['sports', 'sport', 'gym', 'workout', 'badminton', 'squash', 'swimming', 'pool', 'basketball', 'tennis', 'football']) ||
+      q.includes('arjuna') || q.includes('table tennis')
+    ) {
+      const sportEvents = events.filter((e) => {
+        const text = `${e.event_name} ${e.description} ${e.category} ${(e.categories || []).join(' ')} ${e.venue_zone}`.toLowerCase();
+        return text.includes('sport') || text.includes('football') || text.includes('cricket') || text.includes('badminton') || text.includes('basketball') || text.includes('athletics') || text.includes('tournament') || text.includes('arjuna');
+      });
+
+      let resText = `**Arjuna Centre for Sports** has indoor badminton, squash courts, the gym, table tennis, and the swimming pool.\n\n`;
+      if (sportEvents.length > 0) {
+        resText += `here are upcoming sports events & competitions:\n\n` +
+          sportEvents.slice(0, 3).map(e => `* **${e.event_name}** — ${e.date} (${e.time_start_end}) at ${e.venue_zone}`).join('\n');
+      } else {
+        resText += `no specific sports tournaments scheduled right now, but Arjuna Centre is open for recreational play!`;
+      }
+
+      return {
+        text: resText,
+        referencedEventIds: sportEvents.map(e => e.id)
+      };
+    }
+
+    // 9. LIBRARY & STUDY
+    if (hasAnyWord(['library', 'study', 'quiet', 'books', 'reading'])) {
+      return {
+        text: `the **FLAME Central Library** is your best bet for quiet study, research, and project discussions. open daily for students!`
+      };
+    }
+
+    // 10. CRICKET GROUND RULE
+    if (q.includes('cricket') && (q.includes('ground') || q.includes('walk') || q.includes('pitch') || q.includes('cross') || q.includes('rule'))) {
+      return {
+        text: `nah, walking on the cricket ground isn't allowed at all lol. gotta stick to the paved road around it to keep the pitch intact.`,
+      };
+    }
+
+    // 11. JUICE PRESS (ONLY IF EXPLICITLY ASKED)
+    if (q.includes('juice press') || (q.includes('juice') && q.includes('where'))) {
+      return {
+        text: `juice press is spot #28 near west housing (blocks L through S).`,
+      };
+    }
+
+    // 12. FREE TIME / "I'M FREE RN WHAT TO DO" / BORED
+    if (
+      q.includes('free rn') || q.includes('free right now') || q.includes('free now') ||
+      (q.includes('free') && (q.includes('what to do') || q.includes('what should i do') || q.includes('am i free'))) ||
+      hasWord('bored') || q.includes('nothing to do') || q.includes('kill time') || q.includes('pass time')
+    ) {
       const currentClass = user?.academic_timetable?.find(
         (cls) => cls.day === currentDay && currentTime >= cls.timeStart && currentTime <= cls.timeEnd
       );
@@ -144,27 +269,25 @@ export const ChatBotModal: React.FC = () => {
       }
     }
 
-    // 2. Film competitions / creative / media
-    if (q.includes('film') || q.includes('movie') || (q.includes('comp') && (q.includes('film') || q.includes('media') || q.includes('acting') || q.includes('ad')))) {
-      const filmEvents = events.filter((e) => {
-        const text = `${e.event_name} ${e.description} ${e.category} ${(e.categories || []).join(' ')} ${e.organizer}`.toLowerCase();
-        return text.includes('film') || text.includes('movie') || text.includes('advertisement') || text.includes('brand') || text.includes('bunkasai') || text.includes('the front row') || text.includes('story project');
-      });
-
-      if (filmEvents.length > 0) {
-        const listStr = filmEvents.map((e) => 
-          `🎬 **${e.event_name}**\n* **By:** ${e.organizer}\n* **When:** ${e.date} (${e.time_start_end})\n* **Deadline:** ${e.registration_deadline || 'Open'}\n* **Eligibility:** ${e.requirements_eligibility || 'Open to All'}\n* **Where:** ${e.venue_zone}`
-        ).join('\n\n');
-
+    // 13. TIMETABLE / CLASSES QUERY
+    if (hasAnyWord(['class', 'classes', 'lecture', 'lectures', 'timetable', 'schedule']) || q.includes('do i have class')) {
+      const todayClasses = user?.academic_timetable?.filter(c => c.day === currentDay) || [];
+      if (todayClasses.length === 0) {
         return {
-          text: `here are the creative and film challenges going on right now:\n\n${listStr}\n\ntap any card below to check out the details or register!`,
-          referencedEventIds: filmEvents.map((e) => e.id)
+          text: `you don't have any classes on **${currentDay}**! you're totally free.`
         };
       }
+      return {
+        text: `here are your classes for today (**${currentDay}**):\n\n` +
+          todayClasses.map(c => `* **${c.courseName}** — ${c.timeStart} to ${c.timeEnd} (${c.room || 'Academics'})`).join('\n')
+      };
     }
 
-    // 3. "What's the next event I'm going to?" / "next event" / "going"
-    if (q.includes('next event') || (q.includes('going') && (q.includes('event') || q.includes('what') || q.includes('where')))) {
+    // 14. "WHAT'S THE NEXT EVENT I'M GOING TO?" / "NEXT EVENT" / "GOING"
+    if (
+      q.includes('next event') ||
+      (hasWord('going') && (q.includes('event') || q.includes('what') || q.includes('where') || q.includes('am i')))
+    ) {
       if (!isAuthenticated || !user) {
         return {
           text: `sign in with your @flame.edu.in email first so i can see your personal rsvp list!`
@@ -190,8 +313,8 @@ export const ChatBotModal: React.FC = () => {
       };
     }
 
-    // 4. "What all events have I saved?" / "saved events"
-    if (q.includes('saved') || q.includes('bookmark') || (q.includes('events') && q.includes('save'))) {
+    // 15. "WHAT ALL EVENTS HAVE I SAVED?" / "SAVED EVENTS"
+    if (hasAnyWord(['saved', 'bookmarks', 'bookmarked', 'watchlist']) || (q.includes('events') && q.includes('save'))) {
       if (!isAuthenticated || !user) {
         return {
           text: `sign in with your flame email to check your saved bookmarks!`
@@ -213,8 +336,8 @@ export const ChatBotModal: React.FC = () => {
       };
     }
 
-    // 5. "Events similar to my favourites / starred"
-    if (q.includes('similar') || q.includes('favourite') || q.includes('favorite') || q.includes('starred') || q.includes('recommend')) {
+    // 16. "EVENTS SIMILAR TO MY FAVOURITES / STARRED"
+    if (hasAnyWord(['similar', 'favourite', 'favorite', 'starred', 'recommend', 'recommendations', 'suggest'])) {
       const favEvents = events.filter((e) => favouriteEventIds.includes(e.id));
 
       if (favEvents.length === 0) {
@@ -263,51 +386,137 @@ export const ChatBotModal: React.FC = () => {
       }
     }
 
-    // 6. Timetable / classes query
-    if (q.includes('class') || q.includes('timetable') || q.includes('schedule')) {
-      const todayClasses = user?.academic_timetable?.filter(c => c.day === currentDay) || [];
-      if (todayClasses.length === 0) {
+    // 17. FILM / CREATIVE / MEDIA COMPETITIONS
+    if (hasAnyWord(['film', 'movie', 'cinema', 'video', 'acting', 'director']) || q.includes('ad-shad') || (hasWord('comp') && (q.includes('film') || q.includes('media') || q.includes('brand')))) {
+      const filmEvents = events.filter((e) => {
+        const text = `${e.event_name} ${e.description} ${e.category} ${(e.categories || []).join(' ')} ${e.organizer}`.toLowerCase();
+        return text.includes('film') || text.includes('movie') || text.includes('advertisement') || text.includes('brand') || text.includes('bunkasai') || text.includes('the front row') || text.includes('story project');
+      });
+
+      if (filmEvents.length > 0) {
+        const listStr = filmEvents.map((e) => 
+          `🎬 **${e.event_name}**\n* **By:** ${e.organizer}\n* **When:** ${e.date} (${e.time_start_end})\n* **Deadline:** ${e.registration_deadline || 'Open'}\n* **Eligibility:** ${e.requirements_eligibility || 'Open to All'}\n* **Where:** ${e.venue_zone}`
+        ).join('\n\n');
+
         return {
-          text: `you don't have any classes on **${currentDay}**! you're totally free.`
+          text: `here are the creative and film challenges going on right now:\n\n${listStr}\n\ntap any card below to check out the details or register!`,
+          referencedEventIds: filmEvents.map((e) => e.id)
         };
       }
-      return {
-        text: `here are your classes for today (**${currentDay}**):\n\n` +
-          todayClasses.map(c => `* **${c.courseName}** — ${c.timeStart} to ${c.timeEnd} (${c.room || 'Academics'})`).join('\n')
-      };
     }
 
-    // 7. Cricket ground rule
-    if (q.includes('cricket') || q.includes('ground') || q.includes('pitch')) {
-      return {
-        text: `nah, walking on the cricket ground isn't allowed at all lol. gotta stick to the paved road around it to keep the pitch intact.`,
-      };
+    // 18. MUSIC / BANDS / JAMMING
+    if (hasAnyWord(['music', 'band', 'jam', 'singing', 'concert', 'acoustic', 'gig'])) {
+      const musicEvents = events.filter((e) => {
+        const text = `${e.event_name} ${e.description} ${e.category} ${(e.categories || []).join(' ')} ${e.organizer}`.toLowerCase();
+        return text.includes('music') || text.includes('band') || text.includes('sing') || text.includes('jam') || text.includes('acoustic');
+      });
+      if (musicEvents.length > 0) {
+        return {
+          text: `here's what the FLAME Music Club and campus bands have lined up:\n\n` +
+            musicEvents.map(e => `* **${e.event_name}** on **${e.date}** (${e.time_start_end}) at ${e.venue_zone}`).join('\n'),
+          referencedEventIds: musicEvents.map(e => e.id)
+        };
+      }
     }
 
-    // 8. Juice Press (only if specifically asked)
-    if (q.includes('juice press') || (q.includes('juice') && q.includes('where'))) {
-      return {
-        text: `juice press is spot #28 near west housing (blocks L through S).`,
-      };
+    // 19. DANCE & CHOREOGRAPHY
+    if (hasAnyWord(['dance', 'dancer', 'choreography', 'hip hop', 'bhangra'])) {
+      const danceEvents = events.filter((e) => {
+        const text = `${e.event_name} ${e.description} ${e.category} ${(e.categories || []).join(' ')} ${e.organizer}`.toLowerCase();
+        return text.includes('dance') || text.includes('choreography');
+      });
+      if (danceEvents.length > 0) {
+        return {
+          text: `here's what's happening with FLAME Dance Club:\n\n` +
+            danceEvents.map(e => `* **${e.event_name}** on **${e.date}** (${e.time_start_end}) at ${e.venue_zone}`).join('\n'),
+          referencedEventIds: danceEvents.map(e => e.id)
+        };
+      }
     }
 
-    // 9. General search across all events
-    const matchedEvents = events.filter((e) => {
-      const fullText = `${e.event_name} ${e.description} ${e.category} ${e.organizer} ${e.venue_zone}`.toLowerCase();
-      return fullText.includes(q);
-    }).slice(0, 3);
-
-    if (matchedEvents.length > 0) {
-      return {
-        text: `found **${matchedEvents.length} event${matchedEvents.length > 1 ? 's' : ''}** for "${query}":\n\n` +
-          matchedEvents.map(e => `* **${e.event_name}** (${e.category})\n  📅 ${e.date} (${e.time_start_end}) · 📍 ${e.venue_zone}`).join('\n\n'),
-        referencedEventIds: matchedEvents.map(e => e.id)
-      };
+    // 20. PARTIES, FESTS & CULTURAL NIGHTS
+    if (hasAnyWord(['party', 'fest', 'fests', 'cultural', 'celebration', 'dj']) || q.includes('bunkasai') || q.includes('first cut')) {
+      const festEvents = events.filter((e) => {
+        const text = `${e.event_name} ${e.description} ${e.category} ${(e.categories || []).join(' ')} ${e.organizer}`.toLowerCase();
+        return text.includes('fest') || text.includes('cultural') || text.includes('bunkasai') || text.includes('party') || text.includes('first cut') || text.includes('celebration');
+      });
+      if (festEvents.length > 0) {
+        return {
+          text: `here are the major fests and cultural events happening:\n\n` +
+            festEvents.map(e => `* **${e.event_name}** (${e.category}) on **${e.date}** at ${e.venue_zone}`).join('\n'),
+          referencedEventIds: festEvents.map(e => e.id)
+        };
+      }
     }
 
-    // 10. Default friendly fallback
+    // 21. GENERAL "WHAT'S HAPPENING?" / "WHAT EVENTS ARE THERE?" / "UPCOMING EVENTS"
+    if (
+      q.includes("what's happening") || q.includes('whats happening') || q.includes('what is happening') ||
+      q.includes('what events') || q.includes('any events') || q.includes('upcoming events') ||
+      q.includes('show events') || q.includes('list events') || q.includes('all events') || q === 'events'
+    ) {
+      const upcoming = events
+        .filter((e) => e.status !== 'Completed' && e.status !== 'Cancelled')
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 4);
+
+      if (upcoming.length > 0) {
+        return {
+          text: `here's what's coming up on campus soon:\n\n` +
+            upcoming.map(e => `* **${e.event_name}** (${e.category}) — **${e.date}** (${e.time_start_end}) at **${e.venue_zone}**`).join('\n\n'),
+          referencedEventIds: upcoming.map(e => e.id)
+        };
+      }
+    }
+
+    // 22. SMART KEYWORD & RELEVANCE SCORING ACROSS EVENTS
+    // Removes filler/stop words and matches keywords naturally
+    const stopWords = new Set([
+      'the', 'is', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'any', 'some',
+      'what', 'are', 'there', 'i', 'can', 'you', 'tell', 'me', 'about', 'show', 'give', 'do', 'have',
+      'my', 'how', 'when', 'where', 'which', 'who', 'want', 'looking', 'know'
+    ]);
+    const queryTokens = q
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !stopWords.has(w));
+
+    if (queryTokens.length > 0) {
+      const scoredEvents = events
+        .map((e) => {
+          let score = 0;
+          const nameLower = e.event_name.toLowerCase();
+          const descLower = (e.description || '').toLowerCase();
+          const catLower = (e.category || '').toLowerCase();
+          const orgLower = (e.organizer || '').toLowerCase();
+          const venueLower = (e.venue_zone || '').toLowerCase();
+
+          for (const token of queryTokens) {
+            if (nameLower.includes(token)) score += 5;
+            if (catLower.includes(token)) score += 3;
+            if (orgLower.includes(token)) score += 3;
+            if (descLower.includes(token)) score += 1;
+            if (venueLower.includes(token)) score += 1;
+          }
+          return { event: e, score };
+        })
+        .filter((item) => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      if (scoredEvents.length > 0) {
+        return {
+          text: `found **${scoredEvents.length} event${scoredEvents.length > 1 ? 's' : ''}** related to "${queryTokens.join(' ')}":\n\n` +
+            scoredEvents.map(({ event: e }) => `* **${e.event_name}** (${e.category})\n  📅 ${e.date} (${e.time_start_end}) · 📍 ${e.venue_zone}`).join('\n\n'),
+          referencedEventIds: scoredEvents.map(s => s.event.id)
+        };
+      }
+    }
+
+    // 23. NATURAL FALLBACK
     return {
-      text: `hit me with whatever you need: events coming up, club comps, your classes, or what's on your schedule.`
+      text: `i couldn't find anything specifically matching that right now! you can browse all upcoming fests and club activities on the Explore tab, or ask me about your classes, film comps, sports at Arjuna, or what to do when you're free.`
     };
   };
 

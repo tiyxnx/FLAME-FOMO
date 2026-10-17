@@ -55,10 +55,10 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { 
-          error: 'NO_API_KEY', 
+          fallbackToLocal: true,
           message: 'Gemini API key is not configured. Falling back to local campus intelligence engine.' 
         },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
