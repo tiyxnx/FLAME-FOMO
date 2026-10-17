@@ -77,6 +77,29 @@ export const ChatBotModal: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Multi-turn conversation context & non-repeating response index tracking
+  interface ConversationContext {
+    topic?: string;
+    eventId?: string;
+    eventName?: string;
+    eventObject?: EventItem;
+    eventsList?: EventItem[];
+    lastQueryType?: string;
+  }
+  const lastContextRef = useRef<ConversationContext>({});
+  const lastResponseIndexMap = useRef<Record<string, number>>({});
+
+  // Helper to ensure varied, non-repeating answers
+  const pickNonRepeating = (key: string, options: string[]): string => {
+    const lastIdx = lastResponseIndexMap.current[key] ?? -1;
+    let nextIdx = Math.floor(Math.random() * options.length);
+    if (options.length > 1 && nextIdx === lastIdx) {
+      nextIdx = (nextIdx + 1) % options.length;
+    }
+    lastResponseIndexMap.current[key] = nextIdx;
+    return options[nextIdx];
+  };
+
   // Initialize welcome message when opened
   useEffect(() => {
     if (isChatBotOpen && messages.length === 0) {
@@ -111,7 +134,11 @@ export const ChatBotModal: React.FC = () => {
   // Handles all specific queries instantly with 0ms latency and 100% accuracy
   // ---------------------------------------------------------------------------
   const answerWithLocalEngine = (query: string): { text: string; referencedEventIds?: string[] } => {
-    const q = query.toLowerCase().trim();
+    const qRaw = query.toLowerCase().trim();
+    // Word deduplication: collapse 3+ repeated characters down (e.g. "stop itttt" -> "stop it", "noooo" -> "no", "heyyy" -> "hey")
+    const qDeduplicated = qRaw.replace(/([a-zA-Z])\1{2,}/g, '$1');
+    const q = qDeduplicated;
+
     const now = new Date();
     const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
     const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -164,6 +191,11 @@ export const ChatBotModal: React.FC = () => {
       'wat': 'what',
       'wut': 'what',
       'fr': 'for real',
+      'af': 'extremely',
+      'idc': "i don't care",
+      'nvm': 'nevermind',
+      'bro': 'friend',
+      'dude': 'friend',
     };
 
     // Words with slang expanded for semantic intent matching
@@ -173,78 +205,268 @@ export const ChatBotModal: React.FC = () => {
       .map((w) => SLANG_MAP[w] || w)
       .join(' ');
 
-    // Helper: test if query or expanded slang contains word
+    // Robust matching helpers
     const hasWord = (word: string) => {
       const regex = new RegExp(`\\b${word}\\b`, 'i');
-      return regex.test(q) || regex.test(qNormalized);
+      return regex.test(qRaw) || regex.test(qDeduplicated) || regex.test(qNormalized);
     };
     const hasAnyWord = (words: string[]) => words.some((w) => hasWord(w));
+    const hasPhrase = (phrase: string) => {
+      return qRaw.includes(phrase) || qDeduplicated.includes(phrase) || qNormalized.includes(phrase);
+    };
 
-    // 0. Explicit User Prompt: "say fomo bot"
-    if (q.includes('fomo bot') && (q.includes('say') || q.includes('call yourself') || q.includes('name'))) {
+    // 0a. Training & Conversational Upgrades / "Whatever works best" / "Chat GPT"
+    if (
+      hasPhrase('train') || hasPhrase('better at convo') || hasPhrase('repetition') ||
+      hasPhrase('repeat') || hasPhrase('whatever works') || hasPhrase('do whatever') ||
+      hasPhrase('improve') || hasPhrase('smarter') || hasPhrase('how to train') ||
+      hasPhrase('chat gpt') || hasPhrase('talk back')
+    ) {
+      return {
+        text: `on it! 🔥 i just upgraded my conversational engine so we can chat naturally without any repetitive loops.\n\nhere is how i work now:\n* 🗣️ **Conversational Banter & Slang**: i understand college slang (rn, smth, tmrw, comps, tt), banter, moods, and emotions.\n* 🔄 **Multi-Turn Context**: ask follow-ups like *"tell me more"*, *"where is that"*, *"when is it"*, or *"how do i register"* and i remember what we just talked about.\n* 🏛️ **Life@FLAME & Live Events**: complete background on Kurukshetra, FLAME Fest, FirstCut, Blaze, committees, and real-time event updates.\n* ⚡ **Gemini AI Integration**: tap **AI Key** in the header anytime to plug in a free Google AI key for full unconstrained ChatGPT power.\n\ntest me out — ask anything or just chat!`
+      };
+    }
+
+    // 0b. Explicit User Prompt: "say fomo bot"
+    if (hasPhrase('fomo bot') && (hasPhrase('say') || hasPhrase('call yourself') || hasPhrase('name'))) {
       return {
         text: `got it! i'm **fomo bot** from now on 🔥 ask me anything about events, club comps, your classes, or what's on campus.`
       };
     }
 
-    // 0b. Slang & Short-form Inquiry / Training
+    // 0c. Slang & Short-form Inquiry / Training
     if (
-      q.includes('slang') || q.includes('short form') || q.includes('shortform') || q.includes('abbreviation') ||
-      ((hasWord('rn') || hasWord('smth')) && (q.includes('teach') || q.includes('learn') || q.includes('know') || q.includes('understand')))
+      hasPhrase('slang') || hasPhrase('short form') || hasPhrase('shortform') || hasPhrase('abbreviation') ||
+      ((hasWord('rn') || hasWord('smth')) && (hasPhrase('teach') || hasPhrase('learn') || hasPhrase('know') || hasPhrase('understand')))
     ) {
       return {
         text: `bet! i know student slang like **rn** (right now), **smth** (something), **tmrw** (tomorrow), **wknd**, **bc**, **tt** (timetable), **comps**, and more. hit me with whatever abbreviations u use lol.`
       };
     }
 
-    // 0c. Conversational Banter: "nah" / "no" / "not really" / "nothing" / "leave it" / "nvm"
-    const dismissives = ['nah', 'no', 'nope', 'not really', 'nothing', 'leave it', 'nvm', 'nevermind', 'dont want to', 'dont care', 'idc', 'nothing much'];
-    if (dismissives.some((d) => q === d || q.startsWith(d + ' ') || q.endsWith(' ' + d))) {
-      const replies = [
-        "haha fair enough! just chilling then? let me know if u need smth later.",
-        "all good haha! what's on your mind then?",
-        "no worries at all 🙌 i'm right here whenever u wanna check out campus buzz.",
-        "gotchu, keeping it lowkey today. let me know if u need anything!"
-      ];
-      return { text: replies[Math.floor(Math.random() * replies.length)] };
+    // 0d. Explicit Juice Press mute request: "stop talking about juice press"
+    if (hasPhrase('juice press') && (hasPhrase('stop') || hasPhrase('dont') || hasPhrase('hate') || hasPhrase('not important') || hasPhrase('shut up'))) {
+      return {
+        text: `haha gotchu, strictly ZERO juice press talk from now on! 🤐 sworn to secrecy lol.`
+      };
     }
 
-    // 0c2. Playful Stop / Hush requests: "stop", "lol stop", "stop itttt", "shut up", "shh"
-    if (q.includes('stop') || q.includes('shut up') || q.includes('quiet') || q.includes('shh') || q.includes('chill out')) {
+    // 0e. JUICE PRESS (ONLY IF EXPLICITLY ASKED)
+    if (hasPhrase('juice press') || (hasWord('juice') && hasWord('where'))) {
+      return {
+        text: `juice press is spot #28 near west housing (blocks L through S).`,
+      };
+    }
+
+    // 0f. MULTI-TURN CONTEXT FOLLOW-UPS (Remembers what was discussed previously!)
+    if (hasPhrase('tell me more') || hasPhrase('more info') || hasPhrase('more details') || hasPhrase('expand') || q === 'more' || q === 'details') {
+      if (lastContextRef.current.eventObject) {
+        const ev = lastContextRef.current.eventObject;
+        return {
+          text: `here's the full rundown on **${ev.event_name}**:\n\n${ev.description}\n\n* **Hosted by:** ${ev.organizer}\n* **When:** ${ev.date} (${ev.time_start_end})\n* **Location:** ${ev.venue_zone}${ev.room_specific ? ` · ${ev.room_specific}` : ''}\n* **Eligibility:** ${ev.requirements_eligibility || 'Open to all'}\n* **Fee:** ${ev.registration_fee || 'Free'}\n* **Deadline:** ${ev.registration_deadline || 'Open'}${ev.poc_name ? `\n* **POC:** ${ev.poc_name}${ev.poc_number ? ` (${ev.poc_number})` : ''}` : ''}`,
+          referencedEventIds: [ev.id]
+        };
+      }
+      if (lastContextRef.current.topic) {
+        const topic = LIFE_AT_FLAME_KNOWLEDGE.find(t => t.title.toLowerCase().includes(lastContextRef.current.topic!) || lastContextRef.current.topic!.includes(t.title.toLowerCase()));
+        if (topic) {
+          return {
+            text: `🔥 more details on **${topic.title}**:\n\n${topic.details}\n\ncheck out official updates on the [Life@FLAME Portal](${topic.link || LIFE_AT_FLAME_PORTAL_URL})!`
+          };
+        }
+      }
+      return {
+        text: `tell u more about which one? i can dive into upcoming fests (Kurukshetra / FLAME Fest / FirstCut), your saved events, or active competitions!`
+      };
+    }
+
+    // Follow-up: Where is it?
+    if (hasPhrase('where is it') || hasPhrase('where is that') || hasPhrase('where is this') || q === 'where' || hasPhrase('which room') || hasPhrase('what location')) {
+      if (lastContextRef.current.eventObject) {
+        const ev = lastContextRef.current.eventObject;
+        return {
+          text: `**${ev.event_name}** is happening at **${ev.venue_zone}**${ev.room_specific ? ` (${ev.room_specific})` : ''}!`,
+          referencedEventIds: [ev.id]
+        };
+      }
+    }
+
+    // Follow-up: When is it?
+    if (hasPhrase('when is it') || hasPhrase('what time') || hasPhrase('when is that') || q === 'when' || hasPhrase('which date')) {
+      if (lastContextRef.current.eventObject) {
+        const ev = lastContextRef.current.eventObject;
+        return {
+          text: `**${ev.event_name}** is scheduled for **${ev.date}** from **${ev.time_start_end}**.`,
+          referencedEventIds: [ev.id]
+        };
+      }
+    }
+
+    // Follow-up: How to register / Registration fee
+    if (hasPhrase('how to register') || hasPhrase('how do i register') || hasPhrase('sign up') || hasPhrase('registration link') || hasPhrase('is it free') || hasPhrase('what is the fee') || hasPhrase('how much')) {
+      if (lastContextRef.current.eventObject) {
+        const ev = lastContextRef.current.eventObject;
+        let regText = `for **${ev.event_name}**:\n* **Fee:** ${ev.registration_fee || 'Free'}\n* **Deadline:** ${ev.registration_deadline || 'Open'}`;
+        if (ev.registration_link) {
+          regText += `\n* **Register here:** [Registration Link](${ev.registration_link})`;
+        } else {
+          regText += `\n* you can register directly through the card below!`;
+        }
+        return {
+          text: regText,
+          referencedEventIds: [ev.id]
+        };
+      }
+    }
+
+    // Follow-up: Who is organizing / POC
+    if (hasPhrase('who is organizing') || hasPhrase('who is hosting') || hasPhrase('who to contact') || hasPhrase('poc') || hasPhrase('contact person')) {
+      if (lastContextRef.current.eventObject) {
+        const ev = lastContextRef.current.eventObject;
+        return {
+          text: `**${ev.event_name}** is organized by **${ev.organizer}**${ev.poc_name ? `.\n\nPoint of Contact: **${ev.poc_name}**${ev.poc_number ? ` (${ev.poc_number})` : ''}` : '.'}`,
+          referencedEventIds: [ev.id]
+        };
+      }
+    }
+
+    // 0g. Playful Stop / Hush requests: "stop", "lol stop", "stop itttt", "shut up", "shh", "chill out"
+    if (
+      hasPhrase('stop') || hasPhrase('shut up') || hasPhrase('quiet') || hasPhrase('shh') ||
+      hasPhrase('chill out') || hasPhrase('leave me alone') || hasPhrase('stop it') || hasPhrase('be quiet')
+    ) {
       const stopReplies = [
         "haha my bad, i'm quiet! 🤐",
         "hahaha okay okay, shutting up now lol 🤐",
         "alright alright, i'm out! hit me up whenever u need smth 🙌",
-        "lol heard! keeping it muted."
+        "lol heard! keeping it muted.",
+        "haha fair enough, backing off! 🤐",
+        "oops my bad lol, say less!"
       ];
-      return { text: stopReplies[Math.floor(Math.random() * stopReplies.length)] };
+      return { text: pickNonRepeating('stop', stopReplies) };
     }
 
-    // 0d. Laughter / Keyboard Smash: "sjsjjajaja", "hahaha", "lmao", "lol", "xd"
-    if (/(sjsj|jaja|haha|lmao|lol|rofl|xd|asdf|ghjk)/i.test(q)) {
+    // 0h. Conversational Dismissives: "nah", "no", "nope", "not really", "nothing", "leave it", "nvm", "whatever"
+    const dismissives = ['nah', 'no', 'nope', 'not really', 'nothing', 'leave it', 'nvm', 'nevermind', 'dont want to', 'dont care', 'idc', 'nothing much', 'whatever'];
+    if (dismissives.some((d) => qRaw === d || qDeduplicated === d || qRaw.startsWith(d + ' ') || qRaw.endsWith(' ' + d))) {
+      const replies = [
+        "haha fair enough! just chilling then? let me know if u need smth later.",
+        "all good haha! what's on your mind then?",
+        "no worries at all 🙌 i'm right here whenever u wanna check out campus buzz.",
+        "gotchu, keeping it lowkey today. let me know if u need anything!",
+        "cool cool, take it easy 🙌"
+      ];
+      return { text: pickNonRepeating('dismissive', replies) };
+    }
+
+    // 0i. Laughter & Keyboard Smashes: "sjsjjajaja", "hahaha", "lmao", "lol", "xd"
+    if (/(sjsj|jaja|haha|lmao|lol|rofl|xd|asdf|ghjk)/i.test(qRaw) || /(sjsj|jaja|haha|lmao|lol|rofl|xd|asdf|ghjk)/i.test(qDeduplicated)) {
       const laughReplies = [
         "lmao what's got u laughing? 😂",
         "hahaha keyboard smash energy. everything good? lol",
         "lmao fair enough 😂 having a good day?",
-        "haha what's funny? spill the tea!"
+        "haha what's funny? spill the tea!",
+        "lol love the energy 😂 what are u up to?"
       ];
-      return { text: laughReplies[Math.floor(Math.random() * laughReplies.length)] };
+      return { text: pickNonRepeating('laugh', laughReplies) };
     }
 
-    // 0e. Affirmatives: "yes", "yeah", "yup", "sure", "ok", "okay", "bet", "alright"
-    if (['yes', 'yeah', 'yup', 'sure', 'ok', 'okay', 'k', 'bet', 'alright', 'cool', 'fine'].includes(q)) {
+    // 0j. Affirmatives: "yes", "yeah", "yup", "sure", "ok", "okay", "bet", "alright"
+    if (['yes', 'yeah', 'yup', 'sure', 'ok', 'okay', 'k', 'bet', 'alright', 'cool', 'fine'].includes(qDeduplicated)) {
       const affirmReplies = [
         "bet! what are u trying to check out — events coming up, your classes, or club comps?",
         "awesome! what do u wanna look for on campus?",
-        "for sure. let me know what u need — events, spots to chill, or your schedule!"
+        "for sure. let me know what u need — events, spots to chill, or your schedule!",
+        "sweet! hit me with whatever's on your mind."
       ];
-      return { text: affirmReplies[Math.floor(Math.random() * affirmReplies.length)] };
+      return { text: pickNonRepeating('affirm', affirmReplies) };
     }
 
-    // 0f. Questions / Confusion: "what", "why", "huh", "wym", "wdym"
-    if (['what', 'why', 'huh', 'wym', 'wdym', 'what do you mean'].includes(q)) {
+    // 0k. Questions / Confusion: "what", "why", "huh", "wym", "wdym"
+    if (['what', 'why', 'huh', 'wym', 'wdym', 'what do you mean'].includes(qDeduplicated)) {
       return {
         text: "i mean whatever you're looking for on campus! like upcoming fests, film competitions, whether you've got classes rn, or places to hang out."
+      };
+    }
+
+    // 0l. STUDENT MOODS & DAILY CAMPUS LIFE
+    // 1. Boredom
+    if (hasAnyWord(['bored', 'bore']) || hasPhrase('nothing to do') || hasPhrase('kill time') || hasPhrase('pass time') || hasPhrase('entertain me')) {
+      return {
+        text: pickNonRepeating('bored', [
+          "bored on campus? let's fix that! you could hit the Arjuna Centre for badminton or squash, grab a snack at the Plaza, or check out active club comps.\n\nwanna see upcoming events or active challenges?",
+          "honestly same sometimes lol. if you're looking for smth active, pick-up basketball at Arjuna Centre is usually popping, or you could chill at the Plaza. want me to check what events are coming up?",
+          "no way! campus is buzzing. check out the live film & brand challenges on the board, or go explore the sports fests. what are u in the mood for?"
+        ])
+      };
+    }
+
+    // 2. Tired / Exhaustion
+    if (hasAnyWord(['tired', 'sleepy', 'exhausted', 'drained']) || hasPhrase('need sleep') || hasPhrase('slept') || hasPhrase('all nighter')) {
+      return {
+        text: pickNonRepeating('tired', [
+          "bro go take a power nap in your room! sleep debt at FLAME is no joke lol. just make sure you don't sleep through your next class.",
+          "felt that! grab an iced coffee or chai at the Plaza, or just crash for an hour. don't burn out!",
+          "sounds like an all-nighter caught up with you lol. take it easy today, hit the bed early, and catch up on campus stuff later 🙌"
+        ])
+      };
+    }
+
+    // 3. Stressed / Exams / Deadlines
+    if (hasAnyWord(['stressed', 'anxious', 'overwhelmed']) || hasPhrase('exam') || hasPhrase('finals') || hasPhrase('assignment') || hasPhrase('submission') || hasPhrase('due date')) {
+      return {
+        text: pickNonRepeating('stressed', [
+          "deep breaths! you've got this. the Central Library has quiet study zones if you need to lock in. take a 10-minute break to walk around the peripheral road when your brain feels fried.",
+          "exam / submission stress is real! take it one task at a time. grab some chai at the Plaza, review your notes, and take breaks. you'll crush it!",
+          "hang in there! FLAME deadlines can get intense, but you'll get through it. make sure to stay hydrated and eat at the Dining Hall!"
+        ])
+      };
+    }
+
+    // 4. Social / Meeting Friends
+    if (hasPhrase('meet people') || hasPhrase('make friends') || hasPhrase('where is everyone') || hasPhrase('socialize') || hasPhrase('lonely')) {
+      return {
+        text: `best spots to meet people on campus:\n* **FLAME Plaza** around 5:00 PM – 7:00 PM (peak social hours)\n* **Arjuna Centre** for pick-up badminton, basketball, or pool\n* **Club events & comps**: joining a team for AD-SHAD or cultural fest rehearsals is the fastest way to make friends!`
+      };
+    }
+
+    // 0m. CASUAL WIT, AI COMPARISONS & GOSSIP
+    if (hasPhrase('are you real') || hasPhrase('are you ai') || hasPhrase('are you chatgpt') || hasPhrase('chatgpt')) {
+      return {
+        text: pickNonRepeating('ai_identity', [
+          "i'm fomo bot! built specifically for FLAME students with local campus intelligence and live event sync. if you connect your Gemini key in the header, i run on full Gemini 2.0 Flash AI too!",
+          "i'm your FLAME campus AI buddy! unlike regular chatgpt, i actually know where APJ hall is, the cricket ground rules, and when the next fest is happening lol."
+        ])
+      };
+    }
+
+    if (hasPhrase('i love you') || hasPhrase('marry me') || hasPhrase('you are cute') || hasPhrase('youre cute') || hasPhrase('you are the best') || hasPhrase('youre the best') || hasPhrase('best bot')) {
+      return {
+        text: pickNonRepeating('flirt', [
+          "hahaha appreciate the love! flattered, but my only commitment is making sure you never miss campus events lol 🙌",
+          "ayyy thank you! you're awesome too. let me know if u need any event recommendations 🔥",
+          "haha blushing! happy to be your campus guide 🙌"
+        ])
+      };
+    }
+
+    if (hasPhrase('you suck') || hasPhrase('you are dumb') || hasPhrase('youre dumb') || hasPhrase('you are stupid') || hasPhrase('bad bot') || hasPhrase('useless')) {
+      return {
+        text: pickNonRepeating('roast', [
+          "ouch haha, my bad! what did i miss? tell me what you're trying to find and i'll get it right 🙌",
+          "damn harsh! haha give me another shot — what are you looking for on campus?",
+          "my feelings! 🥲 jk, tell me what went wrong and i'll help u out."
+        ])
+      };
+    }
+
+    if (hasPhrase('secret') || hasPhrase('gossip') || hasPhrase('campus tip') || hasPhrase('pro tip') || hasPhrase('hack')) {
+      return {
+        text: pickNonRepeating('tips', [
+          "🤫 **Campus Pro Tip #1**: The indoor badminton courts at Arjuna Centre are emptiest between 2 PM and 4 PM during afternoon lecture blocks!",
+          "🤫 **Campus Pro Tip #2**: The sunset view from the lawn behind West Housing is undefeated. Bring a cold drink and thank me later.",
+          "🤫 **Campus Pro Tip #3**: Never cut across the cricket pitch to save 2 minutes before class. Security will catch you every single time lol!"
+        ])
       };
     }
 
@@ -254,12 +476,14 @@ export const ChatBotModal: React.FC = () => {
       q.includes(topic.title.toLowerCase())
     );
     if (matchedTopic) {
+      lastContextRef.current = { topic: matchedTopic.title.toLowerCase() };
       return {
         text: `🔥 **${matchedTopic.title}**\n\n${matchedTopic.details}\n\n🔗 check out more on the official [Life@FLAME Portal](${matchedTopic.link || LIFE_AT_FLAME_PORTAL_URL})!`
       };
     }
 
     if (q.includes('life at flame') || q.includes('lifeatflame') || q.includes('google site')) {
+      lastContextRef.current = { topic: 'lifeatflame' };
       return {
         text: `🔗 **Life@FLAME** is FLAME's official campus life & student affairs portal!\n\nit covers flagship fests like Kurukshetra & FLAME Fest, student committees (Sports Committee, Cultural Committee, Student Council), club charters, and student resources.\n\ncheck it out here: [Life@FLAME Official Portal](${LIFE_AT_FLAME_PORTAL_URL})`
       };
@@ -287,18 +511,6 @@ export const ChatBotModal: React.FC = () => {
     ) {
       return {
         text: `all good here! just tracking all the campus events, club competitions, and schedules. how about you? got some free time or looking to hit up an event?`
-      };
-    }
-
-    // 3. BOT IDENTITY & CAPABILITIES: "WHO ARE YOU" / "WHAT CAN YOU DO" / "WHAT ARE YOU"
-    if (
-      q.includes('who are you') || q.includes('who r u') || q.includes('what are you') ||
-      q.includes('what is your name') || q.includes("what's your name") || q.includes('whats your name') ||
-      q === 'fomo bot' || q === 'who made you' || q.includes('what can you do') || q.includes('help') ||
-      q.includes('what do you do') || q === 'about'
-    ) {
-      return {
-        text: `i'm **fomo bot**, your chill campus buddy at FLAME! 🔥\n\nhere's what i can answer:\n* ⚡ **"free rn what to do?"** — checks your timetable & suggests active events or chill spots\n* 📚 **"my classes today"** — breaks down your lectures and halls\n* 🎬 **"film / dance / music / sports comps"** — finds active competitions, dates, and sign-up links\n* 📍 **"next event i'm going to"** — pulls up your RSVPs\n* 📌 **"events i saved"** — shows your bookmarked events\n* ⭐ **"similar to what i starred"** — recommends new stuff based on your interests\n* 🗺️ **campus spots & rules** (like the cricket ground rule!)`
       };
     }
 
@@ -342,9 +554,11 @@ export const ChatBotModal: React.FC = () => {
 
       let resText = `**Arjuna Centre for Sports** has indoor badminton, squash courts, the gym, table tennis, and the swimming pool.\n\n`;
       if (sportEvents.length > 0) {
+        lastContextRef.current = { topic: 'sports', eventObject: sportEvents[0], eventsList: sportEvents };
         resText += `here are upcoming sports events & competitions:\n\n` +
           sportEvents.slice(0, 3).map(e => `* **${e.event_name}** — ${e.date} (${e.time_start_end}) at ${e.venue_zone}`).join('\n');
       } else {
+        lastContextRef.current = { topic: 'sports' };
         resText += `no specific sports tournaments scheduled right now, but Arjuna Centre is open for recreational play!`;
       }
 
@@ -549,6 +763,7 @@ export const ChatBotModal: React.FC = () => {
       });
 
       if (filmEvents.length > 0) {
+        lastContextRef.current = { topic: 'film', eventObject: filmEvents[0], eventsList: filmEvents };
         const listStr = filmEvents.map((e) => 
           `🎬 **${e.event_name}**\n* **By:** ${e.organizer}\n* **When:** ${e.date} (${e.time_start_end})\n* **Deadline:** ${e.registration_deadline || 'Open'}\n* **Eligibility:** ${e.requirements_eligibility || 'Open to All'}\n* **Where:** ${e.venue_zone}`
         ).join('\n\n');
@@ -567,6 +782,7 @@ export const ChatBotModal: React.FC = () => {
         return text.includes('music') || text.includes('band') || text.includes('sing') || text.includes('jam') || text.includes('acoustic');
       });
       if (musicEvents.length > 0) {
+        lastContextRef.current = { topic: 'music', eventObject: musicEvents[0], eventsList: musicEvents };
         return {
           text: `here's what the FLAME Music Club and campus bands have lined up:\n\n` +
             musicEvents.map(e => `* **${e.event_name}** on **${e.date}** (${e.time_start_end}) at ${e.venue_zone}`).join('\n'),
@@ -582,6 +798,7 @@ export const ChatBotModal: React.FC = () => {
         return text.includes('dance') || text.includes('choreography');
       });
       if (danceEvents.length > 0) {
+        lastContextRef.current = { topic: 'dance', eventObject: danceEvents[0], eventsList: danceEvents };
         return {
           text: `here's what's happening with FLAME Dance Club:\n\n` +
             danceEvents.map(e => `* **${e.event_name}** on **${e.date}** (${e.time_start_end}) at ${e.venue_zone}`).join('\n'),
@@ -597,6 +814,7 @@ export const ChatBotModal: React.FC = () => {
         return text.includes('fest') || text.includes('cultural') || text.includes('bunkasai') || text.includes('party') || text.includes('first cut') || text.includes('celebration');
       });
       if (festEvents.length > 0) {
+        lastContextRef.current = { topic: 'fest', eventObject: festEvents[0], eventsList: festEvents };
         return {
           text: `here are the major fests and cultural events happening:\n\n` +
             festEvents.map(e => `* **${e.event_name}** (${e.category}) on **${e.date}** at ${e.venue_zone}`).join('\n'),
@@ -617,6 +835,7 @@ export const ChatBotModal: React.FC = () => {
         .slice(0, 4);
 
       if (upcoming.length > 0) {
+        lastContextRef.current = { topic: 'events', eventObject: upcoming[0], eventsList: upcoming };
         return {
           text: `here's what's coming up on campus soon:\n\n` +
             upcoming.map(e => `* **${e.event_name}** (${e.category}) — **${e.date}** (${e.time_start_end}) at **${e.venue_zone}**`).join('\n\n'),
@@ -661,6 +880,7 @@ export const ChatBotModal: React.FC = () => {
         .slice(0, 3);
 
       if (scoredEvents.length > 0) {
+        lastContextRef.current = { topic: queryTokens.join(' '), eventObject: scoredEvents[0].event, eventsList: scoredEvents.map(s => s.event) };
         return {
           text: `found **${scoredEvents.length} event${scoredEvents.length > 1 ? 's' : ''}** related to "${queryTokens.join(' ')}":\n\n` +
             scoredEvents.map(({ event: e }) => `* **${e.event_name}** (${e.category})\n  📅 ${e.date} (${e.time_start_end}) · 📍 ${e.venue_zone}`).join('\n\n'),
@@ -669,16 +889,31 @@ export const ChatBotModal: React.FC = () => {
       }
     }
 
-    // 23. DYNAMIC CHATGPT-STYLE FALLBACK (NEVER REPEATS A STATIC SENTENCE)
+    // 23. DYNAMIC CHATGPT-STYLE FALLBACK (NEVER REPEATS CONSECUTIVELY)
+    const isQuestion = qRaw.endsWith('?') || q.startsWith('why') || q.startsWith('how') || q.startsWith('who') || q.startsWith('where') || q.startsWith('when') || q.startsWith('which') || q.startsWith('can i');
+
+    if (isQuestion) {
+      const questionFallbacks = [
+        "good question! on campus that usually connects back to student council policies or committee planning. looking for info on a specific event, venue, or fest?",
+        "depends on the situation! if it's about club registrations, fests, or campus facilities, let me know which one and i'll break it down.",
+        "heard that! could you specify if you're asking about an event, a campus rule, or your timetable? i've got all the details right here.",
+        "for sure. let me know if you mean sports at Arjuna Centre, student fests like Kurukshetra, or your saved events list!"
+      ];
+      return { text: pickNonRepeating('q_fallback', questionFallbacks) };
+    }
+
     const dynamicFallbacks = [
       "gotchu! i'm tuned into all the campus events, club comps, and your timetable. what's on your mind?",
       "heard that! looking for smth specific on campus or just seeing what's good?",
       "for sure. let me know if u wanna find events happening this week, check your classes, or see what's on Life@FLAME!",
       "bet. what can i help u with — classes, events, or club comps?",
-      "i'm listening! hit me with any questions about campus life, fests, or your schedule."
+      "i'm listening! hit me with any questions about campus life, fests, or your schedule.",
+      "100%. always here if you want recommendations on competitions, sports, or food spots.",
+      "haha noted! let me know whenever you want to check what's happening around campus 🙌",
+      "sounds good! ready whenever you need the scoop on upcoming events or campus buzz."
     ];
     return {
-      text: dynamicFallbacks[Math.floor(Math.random() * dynamicFallbacks.length)]
+      text: pickNonRepeating('dynamic_fallback', dynamicFallbacks)
     };
   };
 
@@ -758,6 +993,12 @@ export const ChatBotModal: React.FC = () => {
           // Extract any [EVENT: id] tags from answer
           const eventMatches = Array.from(data.answer.matchAll(/\[EVENT:\s*([a-zA-Z0-9_-]+)\]/g)) as RegExpMatchArray[];
           const refIds = eventMatches.map((m) => m[1]);
+          if (refIds.length > 0) {
+            const ev = events.find(e => e.id === refIds[0]);
+            if (ev) {
+              lastContextRef.current = { eventId: ev.id, eventName: ev.event_name, eventObject: ev };
+            }
+          }
           const cleanedText = data.answer.replace(/\[EVENT:\s*([a-zA-Z0-9_-]+)\]/g, '').trim();
 
           const botMsg: ChatMessage = {

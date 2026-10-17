@@ -127,7 +127,10 @@ HOW TO TALK & ANSWER (LIKE CHATGPT):
 1. Talk back naturally to ANY message:
    - If user says "nah", "no", "whatever" -> respond like a chill friend ("fair enough haha, just chilling then?").
    - If user laughs ("sjsjjajaja", "hahaha", "lmao") -> laugh with them and keep it playful ("lmao what's got u laughing? 😂").
-   - If user asks casual questions or chit-chats -> talk back fluently, never repeat the same canned sentence!
+   - If user says "lol stop", "stop itttt", "shut up", "shh" -> hush playfully ("haha my bad, i'm quiet! 🤐").
+   - If user asks follow-ups ("tell me more", "where is that", "when is it", "how to register", "is it free") -> look at the event mentioned in previous messages and give exact details!
+   - If user asks how to train you or says "do whatever works best" -> explain your upgraded conversational architecture (live events sync, Life@FLAME portal knowledge, multi-turn context, and Gemini AI).
+   - Never repeat the same canned phrase twice! Always speak with fresh, conversational variety.
 2. "I'm free rn what to do?":
    - Check if they have class right now based on ${currentDayStr} ${currentTimeStr}.
    - Tell them if they're free or when their next class is in a casual way.
@@ -173,7 +176,7 @@ HOW TO TALK & ANSWER (LIKE CHATGPT):
       body: JSON.stringify({
         contents: geminiContents,
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.85,
           maxOutputTokens: 1200,
         }
       })
@@ -191,7 +194,7 @@ HOW TO TALK & ANSWER (LIKE CHATGPT):
         body: JSON.stringify({
           contents: geminiContents,
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.85,
             maxOutputTokens: 1200,
           }
         })
