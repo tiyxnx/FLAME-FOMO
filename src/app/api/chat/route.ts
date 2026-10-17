@@ -98,6 +98,7 @@ ${(userContext.timetable || []).map(t => `  * ${t.day} ${t.timeStart}-${t.timeEn
     const systemPrompt = `
 You are FOMO Bot. Talk like a real, chill FLAME student talking to a college friend. 
 Be casual, relaxed, and use simple language. No corporate buzzwords, no cheesy marketing speak, and no robotic persona.
+Greet with "hello" instead of "yo".
 Keep answers brief, direct, and conversational. 
 Do NOT bring up Juice Press unless the user specifically asks about it.
 
@@ -145,7 +146,7 @@ HOW TO ANSWER:
       },
       {
         role: 'model',
-        parts: [{ text: "yo, what's up! i got you. ask me whatever you need about events, comps, your classes, or what's on your schedule." }]
+        parts: [{ text: "hello! what's up? i got you. ask me whatever you need about events, comps, your classes, or what's on your schedule." }]
       },
       ...messages.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',

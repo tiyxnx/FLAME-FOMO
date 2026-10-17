@@ -69,7 +69,7 @@ export const ChatBotModal: React.FC = () => {
       const welcome: ChatMessage = {
         id: 'msg-welcome',
         sender: 'bot',
-        text: `yo **${studentName}**! what's up? 🔥\n\ni'm the campus bot. ask me anything about events, club comps, your classes, or what you've got saved.\n\nwhat are you looking for?`,
+        text: `hello **${studentName}**! what's up? 🔥\n\ni'm the campus bot. ask me anything about events, club comps, your classes, or what you've got saved.\n\nwhat are you looking for?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages([welcome]);
