@@ -24,7 +24,15 @@ interface DayColumnInfo {
 }
 
 export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp }) => {
-  const { events: contextEvents, goingEventIds, openEventDetail, setCurrentTab } = useApp();
+  const { 
+    events: contextEvents, 
+    goingEventIds, 
+    openEventDetail, 
+    setCurrentTab,
+    isAuthenticated,
+    openAuthModal 
+  } = useApp();
+  
   const rawEvents = eventsProp || contextEvents;
 
   // Week offset: 0 is current week, 1 is next week, -1 is previous week
@@ -42,9 +50,9 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
     setTodayIsoDate(`${y}-${m}-${d}`);
   }, []);
 
-  // Filter out club applications and cancelled events for this campus overview
-  const campusEvents = (rawEvents || []).filter(
-    (e) => e.item_type !== 'application' && e.status !== 'Cancelled'
+  // ONLY SHOW EVENTS IF THE USER HAS PUT "I'M GOING"
+  const myGoingEvents = (rawEvents || []).filter(
+    (e) => goingEventIds.includes(e.id) && e.item_type !== 'application' && e.status !== 'Cancelled'
   );
 
   // Compute the 7 days of the week starting from Monday
@@ -71,8 +79,8 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
       const dayNum = String(d.getDate()).padStart(2, '0');
       const dateStr = `${y}-${m}-${dayNum}`;
 
-      // Find events matching this exact date
-      const matchingEvents = campusEvents
+      // Only match events that the student has marked "I'm Going" to
+      const matchingEvents = myGoingEvents
         .filter((e) => e.date === dateStr)
         .sort((a, b) => {
           const timeA = a.time_start || a.time_start_end.split('-')[0]?.trim() || '';
@@ -95,9 +103,17 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
 
   const weekDays = getWeekDays(baseDate, weekOffset);
 
+  // Total going events this specific week
+  const totalEventsThisWeek = weekDays.reduce((acc, d) => acc + d.events.length, 0);
+
   // Date range label for header
   const weekStartFormatted = weekDays[0]?.formattedDate || '';
   const weekEndFormatted = weekDays[6]?.formattedDate || '';
+
+  // Check if there are other going events in next week when current week is empty
+  const hasGoingNextWeek = weekOffset === 0 && totalEventsThisWeek === 0 && myGoingEvents.some((e) => {
+    return e.date > (weekDays[6]?.dateStr || '');
+  });
 
   const toggleExpandDay = (dateStr: string) => {
     setExpandedDays((prev) => ({
@@ -125,7 +141,7 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
               <button
                 type="button"
                 onClick={() => setWeekOffset((prev) => prev - 1)}
-                className="p-0.5 text-neutral-400 hover:text-amber-200 transition-colors"
+                className="p-0.5 text-neutral-400 hover:text-amber-200 transition-colors cursor-pointer"
                 title="Previous Week"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
@@ -136,7 +152,7 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
               <button
                 type="button"
                 onClick={() => setWeekOffset((prev) => prev + 1)}
-                className="p-0.5 text-neutral-400 hover:text-amber-200 transition-colors"
+                className="p-0.5 text-neutral-400 hover:text-amber-200 transition-colors cursor-pointer"
                 title="Next Week"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -147,9 +163,19 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
               <button
                 type="button"
                 onClick={() => setWeekOffset(0)}
-                className="text-[10px] px-2 py-0.5 bg-[#2d251a] hover:bg-[#3a2f21] text-amber-300 border border-amber-500/30 rounded-xs font-semibold transition-all"
+                className="text-[10px] px-2 py-0.5 bg-[#2d251a] hover:bg-[#3a2f21] text-amber-300 border border-amber-500/30 rounded-xs font-semibold transition-all cursor-pointer"
               >
                 Jump to This Week
+              </button>
+            )}
+
+            {hasGoingNextWeek && (
+              <button
+                type="button"
+                onClick={() => setWeekOffset(1)}
+                className="text-[10px] px-2 py-0.5 bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-600/40 rounded-xs font-medium transition-all flex items-center gap-1 cursor-pointer"
+              >
+                <span>View next week&apos;s RSVPs →</span>
               </button>
             )}
           </div>
@@ -158,16 +184,16 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
             Your Week at FLAME
           </h3>
           <p className="text-xs text-[#a89b87] font-sans-ui mt-0.5">
-            Campus events scheduled day by day
+            Events you&apos;ve marked &ldquo;I&apos;m Going&rdquo; to
           </p>
         </div>
 
         <button
           type="button"
-          onClick={() => setCurrentTab('explore')}
-          className="text-xs font-semibold text-amber-200 hover:text-amber-100 flex items-center gap-1 group self-start md:self-auto"
+          onClick={() => setCurrentTab('my-plan')}
+          className="text-xs font-semibold text-amber-200 hover:text-amber-100 flex items-center gap-1 group self-start md:self-auto cursor-pointer"
         >
-          <span>Explore all events</span>
+          <span>View your full plan</span>
           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -226,13 +252,11 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
                 ) : (
                   <>
                     {displayedDayEvents.map((evt) => {
-                      const isGoing = goingEventIds.includes(evt.id);
-
                       return (
                         <div
                           key={evt.id}
                           onClick={() => openEventDetail(evt)}
-                          className="p-2 rounded-xs bg-[#241f19] hover:bg-[#2e261d] border border-[#3e3427] hover:border-amber-400/70 transition-all text-left cursor-pointer group shadow-xs hover:shadow-md"
+                          className="p-2 rounded-xs bg-[#241f19] hover:bg-[#2e261d] border border-amber-500/30 hover:border-amber-400/80 transition-all text-left cursor-pointer group shadow-xs hover:shadow-md"
                         >
                           <div className="flex items-start justify-between gap-1 mb-1">
                             <h4 className="text-[11px] font-bold text-[#f5ebd7] group-hover:text-amber-200 line-clamp-2 leading-tight transition-colors">
@@ -248,7 +272,10 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
                           </div>
 
                           <div className="flex items-center justify-between gap-1 mt-1.5 pt-1 border-t border-white/5 text-[9px]">
-                            <span className="text-[#a89b87] truncate font-sans-ui max-w-[80px]" title={evt.room_specific || evt.venue_zone}>
+                            <span 
+                              className="text-[#a89b87] truncate font-sans-ui max-w-[80px]" 
+                              title={evt.room_specific || evt.venue_zone}
+                            >
                               {evt.room_specific || evt.venue_zone}
                             </span>
                             <span className="px-1 py-0.2 bg-[#332b21] text-amber-200/90 rounded-xs border border-[#4a3e2e] shrink-0 font-medium truncate max-w-[75px]">
@@ -256,12 +283,10 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
                             </span>
                           </div>
 
-                          {isGoing && (
-                            <div className="mt-1 flex items-center gap-1 text-[8px] font-bold text-emerald-400">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              <span>Going ✓</span>
-                            </div>
-                          )}
+                          <div className="mt-1.5 pt-1 border-t border-white/5 flex items-center gap-1 text-[8px] font-bold text-emerald-400">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Going ✓</span>
+                          </div>
                         </div>
                       );
                     })}
@@ -274,7 +299,7 @@ export const YourWeek: React.FC<{ eventsProp?: EventItem[] }> = ({ eventsProp })
                           e.stopPropagation();
                           toggleExpandDay(day.dateStr);
                         }}
-                        className="w-full text-center py-1 text-[10px] font-medium text-amber-300 hover:text-amber-200 bg-[#282118] hover:bg-[#332a1f] border border-[#403527] rounded-xs transition-colors"
+                        className="w-full text-center py-1 text-[10px] font-medium text-amber-300 hover:text-amber-200 bg-[#282118] hover:bg-[#332a1f] border border-[#403527] rounded-xs transition-colors cursor-pointer"
                       >
                         {isExpanded ? 'Show less' : `+${remainingCount} more`}
                       </button>
