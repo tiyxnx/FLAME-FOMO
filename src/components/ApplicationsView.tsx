@@ -145,7 +145,7 @@ export const ApplicationsView: React.FC = () => {
 
   const handleCreateClick = () => {
     if (!isAuthenticated) {
-      openAuthModal('Sign in with your FLAME email to post club applications.');
+      openAuthModal('Sign in with your FLAME email to post applications.');
       return;
     }
     openCreateEvent('application');
@@ -160,37 +160,30 @@ export const ApplicationsView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-purple-900/60 border border-purple-500/40 text-purple-200 rounded-xs">
-                Clubs &amp; Societies
+                Clubs &amp; Committees
               </span>
               <span className="text-xs text-[#a89b87] font-mono uppercase tracking-wider">
-                Recruitment Desk
+                Member &amp; Core Desk
               </span>
             </div>
 
             <h1 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#fbf7ee]">
-              Club <span className="text-purple-400 italic font-serif">Applications</span>
+              Member &amp; Committee <span className="text-purple-400 italic font-serif">Applications</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-1 max-w-2xl leading-relaxed">
-              Want to join a club, lead a vertical, or audition for a production? Discover open positions and recruitment calls with strict deadlines and interview timelines.
+              Looking to become a club member, join core committees for flagship campus events, or audition for student productions? Discover verified positions with strict deadlines and interview timelines.
             </p>
 
-            {/* Live Life@FLAME Portal Sync Status Banner */}
+            {/* Verified Deadlines Status Banner */}
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-medium text-[11px]">
                 <span className={`w-1.5 h-1.5 rounded-full ${isSyncingLifeAtFlame ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
-                Verified Active Deadlines
+                Verified Active Calls
               </span>
               <span className="text-[#a89b87] text-[11px]">
-                Only active application forms with open deadlines are listed
+                Only verified member and core committee applications with open deadlines are listed
               </span>
-              <button
-                onClick={() => syncLifeAtFlameNow(true)}
-                disabled={isSyncingLifeAtFlame}
-                className="text-[11px] text-purple-300 hover:text-purple-200 underline cursor-pointer ml-1 inline-flex items-center gap-1"
-              >
-                {isSyncingLifeAtFlame ? 'Syncing...' : 'Sync now'}
-              </button>
             </div>
           </div>
 
@@ -214,7 +207,7 @@ export const ApplicationsView: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c806f]" />
             <input
               type="text"
-              placeholder="Search by club, position, or role..."
+              placeholder="Search by club, committee, position, or role..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-[#1c1915] border border-[#3d362b] rounded-md text-xs sm:text-sm text-neutral-100 placeholder-[#7a6f5e] focus:outline-none focus:border-purple-400 transition-colors"
@@ -286,7 +279,7 @@ export const ApplicationsView: React.FC = () => {
             </h3>
 
             <p className="text-xs sm:text-sm text-[#a89b87] font-sans-ui leading-relaxed mb-6">
-              Clubs have not posted open recruitment or audition calls right now. Check back soon or post an application call for your club.
+              Clubs and flagship event committees are not accepting member or core committee applications right now. Check back soon or post an application call for your team.
             </p>
 
             <button

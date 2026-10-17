@@ -159,7 +159,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         'lifeatflame-app-flame-yearbook-committee',
         'lifeatflame-app-animal-welfare-committee',
         'lifeatflame-app-anime-arcadia-flame-anime-club',
-        'lifeatflame-app-flame-business-consulting'
+        'lifeatflame-app-flame-business-consulting',
+        'evt-app-markit-core-2026',
+        'evt-app-first-cut-auditions-2026'
       ];
       const storedEvents = localStorage.getItem(LOCAL_STORAGE_EVENTS_KEY);
       if (storedEvents) {
@@ -527,7 +529,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const openCreateEvent = (initialType?: 'event' | 'application' | any) => {
     const cleanType: 'event' | 'application' = initialType === 'application' ? 'application' : 'event';
     if (!user) {
-      openAuthModal(cleanType === 'application' ? 'Sign in with your FLAME email to post club applications.' : 'Sign in with your FLAME email to post events.');
+      openAuthModal(cleanType === 'application' ? 'Sign in with your FLAME email to post applications.' : 'Sign in with your FLAME email to post events.');
       return;
     }
     setCreateEventInitialType(cleanType);

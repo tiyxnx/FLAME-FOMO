@@ -203,61 +203,6 @@ export const DEFAULT_TIMETABLE_SAMPLE: ClassScheduleItem[] = [
 
 export const INITIAL_SEED_EVENTS: EventItem[] = [
   {
-    "id": "evt-app-markit-core-2026",
-    "item_type": "application",
-    "event_name": "MARKiT: Core Committee & Creative Team Recruitment",
-    "category": "Workshop",
-    "categories": [
-      "Workshop",
-      "Academic"
-    ],
-    "date": "2026-10-24",
-    "time_start_end": "Rolling Interviews",
-    "time_start": "10:00",
-    "time_end": "18:00",
-    "venue_zone": "Academics",
-    "room_specific": "APJ Abdul Kalam - Design Studio",
-    "organizer": "MARKiT (FLAME Marketing Club)",
-    "description": "Looking to lead brand campaigns, run flagship events like AD-SHAD, design visuals, or manage corporate partnerships? MARKiT is recruiting its Core Committee for 2026-27! Open verticals: Creative Design, Event Operations, Content & Social Media, and Corporate Relations. Shortlisted applicants will be invited for personal interviews.",
-    "registration_deadline": "2026-10-21 23:59",
-    "registration_link": "https://forms.gle/8XDTfWu3Y4U8ANQ77",
-    "requirements_eligibility": "Open to UG1, UG2, UG3, PG1 [TYPE: application] [INTERVIEW: Personal interviews on 23rd & 24th Oct at APJ Kalam Design Studio] [HAS_INTERVIEW]",
-    "has_interview": true,
-    "interview_details": "Personal interviews on 23rd & 24th Oct at APJ Kalam Design Studio.",
-    "poc_name": "Aarav Malhotra",
-    "poc_number": "+91 98201 44521",
-    "event_image": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
-    "status": "Upcoming",
-    "submitted_by": "tiyana.shah@flame.edu.in"
-  },
-  {
-    "id": "evt-app-first-cut-auditions-2026",
-    "item_type": "application",
-    "event_name": "First Cut Theatre: Annual Production Cast & Crew Auditions",
-    "category": "Performances",
-    "categories": [
-      "Performances"
-    ],
-    "date": "2026-10-26",
-    "time_start_end": "17:30 - 21:00",
-    "time_start": "17:30",
-    "time_end": "21:00",
-    "venue_zone": "Shantiniketan/Recreational",
-    "room_specific": "Auditorium - Main Stage",
-    "organizer": "First Cut Theatre Society",
-    "description": "Ready to take center stage? First Cut is holding auditions for our upcoming annual theatre production and student short film slate. We are scouting for: Actors, Scriptwriters, Stage Managers, Sound Engineers, and Costume Designers. Submit your written application before the strict deadline. Shortlisted candidates will be called for stage audition / interview rounds.",
-    "registration_deadline": "2026-10-23 20:00",
-    "registration_link": "https://forms.gle/JF81jvFLutTo8wJ19",
-    "requirements_eligibility": "All Cohorts (UG & PG) [TYPE: application] [INTERVIEW: Stage reading & monologue auditions on 25th & 26th Oct at Auditorium] [HAS_INTERVIEW]",
-    "has_interview": true,
-    "interview_details": "Stage reading & monologue auditions on 25th & 26th Oct at the Auditorium.",
-    "poc_name": "Rhea Sen",
-    "poc_number": "+91 99100 88234",
-    "event_image": "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=800&q=80",
-    "status": "Upcoming",
-    "submitted_by": "tiyana.shah@flame.edu.in"
-  },
-  {
     "id": "evt-ad-shad-2026",
     "event_name": "AD-SHAD: The Ultimate Brand Advertisement Challenge",
     "category": "Competition",
@@ -304,7 +249,6 @@ export const INITIAL_SEED_EVENTS: EventItem[] = [
   },
   {
     "id": "evt-bunkasai-artist-gallery-r2",
-    "item_type": "application",
     "event_name": "Bunkasai: Artist Gallery (Round 2 Applications)",
     "category": "Exhibition/stall",
     "categories": [
@@ -320,7 +264,7 @@ export const INITIAL_SEED_EVENTS: EventItem[] = [
     "description": "Round 2 of applications! Anime Arcadia is hosting its first flagship fest, Bunkasai. Artists are invited to put up stalls to showcase prints, posters, and other art! No business registration nor fees required (display only). Contact: Saloni (7760694571), Soham (9000932976).",
     "registration_deadline": "2026-10-20 23:59",
     "registration_link": "https://forms.gle/JF81jvFLutTo8wJ19",
-    "requirements_eligibility": "Open to All Artists [TYPE: application] [FEE: Free] [POC_NAME: Saloni] [POC_NUMBER: +91 77606 94571]",
+    "requirements_eligibility": "Open to All Artists [FEE: Free] [POC_NAME: Saloni] [POC_NUMBER: +91 77606 94571]",
     "poc_name": "Saloni",
     "poc_number": "+91 77606 94571",
     "event_image": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80",

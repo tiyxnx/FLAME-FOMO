@@ -18,7 +18,7 @@ export const FloatingActionButton: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-40">
       <button
         onClick={() => openCreateEvent(isApplicationsTab ? 'application' : 'event')}
-        title={isApplicationsTab ? "Post Club Application" : "Post New Campus Event"}
+        title={isApplicationsTab ? "Post Application" : "Post New Campus Event"}
         className="group relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 rounded-full shadow-2xl border-2 border-amber-200/40 hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none"
       >
         {/* Washi tape accent on FAB */}

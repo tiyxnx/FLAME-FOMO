@@ -401,8 +401,8 @@ export const CreateEventModal: React.FC = () => {
           </div>
           <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-900 mt-1">
             {isEditing 
-              ? (itemType === 'application' ? 'Edit Club Application' : 'Edit Campus Event') 
-              : (itemType === 'application' ? 'Post a Club Application' : 'Submit a Campus Event')}
+              ? (itemType === 'application' ? 'Edit Application' : 'Edit Campus Event') 
+              : (itemType === 'application' ? 'Post Member / Committee Application' : 'Submit a Campus Event')}
           </h2>
           <p className="text-xs text-neutral-600 font-sans-ui mt-0.5">
             {itemType === 'application'
@@ -410,7 +410,7 @@ export const CreateEventModal: React.FC = () => {
               : 'Published events instantly appear on the discovery collage, planner, and interactive campus map.'}
           </p>
 
-          {/* Type Toggle: Campus Event vs Club Application */}
+          {/* Type Toggle: Campus Event vs Member / Core Committee Application */}
           {!isEditing && (
             <div className="mt-3 grid grid-cols-2 gap-2 p-1 bg-[#ede6d3] rounded-md border border-[#d6cbb0]">
               <button
@@ -433,7 +433,7 @@ export const CreateEventModal: React.FC = () => {
                     : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/50'
                 }`}
               >
-                <span>📋 Club Application</span>
+                <span>📋 Member / Committee App</span>
               </button>
             </div>
           )}
@@ -833,7 +833,7 @@ export const CreateEventModal: React.FC = () => {
                 className="w-full px-3 py-1.5 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
               />
               <p className="text-[10px] text-amber-800 mt-1">
-                {itemType === 'application' ? 'Link where students can submit their club application' : 'Direct link to Google Form / RSVP website'}
+                {itemType === 'application' ? 'Link where students can submit their application' : 'Direct link to Google Form / RSVP website'}
               </p>
             </div>
 
@@ -985,7 +985,7 @@ export const CreateEventModal: React.FC = () => {
                   ? (itemType === 'application' ? 'Update Application Call' : 'Save Changes & Update Bulletin')
                   : !rateLimit.allowed 
                     ? `Limit Reached (${rateLimit.count}/2/hr)` 
-                    : (itemType === 'application' ? 'Publish Club Application' : 'Publish Event to Bulletin')}
+                    : (itemType === 'application' ? 'Publish Application' : 'Publish Event to Bulletin')}
               </span>
             </button>
           </div>

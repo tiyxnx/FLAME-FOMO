@@ -136,7 +136,7 @@ export const EventDetailModal: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2 mb-2">
           {isApplication ? (
             <span className="px-3 py-1 bg-purple-900 text-purple-100 text-xs font-bold uppercase tracking-wider rounded-xs flex items-center gap-1.5">
-              <span>📋 Club Application</span>
+              <span>📋 Member / Committee Application</span>
             </span>
           ) : (
             <span className="px-3 py-1 bg-[#1a1714] text-amber-200 text-xs font-bold uppercase tracking-wider rounded-xs">
@@ -487,11 +487,11 @@ export const EventDetailModal: React.FC = () => {
               <h4 className={`text-xs font-bold uppercase tracking-wider ${
                 isApplication ? 'text-purple-950' : 'text-amber-950'
               }`}>
-                {isApplication ? 'Official Club Application Form' : 'Registration Required'}
+                {isApplication ? 'Official Application Form' : 'Registration Required'}
               </h4>
               <p className={`text-xs ${isApplication ? 'text-purple-800' : 'text-amber-800'}`}>
                 {isApplication 
-                  ? 'Submit your official club application before the cutoff deadline.' 
+                  ? 'Submit your member or committee application before the cutoff deadline.' 
                   : 'Official external registration via Google Form / RSVP link.'}
               </p>
             </div>
