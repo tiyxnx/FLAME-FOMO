@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
   ALL_CAMPUS_LOCATIONS, 
+  OFFICIAL_CAMPUS_BUILDINGS,
+  OFFICIAL_ZONE_COLORS,
   calculateCampusRoute, 
-  FLAME_CAMPUS_CENTER 
+  FLAME_CAMPUS_CENTER,
+  OfficialBuilding
 } from '@/lib/campusLocations';
 import { 
   CampusLocation, 
-  CampusVenueCategory, 
+  OfficialCampusCategory,
   CampusRouteResult 
 } from '@/types';
 import { 
@@ -21,16 +24,14 @@ import {
   ArrowLeftRight, 
   ExternalLink, 
   Building2, 
-  Coffee, 
-  Dumbbell, 
-  GraduationCap, 
-  Music, 
   LocateFixed, 
   X,
   Layers,
   Footprints,
-  Sparkles,
-  Check
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Maximize2
 } from 'lucide-react';
 
 type MapViewMode = 'wayfinder' | 'directory' | 'my-events';
@@ -48,18 +49,22 @@ export const CampusMap: React.FC = () => {
   const [activeTabMode, setActiveTabMode] = useState<MapViewMode>('wayfinder');
   const [mapRenderType, setMapRenderType] = useState<MapRenderType>('illustrated');
 
-  // Search & Filtering
-  const [selectedCategory, setSelectedCategory] = useState<CampusVenueCategory | 'All'>('All');
+  // Search & Filtering by Official 8 Campus Categories
+  const [selectedCategory, setSelectedCategory] = useState<OfficialCampusCategory | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Zoom level on illustrated canvas (1x, 1.3x, 1.6x, 2x)
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   // Wayfinding Origin & Destination
   // Default: Start at Charlies Cafe (#33 inside APJ #2) -> Destination: Shantiniketan Auditorium (#49)
   const [originLocationId, setOriginLocationId] = useState<string>('other-charlies');
   const [destinationLocationId, setDestinationLocationId] = useState<string>('hall-shantiniketan-auditorium');
 
-  // Active / Selected Pin Details
+  // Active / Selected Pin or Building Details
+  const [selectedBuilding, setSelectedBuilding] = useState<OfficialBuilding | null>(null);
   const [selectedPinLocation, setSelectedPinLocation] = useState<CampusLocation | null>(null);
-  const [hoveredLocationId, setHoveredLocationId] = useState<string | null>(null);
+  const [hoveredBuildingNum, setHoveredBuildingNum] = useState<number | null>(null);
 
   // Events user has marked "Going"
   const goingEvents = useMemo(() => {
@@ -89,37 +94,53 @@ export const CampusMap: React.FC = () => {
     return calculateCampusRoute(originLocationId, destinationLocationId);
   }, [originLocationId, destinationLocationId]);
 
-  // Filtered locations for Directory
-  const filteredLocations = useMemo(() => {
-    return ALL_CAMPUS_LOCATIONS.filter((loc) => {
+  // Filtered Official Buildings for Directory
+  const filteredBuildings = useMemo(() => {
+    return OFFICIAL_CAMPUS_BUILDINGS.filter((b) => {
       // Category filter
-      if (selectedCategory !== 'All' && loc.category !== selectedCategory) {
+      if (selectedCategory !== 'All' && b.category !== selectedCategory) {
         return false;
       }
       // Search query filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchesName = loc.name.toLowerCase().includes(q);
-        const matchesBuilding = loc.building.toLowerCase().includes(q);
-        const matchesFloor = (loc.floor || '').toLowerCase().includes(q);
-        const matchesCategory = loc.category.toLowerCase().includes(q);
-        const matchesDesc = (loc.description || '').toLowerCase().includes(q);
-        const matchesInside = (loc.insideBuilding || '').toLowerCase().includes(q);
-        const matchesNum = loc.officialNumber ? `number ${loc.officialNumber} #${loc.officialNumber}`.includes(q) : false;
-        return matchesName || matchesBuilding || matchesFloor || matchesCategory || matchesDesc || matchesInside || matchesNum;
+        const matchesName = b.name.toLowerCase().includes(q);
+        const matchesNum = `number ${b.number} #${b.number}`.includes(q);
+        const matchesCat = b.category.toLowerCase().includes(q);
+        const matchesDesc = b.description.toLowerCase().includes(q);
+        const matchesVenues = b.insideVenues?.some((v) => v.toLowerCase().includes(q));
+        return matchesName || matchesNum || matchesCat || matchesDesc || matchesVenues;
       }
       return true;
     });
   }, [selectedCategory, searchQuery]);
 
-  // Counts by category
+  // Filtered individual venues for search
+  const filteredVenues = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase().trim();
+    return ALL_CAMPUS_LOCATIONS.filter((loc) => {
+      return (
+        loc.name.toLowerCase().includes(q) ||
+        loc.building.toLowerCase().includes(q) ||
+        (loc.insideBuilding || '').toLowerCase().includes(q) ||
+        (loc.description || '').toLowerCase().includes(q)
+      );
+    });
+  }, [searchQuery]);
+
+  // Counts by the 8 official categories
   const categoryCounts = useMemo(() => {
     return {
-      All: ALL_CAMPUS_LOCATIONS.length,
-      Classrooms: ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Classrooms').length,
-      'Auditoriums / Halls': ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Auditoriums / Halls').length,
-      Sports: ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Sports').length,
-      Others: ALL_CAMPUS_LOCATIONS.filter((l) => l.category === 'Others').length,
+      All: OFFICIAL_CAMPUS_BUILDINGS.length,
+      Academics: OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Academics').length,
+      Sports: OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Sports').length,
+      Eateries: OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Eateries').length,
+      'Flora & Fauna': OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Flora & Fauna').length,
+      Housing: OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Housing').length,
+      Recreational: OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Recreational').length,
+      'Common Areas': OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Common Areas').length,
+      Shantiniketan: OFFICIAL_CAMPUS_BUILDINGS.filter((b) => b.category === 'Shantiniketan').length,
     };
   }, []);
 
@@ -130,15 +151,31 @@ export const CampusMap: React.FC = () => {
     setDestinationLocationId(temp);
   };
 
-  // Handler to set current pin as origin or destination
-  const handleSetAsOrigin = (loc: CampusLocation) => {
-    setOriginLocationId(loc.id);
+  // Handler to set building as origin or destination
+  const handleSetBuildingAsOrigin = (building: OfficialBuilding) => {
+    const match = ALL_CAMPUS_LOCATIONS.find((l) => l.officialNumber === building.number) || ALL_CAMPUS_LOCATIONS[0];
+    setOriginLocationId(match.id);
     setActiveTabMode('wayfinder');
+    setSelectedBuilding(null);
   };
 
-  const handleSetAsDestination = (loc: CampusLocation) => {
+  const handleSetBuildingAsDestination = (building: OfficialBuilding) => {
+    const match = ALL_CAMPUS_LOCATIONS.find((l) => l.officialNumber === building.number) || ALL_CAMPUS_LOCATIONS[0];
+    setDestinationLocationId(match.id);
+    setActiveTabMode('wayfinder');
+    setSelectedBuilding(null);
+  };
+
+  const handleSetLocationAsDestination = (loc: CampusLocation) => {
     setDestinationLocationId(loc.id);
     setActiveTabMode('wayfinder');
+    setSelectedPinLocation(null);
+  };
+
+  const handleSetLocationAsOrigin = (loc: CampusLocation) => {
+    setOriginLocationId(loc.id);
+    setActiveTabMode('wayfinder');
+    setSelectedPinLocation(null);
   };
 
   // Quick origins chips
@@ -147,25 +184,12 @@ export const CampusMap: React.FC = () => {
     { label: '🏛️ APJ001 (#2)', id: 'room-apj001' },
     { label: '🍽️ Aahar Dining (#25)', id: 'other-aahar' },
     { label: '📚 Library (#3)', id: 'other-vivekananda-library' },
-    { label: '🏠 South Housing (#42)', id: 'other-south-housing' },
-    { label: '🏠 West Housing (#41)', id: 'other-west-housing' },
+    { label: '🥐 Hashtag (#29 Chandragupta)', id: 'other-hashtag' },
     { label: '🏆 Arjuna Complex (#18)', id: 'sports-arjuna-complex-main' },
     { label: '🎭 Shantiniketan (#49)', id: 'hall-shantiniketan-auditorium' },
+    { label: '🏠 West Housing (#41)', id: 'other-west-housing' },
+    { label: '🏠 South Housing (#42)', id: 'other-south-housing' },
   ];
-
-  // Helper for Category icons
-  const getCategoryIcon = (category: CampusVenueCategory) => {
-    switch (category) {
-      case 'Classrooms':
-        return <GraduationCap className="w-3.5 h-3.5 text-blue-400" />;
-      case 'Auditoriums / Halls':
-        return <Music className="w-3.5 h-3.5 text-purple-400" />;
-      case 'Sports':
-        return <Dumbbell className="w-3.5 h-3.5 text-emerald-400" />;
-      case 'Others':
-        return <Coffee className="w-3.5 h-3.5 text-amber-400" />;
-    }
-  };
 
   return (
     <div className="max-w-7xl mx-auto py-5 px-3 sm:px-6">
@@ -173,11 +197,11 @@ export const CampusMap: React.FC = () => {
       {/* ============================================================ */}
       {/* 1. EDITORIAL HEADER & CAMPUS MAP CONTROLS                    */}
       {/* ============================================================ */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#3d362b]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#3d362b]">
         <div>
           <div className="flex items-center gap-2">
             <span className="stamp-urgent text-[11px] bg-red-950/70 border-red-500 text-red-200">
-              Official Campus Map &amp; Cartography
+              Official FLAME Cartography &amp; Master Navigation
             </span>
             <span className="text-xs text-[#d6cbaf] font-mono">
               FLAME University Pune (18.5233° N, 73.7317° E)
@@ -189,7 +213,7 @@ export const CampusMap: React.FC = () => {
           </h1>
 
           <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5 max-w-2xl">
-            Calibrated directly with the official 54-building FLAME campus plan and Google Maps satellite feed. Discover accurate room locations (e.g. Charlies inside APJ #2, Hashtag in Chandragupta #12) and turn-by-turn walking directions.
+            Integrated official 54-building illustrated map and Google Maps satellite feed. Discover accurate room locations (Charlies inside APJ #2, Hashtag in Chandragupta #12) and turn-by-turn walking routes.
           </p>
         </div>
 
@@ -218,7 +242,7 @@ export const CampusMap: React.FC = () => {
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
-              <span>Campus Directory ({ALL_CAMPUS_LOCATIONS.length})</span>
+              <span>Campus Directory (54 Buildings)</span>
             </button>
 
             <button
@@ -234,7 +258,7 @@ export const CampusMap: React.FC = () => {
             </button>
           </div>
 
-          {/* Map Layer Switcher: Illustrated Campus Map vs Google Satellite */}
+          {/* Map Layer Switcher */}
           <div className="flex items-center p-1 bg-[#24201a] border border-[#473d2f] rounded-full text-xs">
             <button
               onClick={() => setMapRenderType('illustrated')}
@@ -266,7 +290,7 @@ export const CampusMap: React.FC = () => {
       {/* 2. WAYFINDER QUICK-BAR: ORIGIN -> DESTINATION                */}
       {/* ============================================================ */}
       {activeTabMode === 'wayfinder' && (
-        <div className="mb-6 p-4 sm:p-5 bg-[#24201a] border border-[#4d402f] rounded-sm shadow-xl animate-fade-in">
+        <div className="mb-5 p-4 sm:p-5 bg-[#24201a] border border-[#4d402f] rounded-sm shadow-xl animate-fade-in">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             
             {/* From -> To Selectors */}
@@ -295,7 +319,7 @@ export const CampusMap: React.FC = () => {
                       <option value="sports-cricket-ground">🏏 Cricket Ground (#19)</option>
                       <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
                       <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
-                      <option value="other-south-housing">🏠 South & East Housing (#42)</option>
+                      <option value="other-south-housing">🏠 East & South Housing (#42)</option>
                       <option value="other-west-housing">🏠 West Housing Blocks (#41)</option>
                       <option value="other-main-entrance">🚪 FLAME Main Entrance Gate (#46)</option>
                     </optgroup>
@@ -482,25 +506,51 @@ export const CampusMap: React.FC = () => {
         {/* Left 2 Cols: The Visual Map Canvas */}
         <div className="lg:col-span-2 relative bg-[#1c1a17] rounded-sm p-2 sm:p-3 border-4 border-[#3a3227] shadow-2xl overflow-hidden select-none">
           
-          {/* Header overlay badge on map */}
+          {/* Header controls above canvas */}
           <div className="flex items-center justify-between mb-2 px-1 text-xs text-[#d6cbaf]">
             <div className="flex items-center gap-2">
               <span className="font-editorial text-sm font-bold text-amber-100">
-                FLAME University Campus Cartography
+                FLAME University Official Map
               </span>
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#2a241c] border border-[#4d402f] text-amber-300 font-mono font-semibold">
-                {mapRenderType === 'illustrated' ? 'Official 54-Building Illustrated Map' : 'Google Satellite Feed'}
+                {mapRenderType === 'illustrated' ? '54-Building Master Plan' : 'Google Satellite Feed'}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-[#a89b87] font-mono hidden sm:inline">
-                Click any venue to route or inspect
-              </span>
-            </div>
+            {/* Canvas Zoom Controls (Illustrated mode only) */}
+            {mapRenderType === 'illustrated' && (
+              <div className="flex items-center gap-1 bg-[#26211a] border border-[#473d2f] rounded p-0.5">
+                <button
+                  onClick={() => setZoomLevel((z) => Math.max(1, +(z - 0.25).toFixed(2)))}
+                  className="p-1 text-[#d6cbaf] hover:text-white rounded hover:bg-[#383126]"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+                <span className="px-1.5 text-[10px] font-mono text-amber-200 font-bold min-w-[32px] text-center">
+                  {Math.round(zoomLevel * 100)}%
+                </span>
+                <button
+                  onClick={() => setZoomLevel((z) => Math.min(2, +(z + 0.25).toFixed(2)))}
+                  className="p-1 text-[#d6cbaf] hover:text-white rounded hover:bg-[#383126]"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+                {zoomLevel > 1 && (
+                  <button
+                    onClick={() => setZoomLevel(1)}
+                    className="p-1 text-[#a89b87] hover:text-white rounded hover:bg-[#383126]"
+                    title="Reset Zoom"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Conditional View: Google Satellite Embed OR Illustrated Canvas */}
+          {/* Conditional View: Google Satellite Embed OR Clean Illustrated Canvas */}
           {mapRenderType === 'google-satellite' ? (
             <div className="relative w-full h-[520px] sm:h-[620px] rounded-xs overflow-hidden border border-[#473d2f] bg-[#1a1714]">
               <iframe
@@ -540,279 +590,331 @@ export const CampusMap: React.FC = () => {
               </div>
             </div>
           ) : (
-            /* Illustrated Campus Canvas with SVG Route & Pins */
+            /* Clean Illustrated Campus Canvas with SVG Route & Interactive Hotspots */
             <div className="relative w-full overflow-hidden rounded-xs bg-[#24201a] border border-[#473d2f]">
-              <img
-                src="/campus-map-illustrated.jpg"
-                alt="FLAME Campus Official Illustrated Map"
-                className="w-full h-auto block select-none pointer-events-none"
-              />
+              <div
+                style={{
+                  transform: `scale(${zoomLevel})`,
+                  transformOrigin: 'center center',
+                  transition: 'transform 0.2s ease-out',
+                }}
+                className="relative w-full"
+              >
+                <img
+                  src="/campus-map-illustrated.jpg"
+                  alt="Official FLAME University Campus Map"
+                  className="w-full h-auto block select-none pointer-events-none"
+                />
 
-              {/* Verified Major Campus Zone Badges matching Official Legend Numbers */}
-              <div className="absolute top-[5%] left-[58.5%] -translate-x-1/2 pointer-events-none opacity-80 text-amber-100 bg-neutral-950/70 border border-amber-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #18 ARJUNA SPORTS
-              </div>
-              <div className="absolute top-[16%] left-[56%] -translate-x-1/2 pointer-events-none opacity-80 text-emerald-200 bg-neutral-950/70 border border-emerald-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #20 FOOTBALL &amp; #21 TRACK
-              </div>
-              <div className="absolute top-[26%] left-[73.5%] -translate-x-1/2 pointer-events-none opacity-90 text-amber-300 bg-neutral-950/80 border border-amber-500/60 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #2 APJ &amp; #33 CHARLIES
-              </div>
-              <div className="absolute top-[45%] left-[74.5%] -translate-x-1/2 pointer-events-none opacity-80 text-blue-200 bg-neutral-950/70 border border-blue-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #19 CRICKET GROUND
-              </div>
-              <div className="absolute top-[37.5%] left-[64.5%] -translate-x-1/2 pointer-events-none opacity-80 text-amber-200 bg-neutral-950/70 border border-amber-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #3 LIBRARY &amp; #45 LOUNGE
-              </div>
-              <div className="absolute top-[51.5%] left-[64.5%] -translate-x-1/2 pointer-events-none opacity-80 text-teal-200 bg-neutral-950/70 border border-teal-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #25 AAHAR DINING
-              </div>
-              <div className="absolute top-[64.5%] left-[69%] -translate-x-1/2 pointer-events-none opacity-80 text-purple-200 bg-neutral-950/70 border border-purple-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #49–54 SHANTINIKETAN
-              </div>
-              <div className="absolute top-[44%] left-[42.5%] -translate-x-1/2 pointer-events-none opacity-80 text-amber-200 bg-neutral-950/70 border border-amber-400/40 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #12 CHANDRAGUPTA &amp; #13 ARYABHATTA
-              </div>
-              <div className="absolute top-[25%] left-[18%] -translate-x-1/2 pointer-events-none opacity-80 text-neutral-300 bg-neutral-950/70 border border-neutral-600 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #41 WEST HOUSING
-              </div>
-              <div className="absolute top-[71%] left-[48%] -translate-x-1/2 pointer-events-none opacity-80 text-neutral-300 bg-neutral-950/70 border border-neutral-600 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #42 SOUTH HOUSING
-              </div>
-              <div className="absolute top-[75%] left-[84%] -translate-x-1/2 pointer-events-none opacity-80 text-emerald-300 bg-neutral-950/70 border border-emerald-500/50 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-bold drop-shadow">
-                #46 MAIN GATE
-              </div>
-
-              {/* ============================================================ */}
-              {/* SVG ROUTE LINE LAYER: Turn-by-Turn Path Traced Across Campus */}
-              {/* ============================================================ */}
-              {activeTabMode === 'wayfinder' && activeRoute && activeRoute.pathCoordinates.length > 1 && (
-                <svg
-                  className="absolute inset-0 w-full h-full pointer-events-none z-20"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="50%" stopColor="#f59e0b" />
-                      <stop offset="100%" stopColor="#ef4444" />
-                    </linearGradient>
-                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feDropShadow dx="0" dy="0" stdDeviation="0.8" floodColor="#f59e0b" floodOpacity="0.8" />
-                    </filter>
-                  </defs>
-
-                  {/* Base Glow Path */}
-                  <polyline
-                    points={activeRoute.pathCoordinates.map((pt) => `${pt.x},${pt.y}`).join(' ')}
-                    fill="none"
-                    stroke="#1c1917"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* Animated Dashed Route Line */}
-                  <polyline
-                    points={activeRoute.pathCoordinates.map((pt) => `${pt.x},${pt.y}`).join(' ')}
-                    fill="none"
-                    stroke="url(#routeGradient)"
-                    strokeWidth="1.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeDasharray="2, 1.5"
-                    className="animate-pulse"
-                    filter="url(#glow)"
-                  />
-
-                  {/* Waypoint Nodes along the Path */}
-                  {activeRoute.pathCoordinates.map((pt, idx) => {
-                    const isStart = idx === 0;
-                    const isEnd = idx === activeRoute.pathCoordinates.length - 1;
-                    if (isStart || isEnd) return null;
-                    return (
-                      <circle
-                        key={`wp-${idx}`}
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="0.8"
-                        fill="#fef3c7"
-                        stroke="#b45309"
-                        strokeWidth="0.3"
-                      />
-                    );
-                  })}
-                </svg>
-              )}
-
-              {/* ============================================================ */}
-              {/* CAMPUS PINS LAYER                                            */}
-              {/* ============================================================ */}
-              {/* Wayfinder Mode: Origin & Destination Pins */}
-              {activeTabMode === 'wayfinder' && activeRoute && (
-                <>
-                  {/* Origin Pin (Green 'A') */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: `${activeRoute.fromLocation.x}%`,
-                      top: `${activeRoute.fromLocation.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    className="z-30 pointer-events-auto"
+                {/* ============================================================ */}
+                {/* SVG ROUTE LINE LAYER: Turn-by-Turn Path Traced Across Campus */}
+                {/* ============================================================ */}
+                {activeTabMode === 'wayfinder' && activeRoute && activeRoute.pathCoordinates.length > 1 && (
+                  <svg
+                    className="absolute inset-0 w-full h-full pointer-events-none z-20"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
                   >
-                    <button
-                      onClick={() => setSelectedPinLocation(activeRoute.fromLocation)}
-                      className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500 text-neutral-950 font-black text-xs shadow-2xl ring-4 ring-emerald-300/60 hover:scale-125 transition-transform cursor-pointer"
-                    >
-                      <span className="absolute -inset-1 rounded-full bg-emerald-500/40 animate-ping pointer-events-none" />
-                      <span className="relative z-10 font-mono font-black text-white">A</span>
-                    </button>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-emerald-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-emerald-500/40">
-                      START: {activeRoute.fromLocation.name} {activeRoute.fromLocation.officialNumber ? `(#${activeRoute.fromLocation.officialNumber})` : ''}
-                    </div>
-                  </div>
+                    <defs>
+                      <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="50%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#ef4444" />
+                      </linearGradient>
+                      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="0" stdDeviation="0.8" floodColor="#f59e0b" floodOpacity="0.8" />
+                      </filter>
+                    </defs>
 
-                  {/* Destination Pin (Red 'B') */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: `${activeRoute.toLocation.x}%`,
-                      top: `${activeRoute.toLocation.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    className="z-30 pointer-events-auto"
-                  >
-                    <button
-                      onClick={() => setSelectedPinLocation(activeRoute.toLocation)}
-                      className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-600 text-white font-black text-xs shadow-2xl ring-4 ring-red-400/70 hover:scale-125 transition-transform cursor-pointer"
-                    >
-                      <span className="absolute -inset-1.5 rounded-full bg-red-500/50 animate-ping pointer-events-none" />
-                      <span className="relative z-10 font-mono font-black">B</span>
-                    </button>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-red-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-red-500/40">
-                      DEST: {activeRoute.toLocation.name} {activeRoute.toLocation.officialNumber ? `(#${activeRoute.toLocation.officialNumber})` : ''}
-                    </div>
-                  </div>
-                </>
-              )}
+                    {/* Base Glow Path */}
+                    <polyline
+                      points={activeRoute.pathCoordinates.map((pt) => `${pt.x},${pt.y}`).join(' ')}
+                      fill="none"
+                      stroke="#1c1917"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
 
-              {/* Directory Mode: Filtered Venue Markers with Official Map Numbers */}
-              {activeTabMode === 'directory' && (
-                filteredLocations.map((loc) => {
-                  const isHovered = hoveredLocationId === loc.id;
-                  const isSelected = selectedPinLocation?.id === loc.id;
+                    {/* Animated Dashed Route Line */}
+                    <polyline
+                      points={activeRoute.pathCoordinates.map((pt) => `${pt.x},${pt.y}`).join(' ')}
+                      fill="none"
+                      stroke="url(#routeGradient)"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeDasharray="2, 1.5"
+                      className="animate-pulse"
+                      filter="url(#glow)"
+                    />
+
+                    {/* Waypoint Nodes along the Path */}
+                    {activeRoute.pathCoordinates.map((pt, idx) => {
+                      const isStart = idx === 0;
+                      const isEnd = idx === activeRoute.pathCoordinates.length - 1;
+                      if (isStart || isEnd) return null;
+                      return (
+                        <circle
+                          key={`wp-${idx}`}
+                          cx={pt.x}
+                          cy={pt.y}
+                          r="0.8"
+                          fill="#fef3c7"
+                          stroke="#b45309"
+                          strokeWidth="0.3"
+                        />
+                      );
+                    })}
+                  </svg>
+                )}
+
+                {/* ============================================================ */}
+                {/* INTERACTIVE BUILDING HOTSPOTS (Directly matching 1-54 circles) */}
+                {/* ============================================================ */}
+                {OFFICIAL_CAMPUS_BUILDINGS.map((building) => {
+                  const isHovered = hoveredBuildingNum === building.number;
+                  const isSelected = selectedBuilding?.number === building.number;
+                  const isCategoryActive = selectedCategory !== 'All' && building.category === selectedCategory;
+                  const isSearchMatch = searchQuery.trim().length > 0 && filteredBuildings.some((b) => b.number === building.number);
+                  const shouldHighlight = isCategoryActive || isSearchMatch || isHovered || isSelected;
 
                   return (
                     <div
-                      key={`dir-pin-${loc.id}`}
+                      key={`bldg-hotspot-${building.number}`}
                       style={{
                         position: 'absolute',
-                        left: `${loc.x}%`,
-                        top: `${loc.y}%`,
+                        left: `${building.x}%`,
+                        top: `${building.y}%`,
                         transform: 'translate(-50%, -50%)',
                       }}
                       className="z-25"
                     >
                       <button
-                        onClick={() => setSelectedPinLocation(loc)}
-                        onMouseEnter={() => setHoveredLocationId(loc.id)}
-                        onMouseLeave={() => setHoveredLocationId(null)}
-                        className={`group relative flex items-center justify-center transition-all duration-150 cursor-pointer ${
-                          isSelected
-                            ? 'w-7 h-7 rounded-full bg-amber-400 text-neutral-950 scale-125 ring-2 ring-red-500 z-40 shadow-xl'
-                            : isHovered
-                            ? 'w-6 h-6 rounded-full bg-amber-300 text-neutral-900 scale-110 ring-2 ring-white z-35 shadow-md'
-                            : 'w-4 h-4 rounded-full bg-[#c93b2b] text-white opacity-90 hover:opacity-100 hover:scale-125 ring-1 ring-amber-200/80 shadow'
+                        onClick={() => {
+                          setSelectedBuilding(building);
+                          setSelectedPinLocation(null);
+                        }}
+                        onMouseEnter={() => setHoveredBuildingNum(building.number)}
+                        onMouseLeave={() => setHoveredBuildingNum(null)}
+                        className={`group relative flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                          shouldHighlight
+                            ? 'w-6 h-6 rounded-full scale-125 z-40 shadow-xl'
+                            : 'w-4 h-4 rounded-full opacity-40 hover:opacity-100 hover:scale-125 z-20'
                         }`}
-                        title={`${loc.name} (${loc.building})`}
+                        style={{
+                          backgroundColor: shouldHighlight ? OFFICIAL_ZONE_COLORS[building.category]?.hex || '#F15A24' : 'transparent',
+                          border: shouldHighlight ? '2px solid #ffffff' : '1.5px solid rgba(255,255,255,0.7)',
+                        }}
+                        title={`#${building.number}: ${building.name}`}
                       >
-                        <span className="text-[9px] font-mono font-black leading-none">
-                          {loc.officialNumber || '•'}
-                        </span>
+                        {shouldHighlight && (
+                          <span className="text-[9px] font-mono font-black text-white leading-none">
+                            {building.number}
+                          </span>
+                        )}
                       </button>
 
-                      {/* Mini Tooltip on Hover */}
-                      {(isHovered || isSelected) && (
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-[#1a1713] text-[#fbf7ee] text-[11px] font-medium rounded shadow-xl border border-amber-400/80 whitespace-nowrap z-50 pointer-events-none">
-                          {loc.officialNumber && (
-                            <span className="text-[10px] bg-amber-500 text-neutral-950 font-mono font-black px-1 py-0.2 rounded mr-1">
-                              #{loc.officialNumber}
+                      {/* Hover Tooltip Card */}
+                      {isHovered && !selectedBuilding && (
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-[#1a1714]/95 text-neutral-100 text-xs rounded-sm border border-amber-400 shadow-2xl z-50 pointer-events-none whitespace-nowrap min-w-[140px]">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span 
+                              className="px-1.5 py-0.2 rounded text-[10px] font-mono font-black text-white"
+                              style={{ backgroundColor: OFFICIAL_ZONE_COLORS[building.category]?.hex || '#F15A24' }}
+                            >
+                              #{building.number}
                             </span>
-                          )}
-                          <span className="font-bold text-amber-300">{loc.name}</span>
-                          <span className="text-[#a89b87] ml-1">· {loc.building}</span>
-                          {loc.insideBuilding && (
-                            <span className="text-emerald-300 block text-[10px]">{loc.insideBuilding}</span>
-                          )}
+                            <span className="font-bold text-amber-200">{building.name}</span>
+                          </div>
+                          <span className="text-[10px] text-[#b8aa93] block font-sans-ui">
+                            Zone: {building.category}
+                          </span>
                         </div>
                       )}
                     </div>
                   );
-                })
-              )}
+                })}
 
-              {/* My Events Mode: Numbered Itinerary Pins */}
-              {activeTabMode === 'my-events' && (
-                eventsWithLocations.map(({ event, location }, idx) => {
-                  const pinNumber = idx + 1;
-                  const isSelected = selectedPinLocation?.id === location.id;
-
-                  return (
+                {/* ============================================================ */}
+                {/* WAYFINDER PINS: Start (A) & Destination (B)                  */}
+                {/* ============================================================ */}
+                {activeTabMode === 'wayfinder' && activeRoute && (
+                  <>
+                    {/* Origin Pin (Green 'A') */}
                     <div
-                      key={`evt-pin-${event.id}`}
                       style={{
                         position: 'absolute',
-                        left: `${location.x}%`,
-                        top: `${location.y}%`,
+                        left: `${activeRoute.fromLocation.x}%`,
+                        top: `${activeRoute.fromLocation.y}%`,
                         transform: 'translate(-50%, -50%)',
                       }}
-                      className="z-30"
+                      className="z-35 pointer-events-auto"
                     >
                       <button
-                        onClick={() => setSelectedPinLocation(location)}
-                        className={`group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full font-black text-xs shadow-2xl transition-all duration-200 cursor-pointer ${
-                          isSelected
-                            ? 'bg-amber-300 text-neutral-950 scale-125 ring-4 ring-red-500 z-40'
-                            : 'bg-[#c93b2b] text-white hover:scale-110 ring-2 ring-amber-200'
-                        }`}
+                        onClick={() => setSelectedPinLocation(activeRoute.fromLocation)}
+                        className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500 text-neutral-950 font-black text-xs shadow-2xl ring-4 ring-emerald-300/60 hover:scale-125 transition-transform cursor-pointer"
                       >
-                        <span className="absolute -inset-1 rounded-full bg-red-500/40 animate-ping pointer-events-none" />
-                        <span className="relative z-10 font-mono font-bold">#{pinNumber}</span>
+                        <span className="absolute -inset-1 rounded-full bg-emerald-500/40 animate-ping pointer-events-none" />
+                        <span className="relative z-10 font-mono font-black text-white">A</span>
                       </button>
-
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-amber-200 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-[#4d402f]">
-                        #{pinNumber} {event.event_name.slice(0, 18)}...
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-emerald-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-emerald-500/40">
+                        START: {activeRoute.fromLocation.name} {activeRoute.fromLocation.officialNumber ? `(#${activeRoute.fromLocation.officialNumber})` : ''}
                       </div>
                     </div>
-                  );
-                })
-              )}
 
+                    {/* Destination Pin (Red 'B') */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: `${activeRoute.toLocation.x}%`,
+                        top: `${activeRoute.toLocation.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                      className="z-35 pointer-events-auto"
+                    >
+                      <button
+                        onClick={() => setSelectedPinLocation(activeRoute.toLocation)}
+                        className="group relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-600 text-white font-black text-xs shadow-2xl ring-4 ring-red-400/70 hover:scale-125 transition-transform cursor-pointer"
+                      >
+                        <span className="absolute -inset-1.5 rounded-full bg-red-500/50 animate-ping pointer-events-none" />
+                        <span className="relative z-10 font-mono font-black">B</span>
+                      </button>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 bg-[#1a1713]/95 text-red-300 text-[10px] font-mono font-bold rounded shadow-md whitespace-nowrap pointer-events-none border border-red-500/40">
+                        DEST: {activeRoute.toLocation.name} {activeRoute.toLocation.officialNumber ? `(#${activeRoute.toLocation.officialNumber})` : ''}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* My Events Mode: Numbered Itinerary Pins */}
+                {activeTabMode === 'my-events' && (
+                  eventsWithLocations.map(({ event, location }, idx) => {
+                    const pinNumber = idx + 1;
+                    return (
+                      <div
+                        key={`evt-pin-${event.id}`}
+                        style={{
+                          position: 'absolute',
+                          left: `${location.x}%`,
+                          top: `${location.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                        className="z-30"
+                      >
+                        <button
+                          onClick={() => setSelectedPinLocation(location)}
+                          className="group relative flex items-center justify-center w-7 h-7 rounded-full font-black text-xs shadow-2xl bg-[#c93b2b] text-white hover:scale-110 ring-2 ring-amber-200 cursor-pointer"
+                        >
+                          <span className="relative z-10 font-mono font-bold">#{pinNumber}</span>
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+
+              </div>
             </div>
           )}
 
-          {/* Footer bar below canvas */}
-          <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-2 text-[11px] text-[#9b8d74]">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1">
+          {/* Clean Legend & Instructions below canvas */}
+          <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-2.5 text-[11px] text-[#9b8d74]">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" /> Start Point (A)
               </span>
-              <span className="inline-flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 text-red-400 font-medium">
                 <span className="w-2 h-2 rounded-full bg-red-400" /> Destination (B)
               </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-400" /> Building Number (1–54)
+              <span className="text-[#a89b87]">
+                💡 Tip: Click any building directly on the map to view venues &amp; navigate
               </span>
             </div>
-            <span>Calibrated with Official FLAME Cartography &amp; Google Satellite</span>
+            <span className="font-mono text-[#a89b87]">
+              FLAME University 54-Building Official Map
+            </span>
           </div>
         </div>
 
-        {/* Right Col: Dynamic Context Drawer (Route Itinerary / Directory / Event Details) */}
+        {/* Right Col: Dynamic Context Drawer (Route / Building Details / Directory) */}
         <div className="space-y-4">
           
+          {/* ============================================================ */}
+          {/* INSPECTED BUILDING CARD (When user clicks on any building)   */}
+          {/* ============================================================ */}
+          {selectedBuilding && (
+            <div className="bg-[#1e1b16] border-2 border-amber-400/90 rounded-sm p-4 text-neutral-100 shadow-2xl animate-fade-in relative">
+              <button
+                onClick={() => setSelectedBuilding(null)}
+                className="absolute top-2.5 right-2.5 p-1 text-[#8c7e68] hover:text-white rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2 mb-1.5">
+                <span 
+                  className="px-2 py-0.5 rounded text-[10px] uppercase font-bold text-white font-mono"
+                  style={{ backgroundColor: OFFICIAL_ZONE_COLORS[selectedBuilding.category]?.hex || '#F15A24' }}
+                >
+                  Official Map #{selectedBuilding.number}
+                </span>
+                <span className="text-[11px] font-mono text-[#a89b87]">
+                  Zone: {selectedBuilding.category}
+                </span>
+              </div>
+
+              <h4 className="font-editorial text-lg font-bold text-[#fbf7ee]">
+                {selectedBuilding.name}
+              </h4>
+
+              <p className="text-xs text-[#b8aa93] mt-1.5 leading-relaxed font-sans-ui">
+                {selectedBuilding.description}
+              </p>
+
+              {/* Inside Venues */}
+              {selectedBuilding.insideVenues && selectedBuilding.insideVenues.length > 0 && (
+                <div className="mt-3 p-2.5 bg-[#151310] rounded border border-[#362e24]">
+                  <span className="text-[10px] text-amber-300 uppercase font-mono font-bold block mb-1.5">
+                    Venues &amp; Facilities Inside:
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedBuilding.insideVenues.map((v, i) => (
+                      <span 
+                        key={i} 
+                        className={`px-2 py-0.5 rounded text-[10px] font-sans-ui ${
+                          v.includes('Charlies') || v.includes('Hashtag') || v.includes('Cafe')
+                            ? 'bg-amber-500/20 text-amber-200 border border-amber-500/40 font-bold'
+                            : 'bg-[#26211a] text-[#d6cbaf] border border-[#3e3427]'
+                        }`}
+                      >
+                        {v}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="mt-3 pt-3 border-t border-[#3a3227] grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleSetBuildingAsOrigin(selectedBuilding)}
+                  className="py-1.5 bg-[#2a241b] hover:bg-[#362e24] text-emerald-300 border border-emerald-500/40 rounded text-xs font-semibold flex items-center justify-center gap-1"
+                >
+                  <LocateFixed className="w-3 h-3" />
+                  <span>Start (I&apos;m here)</span>
+                </button>
+
+                <button
+                  onClick={() => handleSetBuildingAsDestination(selectedBuilding)}
+                  className="py-1.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 rounded text-xs font-bold flex items-center justify-center gap-1 shadow-sm"
+                >
+                  <Navigation className="w-3 h-3" />
+                  <span>Navigate Here</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ============================================================ */}
           {/* TAB A: WAYFINDER TURN-BY-TURN INSTRUCTIONS                   */}
           {/* ============================================================ */}
@@ -873,7 +975,7 @@ export const CampusMap: React.FC = () => {
               </div>
 
               {/* Turn-by-Turn Steps */}
-              <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
                 {activeRoute.steps.map((st, index) => {
                   const isFirst = index === 0;
                   const isLast = index === activeRoute.steps.length - 1;
@@ -932,16 +1034,16 @@ export const CampusMap: React.FC = () => {
           )}
 
           {/* ============================================================ */}
-          {/* TAB B: CAMPUS DIRECTORY & SEARCH                             */}
+          {/* TAB B: CAMPUS DIRECTORY & SEARCH (Official 8 Categories)    */}
           {/* ============================================================ */}
           {activeTabMode === 'directory' && (
             <div className="bg-[#24201a] border border-[#3f3629] rounded-sm p-4 text-neutral-100 shadow-xl animate-fade-in">
               <div className="pb-3 border-b border-[#3a3227] mb-3">
                 <h3 className="font-editorial text-lg font-bold text-amber-100">
-                  Campus Venue Directory
+                  Official Campus Directory
                 </h3>
                 <p className="text-xs text-[#a89b87] mt-0.5">
-                  Showing {filteredLocations.length} of {ALL_CAMPUS_LOCATIONS.length} mapped campus places
+                  Showing {filteredBuildings.length} of {OFFICIAL_CAMPUS_BUILDINGS.length} official buildings &amp; facilities
                 </p>
 
                 {/* Instant Search Bar */}
@@ -964,33 +1066,42 @@ export const CampusMap: React.FC = () => {
                   )}
                 </div>
 
-                {/* Category Pills */}
-                <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
-                  {(['All', 'Classrooms', 'Auditoriums / Halls', 'Sports', 'Others'] as const).map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-2 py-1 rounded text-[11px] font-sans-ui transition-all ${
-                        selectedCategory === cat
-                          ? 'bg-amber-400 text-neutral-950 font-bold shadow-xs'
-                          : 'bg-[#1b1814] border border-[#3f3629] text-[#c7ba9f] hover:text-white'
-                      }`}
-                    >
-                      {cat} ({categoryCounts[cat]})
-                    </button>
-                  ))}
+                {/* Official 8 Category Filter Pills */}
+                <div className="flex flex-wrap items-center gap-1 mt-2.5">
+                  {(['All', 'Academics', 'Sports', 'Eateries', 'Flora & Fauna', 'Housing', 'Recreational', 'Common Areas', 'Shantiniketan'] as const).map((cat) => {
+                    const isSelected = selectedCategory === cat;
+                    const colorDef = cat !== 'All' ? OFFICIAL_ZONE_COLORS[cat] : null;
+
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-2 py-1 rounded text-[10px] font-sans-ui transition-all ${
+                          isSelected
+                            ? 'bg-amber-400 text-neutral-950 font-bold shadow-xs'
+                            : 'bg-[#1b1814] border border-[#3f3629] text-[#c7ba9f] hover:text-white'
+                        }`}
+                        style={{
+                          borderColor: isSelected && colorDef ? colorDef.hex : undefined,
+                        }}
+                      >
+                        {cat} ({categoryCounts[cat]})
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Scrollable Directory List */}
+              {/* Scrollable Building Directory List */}
               <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
-                {filteredLocations.map((loc) => {
-                  const isSelected = selectedPinLocation?.id === loc.id;
+                {filteredBuildings.map((bldg) => {
+                  const isSelected = selectedBuilding?.number === bldg.number;
+                  const zoneColor = OFFICIAL_ZONE_COLORS[bldg.category];
 
                   return (
                     <div
-                      key={loc.id}
-                      onClick={() => setSelectedPinLocation(loc)}
+                      key={`bldg-dir-${bldg.number}`}
+                      onClick={() => setSelectedBuilding(bldg)}
                       className={`p-2.5 rounded border cursor-pointer transition-all ${
                         isSelected
                           ? 'bg-[#362f25] border-amber-400 shadow-md'
@@ -1000,26 +1111,41 @@ export const CampusMap: React.FC = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            {loc.officialNumber && (
-                              <span className="px-1.5 py-0.2 rounded bg-amber-500 text-neutral-950 font-mono font-black text-[10px]">
-                                #{loc.officialNumber}
-                              </span>
-                            )}
-                            {getCategoryIcon(loc.category)}
+                            <span 
+                              className="px-1.5 py-0.2 rounded text-[10px] font-mono font-black text-white shrink-0"
+                              style={{ backgroundColor: zoneColor?.hex || '#F15A24' }}
+                            >
+                              #{bldg.number}
+                            </span>
                             <h4 className="font-editorial text-sm font-bold text-[#f5ebd7] truncate">
-                              {loc.name}
+                              {bldg.name}
                             </h4>
                           </div>
 
-                          <div className="flex items-center gap-2 text-[11px] text-[#a89b87] mt-1 font-sans-ui">
-                            <span className="truncate text-amber-200/90 font-medium">{loc.building}</span>
-                            {loc.floor && <span>· {loc.floor}</span>}
+                          <div className="text-[11px] text-[#a89b87] mt-1 font-sans-ui line-clamp-1">
+                            {bldg.description}
                           </div>
 
-                          {loc.insideBuilding && (
-                            <p className="text-[10px] text-emerald-300 mt-1 truncate">
-                              📍 {loc.insideBuilding}
-                            </p>
+                          {bldg.insideVenues && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {bldg.insideVenues.slice(0, 3).map((v, i) => (
+                                <span 
+                                  key={i} 
+                                  className={`text-[9px] px-1.5 py-0.2 rounded ${
+                                    v.includes('Charlies') || v.includes('Hashtag')
+                                      ? 'bg-amber-400/20 text-amber-200 border border-amber-400/40 font-bold'
+                                      : 'bg-[#221e18] text-[#a89b87]'
+                                  }`}
+                                >
+                                  {v}
+                                </span>
+                              ))}
+                              {bldg.insideVenues.length > 3 && (
+                                <span className="text-[9px] text-[#7a6f5e] font-mono">
+                                  +{bldg.insideVenues.length - 3} more
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
 
@@ -1027,10 +1153,10 @@ export const CampusMap: React.FC = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSetAsDestination(loc);
+                            handleSetBuildingAsDestination(bldg);
                           }}
                           className="px-2 py-1 bg-[#2e271e] hover:bg-[#c93b2b] text-amber-200 hover:text-white rounded text-[10px] font-bold border border-[#4a3e31] transition-colors shrink-0 flex items-center gap-1"
-                          title="Calculate route to this venue"
+                          title="Calculate route to this building"
                         >
                           <Navigation className="w-2.5 h-2.5" />
                           <span>Route</span>
@@ -1111,7 +1237,7 @@ export const CampusMap: React.FC = () => {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleSetAsDestination(location);
+                                    handleSetLocationAsDestination(location);
                                   }}
                                   className="text-amber-300 hover:underline flex items-center gap-0.5 font-bold"
                                 >
@@ -1136,78 +1262,6 @@ export const CampusMap: React.FC = () => {
                   })}
                 </div>
               )}
-            </div>
-          )}
-
-          {/* ============================================================ */}
-          {/* INSPECTED VENUE MODAL / POPUP DETAILS                        */}
-          {/* ============================================================ */}
-          {selectedPinLocation && (
-            <div className="bg-[#1e1b16] border-2 border-amber-400/90 rounded-sm p-4 text-neutral-100 shadow-2xl animate-fade-in relative">
-              <button
-                onClick={() => setSelectedPinLocation(null)}
-                className="absolute top-2.5 right-2.5 p-1 text-[#8c7e68] hover:text-white rounded"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-2 mb-1.5">
-                {selectedPinLocation.officialNumber && (
-                  <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-400 text-neutral-950 font-mono">
-                    Official Map #{selectedPinLocation.officialNumber}
-                  </span>
-                )}
-                <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-[#c93b2b] text-amber-100">
-                  {selectedPinLocation.category}
-                </span>
-                <span className="text-[11px] font-mono text-[#a89b87]">
-                  Zone: {selectedPinLocation.zone}
-                </span>
-              </div>
-
-              <h4 className="font-editorial text-lg font-bold text-[#fbf7ee]">
-                {selectedPinLocation.name}
-              </h4>
-
-              <div className="mt-1 space-y-1 text-xs text-[#d6cbaf] font-sans-ui">
-                <div className="flex items-center gap-1.5 text-amber-300">
-                  <Building2 className="w-3.5 h-3.5 shrink-0" />
-                  <span className="font-semibold">{selectedPinLocation.building}</span>
-                  {selectedPinLocation.floor && <span>· {selectedPinLocation.floor}</span>}
-                </div>
-
-                {selectedPinLocation.insideBuilding && (
-                  <div className="px-2.5 py-1.5 bg-amber-950/40 border border-amber-500/40 rounded text-xs text-amber-200 flex items-center gap-1.5 font-medium">
-                    <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>{selectedPinLocation.insideBuilding}</span>
-                  </div>
-                )}
-
-                {selectedPinLocation.description && (
-                  <p className="text-[11px] text-[#b8aa93] mt-2 leading-relaxed bg-[#151310] p-2.5 rounded border border-[#362e24]">
-                    {selectedPinLocation.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="mt-3 pt-3 border-t border-[#3a3227] grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => handleSetAsOrigin(selectedPinLocation)}
-                  className="py-1.5 bg-[#2a241b] hover:bg-[#362e24] text-emerald-300 border border-emerald-500/40 rounded text-xs font-semibold flex items-center justify-center gap-1"
-                >
-                  <LocateFixed className="w-3 h-3" />
-                  <span>Start (I&apos;m here)</span>
-                </button>
-
-                <button
-                  onClick={() => handleSetAsDestination(selectedPinLocation)}
-                  className="py-1.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 rounded text-xs font-bold flex items-center justify-center gap-1 shadow-sm"
-                >
-                  <Navigation className="w-3 h-3" />
-                  <span>Navigate Here</span>
-                </button>
-              </div>
             </div>
           )}
 

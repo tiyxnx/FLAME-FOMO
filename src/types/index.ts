@@ -118,10 +118,21 @@ export interface MapCoordinates {
 
 export type CampusVenueCategory = 'Classrooms' | 'Auditoriums / Halls' | 'Sports' | 'Others';
 
+export type OfficialCampusCategory = 
+  | 'Academics'
+  | 'Sports'
+  | 'Eateries'
+  | 'Flora & Fauna'
+  | 'Housing'
+  | 'Recreational'
+  | 'Common Areas'
+  | 'Shantiniketan';
+
 export interface CampusLocation {
   id: string;
   name: string;
   category: CampusVenueCategory;
+  officialCategory?: OfficialCampusCategory;
   building: string;
   floor?: string;
   zone: VenueZone;
