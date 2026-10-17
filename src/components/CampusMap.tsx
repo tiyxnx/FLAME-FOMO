@@ -69,6 +69,40 @@ export function isEventEnded(evt: EventItem): boolean {
  * Match an event to its authoritative campus location
  */
 function matchEventToCampusLocation(evt: EventItem): CampusLocation {
+  // 1. Check custom map pin tag in requirements_eligibility: [MAP_PIN: x, y]
+  const pinMatch = (evt.requirements_eligibility || '').match(/\[MAP_PIN:\s*([\d.]+),\s*([\d.]+)\]/);
+  if (pinMatch) {
+    const px = parseFloat(pinMatch[1]);
+    const py = parseFloat(pinMatch[2]);
+    return {
+      id: `custom-pin-${evt.id}`,
+      name: evt.room_specific || evt.event_name,
+      category: 'Others',
+      building: evt.room_specific || 'Custom Campus Location',
+      floor: 'Campus Location',
+      zone: evt.venue_zone || 'Academics',
+      x: px,
+      y: py,
+      satX: px,
+      satY: py,
+      description: `Custom event location specified by event organizer: ${evt.room_specific || evt.event_name}`,
+      hubNodeId: 'hub_flame_plaza',
+    };
+  }
+
+  // 2. Check custom nearest location tag: [NEAREST_LOC: id]
+  const nearestMatch = (evt.requirements_eligibility || '').match(/\[NEAREST_LOC:\s*([^\]]+)\]/);
+  if (nearestMatch) {
+    const foundNearest = ALL_CAMPUS_LOCATIONS.find((l) => l.id === nearestMatch[1].trim());
+    if (foundNearest) {
+      return {
+        ...foundNearest,
+        name: evt.room_specific ? `${evt.room_specific} (${foundNearest.name})` : foundNearest.name,
+      };
+    }
+  }
+
+  // 3. Match against ALL_CAMPUS_LOCATIONS by name or building
   const query = `${evt.room_specific || ''} ${evt.venue_zone || ''} ${evt.event_name || ''}`.toLowerCase();
   
   const matched = ALL_CAMPUS_LOCATIONS.find((loc) => {

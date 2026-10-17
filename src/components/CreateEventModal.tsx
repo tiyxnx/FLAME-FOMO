@@ -1,18 +1,22 @@
-'use client';
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { 
   EventCategory, 
   VenueZone, 
   EventStatus, 
-  EventItem 
+  EventItem,
+  CampusLocation
 } from '@/types';
 import { 
   EVENT_CATEGORIES, 
   VENUE_ZONES, 
   VENUE_LOCATIONS_MAP 
 } from '@/lib/constants';
+import { 
+  ALL_CAMPUS_LOCATIONS, 
+  OFFICIAL_CAMPUS_BUILDINGS,
+  OfficialBuilding
+} from '@/lib/campusLocations';
 import { 
   X, 
   Check,
@@ -25,7 +29,12 @@ import {
   Upload,
   Trash2,
   AlertCircle,
-  Phone
+  Phone,
+  Search,
+  ChevronDown,
+  Compass,
+  Navigation,
+  LocateFixed
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -68,6 +77,17 @@ export const CreateEventModal: React.FC = () => {
   const [venueZone, setVenueZone] = useState<VenueZone>('Academics');
   const [roomSpecific, setRoomSpecific] = useState('');
   const [isCustomRoom, setIsCustomRoom] = useState(false);
+
+  // Searchable Campus Location & Custom Mapping
+  const [locationSearch, setLocationSearch] = useState('');
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  const [selectedCampusLocId, setSelectedCampusLocId] = useState<string | null>(null);
+  const [isCustomLocation, setIsCustomLocation] = useState(false);
+  const [nearestLandmarkId, setNearestLandmarkId] = useState<string>('room-apj001');
+  const [customMapPin, setCustomMapPin] = useState<{ x: number; y: number } | null>(null);
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
+  const [locationCategoryFilter, setLocationCategoryFilter] = useState<string>('All');
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
   const [organizer, setOrganizer] = useState('');
   const [pocName, setPocName] = useState('');
   const [pocNumber, setPocNumber] = useState('');
@@ -89,6 +109,114 @@ export const CreateEventModal: React.FC = () => {
       setSelectedCategories(selectedCategories.filter((c) => c !== cat));
     } else {
       setSelectedCategories([...selectedCategories, cat]);
+    }
+  };
+
+  // Close location autocomplete when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) {
+        setIsLocationDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filtered official campus locations for autocomplete
+  const filteredCampusLocations = useMemo(() => {
+    let list = ALL_CAMPUS_LOCATIONS;
+    if (locationCategoryFilter !== 'All') {
+      if (locationCategoryFilter === 'Academics') {
+        list = list.filter((l) => l.officialCategory === 'Academics');
+      } else if (locationCategoryFilter === 'Sports') {
+        list = list.filter((l) => l.officialCategory === 'Sports');
+      } else if (locationCategoryFilter === 'Eateries') {
+        list = list.filter((l) => l.officialCategory === 'Eateries');
+      } else if (locationCategoryFilter === 'Housing') {
+        list = list.filter((l) => l.officialCategory === 'Housing');
+      } else if (locationCategoryFilter === 'Flora & Fauna') {
+        list = list.filter((l) => l.officialCategory === 'Flora & Fauna');
+      } else if (locationCategoryFilter === 'Shantiniketan') {
+        list = list.filter((l) => l.officialCategory === 'Shantiniketan' || l.officialCategory === 'Common Areas' || l.officialCategory === 'Recreational');
+      }
+    }
+
+    if (!locationSearch.trim()) {
+      return list.slice(0, 45);
+    }
+
+    const q = locationSearch.toLowerCase().trim();
+    return list.filter((l) => 
+      l.name.toLowerCase().includes(q) ||
+      l.building.toLowerCase().includes(q) ||
+      (l.insideBuilding || '').toLowerCase().includes(q) ||
+      (l.officialNumber ? `#${l.officialNumber}`.includes(q) || `${l.officialNumber}` === q : false) ||
+      l.zone.toLowerCase().includes(q) ||
+      (l.officialCategory || '').toLowerCase().includes(q)
+    ).slice(0, 30);
+  }, [locationSearch, locationCategoryFilter]);
+
+  // Handlers for Location Selection & Custom Map Placement
+  const handleSelectLocation = (loc: CampusLocation) => {
+    setRoomSpecific(loc.name);
+    setLocationSearch(loc.name);
+    setVenueZone(loc.zone);
+    setSelectedCampusLocId(loc.id);
+    setIsCustomLocation(false);
+    setCustomMapPin(null);
+    setIsLocationDropdownOpen(false);
+  };
+
+  const handleEnableCustomLocation = (customName?: string) => {
+    const nameToUse = (customName !== undefined ? customName : locationSearch).trim();
+    setIsCustomLocation(true);
+    setRoomSpecific(nameToUse);
+    setLocationSearch(nameToUse);
+    setIsLocationDropdownOpen(false);
+    if (!nearestLandmarkId) {
+      setNearestLandmarkId('room-apj001');
+    }
+  };
+
+  const handleNearestLandmarkChange = (locId: string) => {
+    setNearestLandmarkId(locId);
+    const matched = ALL_CAMPUS_LOCATIONS.find((l) => l.id === locId);
+    if (matched) {
+      setVenueZone(matched.zone);
+      if (!customMapPin) {
+        setCustomMapPin({ x: matched.x, y: matched.y });
+      }
+    }
+  };
+
+  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+    const clickY = ((e.clientY - rect.top) / rect.height) * 100;
+    const roundedX = +(clickX.toFixed(1));
+    const roundedY = +(clickY.toFixed(1));
+    setCustomMapPin({ x: roundedX, y: roundedY });
+
+    // Find nearest building
+    let closestBldg = OFFICIAL_CAMPUS_BUILDINGS[0];
+    let minDist = 999999;
+    OFFICIAL_CAMPUS_BUILDINGS.forEach((b) => {
+      const d = Math.hypot(b.x - roundedX, b.y - roundedY);
+      if (d < minDist) {
+        minDist = d;
+        closestBldg = b;
+      }
+    });
+
+    if (closestBldg) {
+      const matchLoc = ALL_CAMPUS_LOCATIONS.find((l) => l.officialNumber === closestBldg.number) || ALL_CAMPUS_LOCATIONS[0];
+      setNearestLandmarkId(matchLoc.id);
+      if (closestBldg.category === 'Sports') setVenueZone('Sports');
+      else if (closestBldg.category === 'Eateries') setVenueZone('Eateries');
+      else if (closestBldg.category === 'Flora & Fauna') setVenueZone('Flora & Fauna');
+      else if (closestBldg.category === 'Academics') setVenueZone('Academics');
+      else setVenueZone('Shantiniketan/Recreational');
     }
   };
 
@@ -116,6 +244,39 @@ export const CreateEventModal: React.FC = () => {
       setTimeEnd(eventToEdit.time_end || '18:30');
       setVenueZone(eventToEdit.venue_zone);
       setRoomSpecific(eventToEdit.room_specific || '');
+      setLocationSearch(eventToEdit.room_specific || '');
+
+      const pinMatch = (eventToEdit.requirements_eligibility || '').match(/\[MAP_PIN:\s*([\d.]+),\s*([\d.]+)\]/);
+      if (pinMatch) {
+        setCustomMapPin({ x: parseFloat(pinMatch[1]), y: parseFloat(pinMatch[2]) });
+        setIsCustomLocation(true);
+      } else {
+        setCustomMapPin(null);
+      }
+
+      const nearMatch = (eventToEdit.requirements_eligibility || '').match(/\[NEAREST_LOC:\s*([^\]]+)\]/);
+      if (nearMatch) {
+        setNearestLandmarkId(nearMatch[1].trim());
+        setIsCustomLocation(true);
+      } else {
+        setNearestLandmarkId('room-apj001');
+      }
+
+      if (!pinMatch && !nearMatch) {
+        const found = ALL_CAMPUS_LOCATIONS.find(
+          (l) => l.name.toLowerCase() === (eventToEdit.room_specific || '').toLowerCase()
+        );
+        if (found) {
+          setSelectedCampusLocId(found.id);
+          setIsCustomLocation(false);
+        } else if (eventToEdit.room_specific) {
+          setIsCustomLocation(true);
+        } else {
+          setIsCustomLocation(false);
+          setSelectedCampusLocId(null);
+        }
+      }
+
       setOrganizer(eventToEdit.organizer);
       setPocName(eventToEdit.poc_name || '');
       setPocNumber(eventToEdit.poc_number || '');
@@ -128,6 +289,8 @@ export const CreateEventModal: React.FC = () => {
           .replace(/\[FEE:\s*[^\]]+\]/g, '')
           .replace(/\[POC_NAME:\s*[^\]]+\]/g, '')
           .replace(/\[POC_NUMBER:\s*[^\]]+\]/g, '')
+          .replace(/\[MAP_PIN:\s*[^\]]+\]/g, '')
+          .replace(/\[NEAREST_LOC:\s*[^\]]+\]/g, '')
           .trim() || 'Open to All Students'
       );
       setEventImage(eventToEdit.event_image || '');
@@ -165,6 +328,13 @@ export const CreateEventModal: React.FC = () => {
       setTimeEnd('18:30');
       setVenueZone('Academics');
       setRoomSpecific('');
+      setLocationSearch('');
+      setSelectedCampusLocId(null);
+      setIsCustomLocation(false);
+      setNearestLandmarkId('room-apj001');
+      setCustomMapPin(null);
+      setIsMapPickerOpen(false);
+      setLocationCategoryFilter('All');
       setOrganizer(user?.name ? `${user.name} / Student Org` : 'FLAME Student Initiative');
       setPocName('');
       setPocNumber('');
@@ -243,6 +413,15 @@ export const CreateEventModal: React.FC = () => {
       return;
     }
 
+    if (!roomSpecific.trim() && !locationSearch.trim()) {
+      setErrorMsg('Please choose or specify an event location.');
+      return;
+    }
+
+    const finalRoomSpecific = isCustomLocation 
+      ? (roomSpecific.trim() || locationSearch.trim() || 'Custom Campus Location')
+      : (roomSpecific.trim() || locationSearch.trim());
+
     let timeStartEnd = `${timeStart} - ${timeEnd}`;
     if (isTentative) {
       timeStartEnd = tentativeNote ? `${timeStartEnd} (${tentativeNote})` : `${timeStartEnd} (Tentative)`;
@@ -255,6 +434,15 @@ export const CreateEventModal: React.FC = () => {
     let eligibilityWithFlag = requirementsEligibility.trim();
     if (isTentative && !eligibilityWithFlag.includes('[TENTATIVE]')) {
       eligibilityWithFlag = `${eligibilityWithFlag} [TENTATIVE]`.trim();
+    }
+
+    if (isCustomLocation) {
+      if (customMapPin) {
+        eligibilityWithFlag = `${eligibilityWithFlag} [MAP_PIN: ${customMapPin.x.toFixed(1)}, ${customMapPin.y.toFixed(1)}]`.trim();
+      }
+      if (nearestLandmarkId) {
+        eligibilityWithFlag = `${eligibilityWithFlag} [NEAREST_LOC: ${nearestLandmarkId}]`.trim();
+      }
     }
 
     const fallbackImage = 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=600&q=80';
@@ -281,7 +469,7 @@ export const CreateEventModal: React.FC = () => {
         time_start: timeStart,
         time_end: timeEnd,
         venue_zone: venueZone,
-        room_specific: roomSpecific.trim() || undefined,
+        room_specific: finalRoomSpecific,
         organizer: organizer.trim(),
         poc_name: pocName.trim() || undefined,
         poc_number: pocNumber.trim() || undefined,
@@ -316,7 +504,7 @@ export const CreateEventModal: React.FC = () => {
         time_start: timeStart,
         time_end: timeEnd,
         venue_zone: venueZone,
-        room_specific: roomSpecific.trim() || undefined,
+        room_specific: finalRoomSpecific,
         organizer: organizer.trim(),
         poc_name: pocName.trim() || undefined,
         poc_number: pocNumber.trim() || undefined,
@@ -597,70 +785,362 @@ export const CreateEventModal: React.FC = () => {
             )}
           </div>
 
-          {/* 3. Venue Zone & Specific Room */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Campus Zone <span className="text-[#c93b2b]">*</span>
-              </label>
-              <select
-                value={venueZone}
-                onChange={(e) => {
-                  setVenueZone(e.target.value as VenueZone);
-                  setRoomSpecific('');
-                }}
-                className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-              >
-                {VENUE_ZONES.map((zone) => (
-                  <option key={zone} value={zone}>{zone}</option>
-                ))}
-              </select>
-            </div>
-
+          {/* 3. Authoritative Campus Location & Custom Spot Mapping */}
+          <div className="p-3 bg-[#f7f3e8] border border-[#d6cbb0] rounded-sm space-y-2.5">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700">
-                  Specific Room / Spot
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#c93b2b]" />
+                  <span>Campus Location / Room</span>
+                  <span className="text-[#c93b2b]">*</span>
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomRoom(!isCustomRoom)}
-                  className="text-[11px] text-[#c93b2b] hover:underline font-semibold"
-                >
-                  {isCustomRoom ? 'Choose from list' : '+ Custom room'}
-                </button>
+                
+                {!isCustomLocation ? (
+                  <button
+                    type="button"
+                    onClick={() => handleEnableCustomLocation()}
+                    className="text-[11px] text-[#c93b2b] hover:underline font-semibold flex items-center gap-1"
+                  >
+                    <span>+ Custom / Unlisted Spot</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomLocation(false);
+                      setCustomMapPin(null);
+                      setLocationSearch('');
+                      setRoomSpecific('');
+                      setSelectedCampusLocId(null);
+                    }}
+                    className="text-[11px] text-neutral-600 hover:text-neutral-900 underline font-medium"
+                  >
+                    Choose from Campus List
+                  </button>
+                )}
               </div>
 
-              {!isCustomRoom ? (
-                <select
-                  value={roomSpecific}
-                  onChange={(e) => {
-                    if (e.target.value === '__custom__') {
-                      setIsCustomRoom(true);
-                      setRoomSpecific('');
-                    } else {
-                      setRoomSpecific(e.target.value);
+              {/* Location Search Bar / Autocomplete Input */}
+              <div className="relative" ref={locationDropdownRef}>
+                <div className="relative flex items-center">
+                  <Search className="w-4 h-4 text-neutral-400 absolute left-3 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={locationSearch}
+                    onChange={(e) => {
+                      setLocationSearch(e.target.value);
+                      setIsLocationDropdownOpen(true);
+                      if (isCustomLocation) {
+                        setRoomSpecific(e.target.value);
+                      }
+                    }}
+                    onFocus={() => setIsLocationDropdownOpen(true)}
+                    placeholder={
+                      isCustomLocation 
+                        ? "Type custom location name (e.g. Amphitheatre Lawn, Breezeway)..."
+                        : "Search all rooms (APJ001, CC101), cafes (Juice Press), hostels (Block L–S)..."
                     }
-                  }}
-                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
-                >
-                  <option value="">-- Select Specific Room / Area --</option>
-                  {VENUE_LOCATIONS_MAP[venueZone]?.map((loc) => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                  <option value="__custom__">✏️ Type another custom room...</option>
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  placeholder="e.g. Kalidas Centre 304 or Amphitheatre Lawn"
-                  value={roomSpecific}
-                  onChange={(e) => setRoomSpecific(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 focus:outline-none focus:border-[#c93b2b]"
-                  autoFocus
-                />
+                    className="w-full pl-9 pr-8 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900 focus:outline-none focus:border-[#c93b2b] font-sans-ui placeholder:text-neutral-400"
+                    required
+                  />
+                  {locationSearch && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocationSearch('');
+                        setRoomSpecific('');
+                        setSelectedCampusLocId(null);
+                        setIsLocationDropdownOpen(true);
+                      }}
+                      className="absolute right-2.5 text-neutral-400 hover:text-neutral-700"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Category Quick Filter Pills */}
+                {!isCustomLocation && (
+                  <div className="flex items-center gap-1 overflow-x-auto pt-1.5 pb-0.5 text-[10px]">
+                    <span className="text-neutral-500 font-medium shrink-0">Filter:</span>
+                    {[
+                      { id: 'All', label: 'All Venues' },
+                      { id: 'Academics', label: '🏛️ Academics' },
+                      { id: 'Sports', label: '🏆 Sports' },
+                      { id: 'Eateries', label: '🍽️ Eateries' },
+                      { id: 'Housing', label: '🏠 Housing (L–S)' },
+                      { id: 'Flora & Fauna', label: '🌳 Gardens' },
+                      { id: 'Shantiniketan', label: '🎭 Shantiniketan' },
+                    ].map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setLocationCategoryFilter(cat.id);
+                          setIsLocationDropdownOpen(true);
+                        }}
+                        className={`px-2 py-0.5 rounded-full whitespace-nowrap transition-colors ${
+                          locationCategoryFilter === cat.id
+                            ? 'bg-[#c93b2b] text-white font-bold'
+                            : 'bg-white hover:bg-neutral-100 text-neutral-700 border border-[#ded3bb]'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Autocomplete Suggestions Dropdown */}
+                {isLocationDropdownOpen && !isCustomLocation && (
+                  <div className="absolute left-0 right-0 top-full mt-1 max-h-56 overflow-y-auto bg-white border border-[#c9bfa7] rounded-sm shadow-xl z-50 divide-y divide-neutral-100 animate-fade-in">
+                    {filteredCampusLocations.map((loc) => {
+                      const isSelected = selectedCampusLocId === loc.id || roomSpecific === loc.name;
+                      return (
+                        <button
+                          key={`sugg-${loc.id}`}
+                          type="button"
+                          onClick={() => handleSelectLocation(loc)}
+                          className={`w-full text-left px-3 py-2 flex items-center justify-between text-xs transition-colors hover:bg-amber-50/70 ${
+                            isSelected ? 'bg-amber-100/60 font-semibold' : ''
+                          }`}
+                        >
+                          <div className="min-w-0 pr-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-neutral-900 truncate">
+                                {loc.name}
+                              </span>
+                              {loc.officialNumber && (
+                                <span className="text-[10px] font-mono px-1 rounded bg-neutral-200 text-neutral-700 font-bold shrink-0">
+                                  #{loc.officialNumber}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-neutral-500 truncate">
+                              {loc.building} {loc.floor ? `· ${loc.floor}` : ''}
+                            </div>
+                          </div>
+                          <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 shrink-0 border border-neutral-200">
+                            {loc.officialCategory}
+                          </span>
+                        </button>
+                      );
+                    })}
+
+                    {/* Option to create custom location with typed text */}
+                    {locationSearch.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => handleEnableCustomLocation(locationSearch)}
+                        className="w-full text-left px-3 py-2.5 bg-amber-50 hover:bg-amber-100/80 text-xs font-bold text-[#b43224] flex items-center gap-1.5 transition-colors"
+                      >
+                        <span>✨ Use custom location: &ldquo;{locationSearch}&rdquo;</span>
+                      </button>
+                    )}
+
+                    {filteredCampusLocations.length === 0 && !locationSearch.trim() && (
+                      <div className="p-3 text-center text-xs text-neutral-500">
+                        No matching locations found.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Official Location Badge */}
+              {!isCustomLocation && roomSpecific && (
+                <div className="mt-2 p-2 bg-emerald-50 border border-emerald-300 rounded-sm flex items-center justify-between text-xs animate-fade-in">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div className="min-w-0">
+                      <span className="font-bold text-emerald-950 truncate block">
+                        {roomSpecific}
+                      </span>
+                      <span className="text-[10px] text-emerald-700 block">
+                        Zone: {venueZone} · Linked to Master Campus Map
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocationSearch('');
+                      setRoomSpecific('');
+                      setSelectedCampusLocId(null);
+                      setIsLocationDropdownOpen(true);
+                    }}
+                    className="text-[10px] text-emerald-800 hover:underline font-bold shrink-0 px-2 py-0.5"
+                  >
+                    Change
+                  </button>
+                </div>
               )}
             </div>
+
+            {/* CUSTOM LOCATION: PROMPT FOR NEAREST SPOT OR PIN ON MAP */}
+            {isCustomLocation && (
+              <div className="p-3 bg-[#1d1914] text-[#f7f2e7] rounded-sm border-2 border-amber-500/70 shadow-md space-y-3 animate-fade-in">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                      <span className="text-xs font-extrabold text-amber-300">
+                        Custom Location: &ldquo;{roomSpecific || locationSearch || 'Custom Spot'}&rdquo;
+                      </span>
+                    </div>
+                    <span className="text-[10px] bg-amber-400/20 text-amber-300 font-mono px-1.5 py-0.2 rounded border border-amber-400/30">
+                      Wayfinding Setup
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#c9bfa7] mt-1 leading-snug">
+                    Where is this on campus? Select the nearest landmark or tap the map to place your pin so attendees know how to get there.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-end">
+                  {/* Nearest Landmark */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-amber-200 mb-1">
+                      Nearest Landmark / Building <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      value={nearestLandmarkId}
+                      onChange={(e) => handleNearestLandmarkChange(e.target.value)}
+                      className="w-full px-2.5 py-2 bg-[#12100d] border border-[#4a3f31] rounded-sm text-xs text-[#fbf7ee] focus:outline-none focus:border-amber-400 font-sans-ui"
+                    >
+                      <optgroup label="West Housing Residences (Blocks L to S)">
+                        <option value="other-west-housing">🏠 West Housing (Blocks L–S)</option>
+                        <option value="housing-west-block-l">🏠 West Housing - Block L</option>
+                        <option value="housing-west-block-m">🏠 West Housing - Block M</option>
+                        <option value="housing-west-block-n">🏠 West Housing - Block N</option>
+                        <option value="housing-west-block-o">🏠 West Housing - Block O</option>
+                        <option value="housing-west-block-p">🏠 West Housing - Block P</option>
+                        <option value="housing-west-block-q">🏠 West Housing - Block Q</option>
+                        <option value="housing-west-block-r">🏠 West Housing - Block R</option>
+                        <option value="housing-west-block-s">🏠 West Housing - Block S</option>
+                      </optgroup>
+                      <optgroup label="Popular Academic & Eatery Spots">
+                        <option value="room-apj001">🏛️ APJ Abdul Kalam (#2)</option>
+                        <option value="other-vivekananda-library">📚 Vivekananda Library (#3)</option>
+                        <option value="other-aahar">🍽️ Aahar Dining Hall (#25)</option>
+                        <option value="hall-shantiniketan-auditorium">🎭 Shantiniketan Auditorium (#49)</option>
+                        <option value="other-juice-press">🥤 Juice Press (#28)</option>
+                        <option value="other-hashtag">🥐 Hashtag Cafe (#29)</option>
+                        <option value="other-charlies">☕ Charlies Cafe (#33 in APJ)</option>
+                        <option value="sports-arjuna-complex-main">🏆 Arjuna Sports Complex (#18)</option>
+                        <option value="other-flame-plaza">🏛️ FLAME Plaza (#43)</option>
+                      </optgroup>
+                      <optgroup label="All Campus Locations">
+                        {ALL_CAMPUS_LOCATIONS.map((loc) => (
+                          <option key={`custom-near-${loc.id}`} value={loc.id}>
+                            {loc.name} {loc.officialNumber ? `(#${loc.officialNumber})` : ''} · {loc.building}
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  {/* Pin on Map Button */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-amber-200 mb-1">
+                      Visual Map Placement
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsMapPickerOpen(!isMapPickerOpen)}
+                      className={`w-full px-2.5 py-2 rounded-sm text-xs font-bold transition-all flex items-center justify-center gap-1.5 border ${
+                        customMapPin
+                          ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500 shadow-sm'
+                          : 'bg-[#261f17] hover:bg-[#332a1f] text-amber-300 border-amber-500/50'
+                      }`}
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{customMapPin ? `✓ Pinned on Map (${customMapPin.x}%, ${customMapPin.y}%)` : '🗺️ Put it on the Map'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Interactive Visual Map Pin Dropper */}
+                {isMapPickerOpen && (
+                  <div className="pt-2 border-t border-[#3d3324] space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-bold text-amber-200">
+                        👇 Click anywhere on the campus map to drop your event pin:
+                      </span>
+                      {customMapPin && (
+                        <button
+                          type="button"
+                          onClick={() => setCustomMapPin(null)}
+                          className="text-[10px] text-red-400 hover:underline"
+                        >
+                          Clear Pin
+                        </button>
+                      )}
+                    </div>
+
+                    <div 
+                      onClick={handleMapClick}
+                      className="relative w-full aspect-[16/10] bg-[#12100d] rounded-lg overflow-hidden border-2 border-amber-500/60 cursor-crosshair shadow-2xl"
+                    >
+                      <img
+                        src="/campus-map-illustrated.jpg"
+                        alt="FLAME Campus Pin Dropper"
+                        className="w-full h-full object-cover select-none pointer-events-none"
+                      />
+
+                      {/* Reference Building Dots */}
+                      {OFFICIAL_CAMPUS_BUILDINGS.map((b) => (
+                        <div
+                          key={`pin-ref-${b.number}`}
+                          style={{
+                            position: 'absolute',
+                            left: `${b.x}%`,
+                            top: `${b.y}%`,
+                            transform: 'translate(-50%, -50%)',
+                          }}
+                          className="w-2 h-2 rounded-full bg-white/40 pointer-events-none"
+                        />
+                      ))}
+
+                      {/* Placed Custom Pin */}
+                      {customMapPin && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: `${customMapPin.x}%`,
+                            top: `${customMapPin.y}%`,
+                            transform: 'translate(-50%, -100%)',
+                          }}
+                          className="z-30 pointer-events-none animate-bounce"
+                        >
+                          <div className="flex flex-col items-center">
+                            <div className="px-2 py-0.5 bg-red-600 text-white font-black text-[10px] rounded shadow-2xl whitespace-nowrap border border-white">
+                              📍 {roomSpecific || locationSearch || 'Event Spot'}
+                            </div>
+                            <div className="w-0 h-0 border-x-4 border-x-transparent border-t-[6px] border-t-red-600" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-[#a89982]">
+                      <span>
+                        {customMapPin 
+                          ? `Pinned at ${customMapPin.x}% X, ${customMapPin.y}% Y` 
+                          : 'Click or tap on the map to place coordinates.'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsMapPickerOpen(false)}
+                        className="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold rounded text-xs"
+                      >
+                        Confirm Pin
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 4. Organizer & Eligibility */}

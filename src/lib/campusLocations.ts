@@ -1,4 +1,5 @@
 import { CampusLocation, CampusRouteResult, CampusRouteStep, OfficialCampusCategory, VenueZone } from '@/types';
+export type { CampusLocation };
 
 export const FLAME_CAMPUS_CENTER = {
   lat: 18.5233078,
