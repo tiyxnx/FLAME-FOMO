@@ -22,8 +22,10 @@ import {
   HelpCircle,
   RefreshCw,
   Zap,
-  Film
+  Film,
+  Key
 } from 'lucide-react';
+import { LIFE_AT_FLAME_KNOWLEDGE, LIFE_AT_FLAME_PORTAL_URL } from '@/lib/lifeAtFlameKnowledge';
 
 interface ChatMessage {
   id: string;
@@ -57,6 +59,20 @@ export const ChatBotModal: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [activeEngine, setActiveEngine] = useState<'gemini' | 'local'>('local');
   const [geminiStatus, setGeminiStatus] = useState<string>('Ready');
+  const [customApiKey, setCustomApiKey] = useState<string>('');
+  const [showKeyModal, setShowKeyModal] = useState<boolean>(false);
+  const [tempKeyInput, setTempKeyInput] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('fomo_gemini_api_key') || '';
+      setCustomApiKey(stored);
+      setTempKeyInput(stored);
+      if (stored) {
+        setActiveEngine('gemini');
+      }
+    }
+  }, []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -178,6 +194,63 @@ export const ChatBotModal: React.FC = () => {
     ) {
       return {
         text: `bet! i know student slang like **rn** (right now), **smth** (something), **tmrw** (tomorrow), **wknd**, **bc**, **tt** (timetable), **comps**, and more. hit me with whatever abbreviations u use lol.`
+      };
+    }
+
+    // 0c. Conversational Banter: "nah" / "no" / "not really" / "nothing" / "leave it" / "nvm"
+    const dismissives = ['nah', 'no', 'nope', 'not really', 'nothing', 'leave it', 'nvm', 'nevermind', 'dont want to', 'dont care', 'idc', 'stop', 'nothing much'];
+    if (dismissives.some((d) => q === d || q.startsWith(d + ' ') || q.endsWith(' ' + d))) {
+      const replies = [
+        "haha fair enough! just chilling then? let me know if u need smth later.",
+        "all good haha! what's on your mind then?",
+        "no worries at all 🙌 i'm right here whenever u wanna check out campus buzz.",
+        "gotchu, keeping it lowkey today. let me know if u need anything!"
+      ];
+      return { text: replies[Math.floor(Math.random() * replies.length)] };
+    }
+
+    // 0d. Laughter / Keyboard Smash: "sjsjjajaja", "hahaha", "lmao", "lol", "xd"
+    if (/(sjsj|jaja|haha|lmao|lol|rofl|xd|asdf|ghjk)/i.test(q)) {
+      const laughReplies = [
+        "lmao what's got u laughing? 😂",
+        "hahaha keyboard smash energy. everything good? lol",
+        "lmao fair enough 😂 having a good day?",
+        "haha what's funny? spill the tea!"
+      ];
+      return { text: laughReplies[Math.floor(Math.random() * laughReplies.length)] };
+    }
+
+    // 0e. Affirmatives: "yes", "yeah", "yup", "sure", "ok", "okay", "bet", "alright"
+    if (['yes', 'yeah', 'yup', 'sure', 'ok', 'okay', 'k', 'bet', 'alright', 'cool', 'fine'].includes(q)) {
+      const affirmReplies = [
+        "bet! what are u trying to check out — events coming up, your classes, or club comps?",
+        "awesome! what do u wanna look for on campus?",
+        "for sure. let me know what u need — events, spots to chill, or your schedule!"
+      ];
+      return { text: affirmReplies[Math.floor(Math.random() * affirmReplies.length)] };
+    }
+
+    // 0f. Questions / Confusion: "what", "why", "huh", "wym", "wdym"
+    if (['what', 'why', 'huh', 'wym', 'wdym', 'what do you mean'].includes(q)) {
+      return {
+        text: "i mean whatever you're looking for on campus! like upcoming fests, film competitions, whether you've got classes rn, or places to hang out."
+      };
+    }
+
+    // 0g. LIFE@FLAME Official Knowledge Matcher
+    const matchedTopic = LIFE_AT_FLAME_KNOWLEDGE.find((topic) => 
+      topic.keywords.some((k) => q.includes(k) || qNormalized.includes(k)) ||
+      q.includes(topic.title.toLowerCase())
+    );
+    if (matchedTopic) {
+      return {
+        text: `🔥 **${matchedTopic.title}**\n\n${matchedTopic.details}\n\n🔗 check out more on the official [Life@FLAME Portal](${matchedTopic.link || LIFE_AT_FLAME_PORTAL_URL})!`
+      };
+    }
+
+    if (q.includes('life at flame') || q.includes('lifeatflame') || q.includes('google site')) {
+      return {
+        text: `🔗 **Life@FLAME** is FLAME's official campus life & student affairs portal!\n\nit covers flagship fests like Kurukshetra & FLAME Fest, student committees (Sports Committee, Cultural Committee, Student Council), club charters, and student resources.\n\ncheck it out here: [Life@FLAME Official Portal](${LIFE_AT_FLAME_PORTAL_URL})`
       };
     }
 
@@ -585,9 +658,16 @@ export const ChatBotModal: React.FC = () => {
       }
     }
 
-    // 23. NATURAL FALLBACK
+    // 23. DYNAMIC CHATGPT-STYLE FALLBACK (NEVER REPEATS A STATIC SENTENCE)
+    const dynamicFallbacks = [
+      "gotchu! i'm tuned into all the campus events, club comps, and your timetable. what's on your mind?",
+      "heard that! looking for smth specific on campus or just seeing what's good?",
+      "for sure. let me know if u wanna find events happening this week, check your classes, or see what's on Life@FLAME!",
+      "bet. what can i help u with — classes, events, or club comps?",
+      "i'm listening! hit me with any questions about campus life, fests, or your schedule."
+    ];
     return {
-      text: `i couldn't find anything specifically matching that rn! you can browse all upcoming fests and club activities on the Explore tab, or ask me about your classes, film comps, sports at Arjuna, or smth to do when you're free.`
+      text: dynamicFallbacks[Math.floor(Math.random() * dynamicFallbacks.length)]
     };
   };
 
@@ -649,6 +729,7 @@ export const ChatBotModal: React.FC = () => {
           poc_name: e.poc_name,
           poc_number: e.poc_number,
         })),
+        userApiKey: customApiKey || undefined,
       };
 
       const res = await fetch('/api/chat', {
@@ -751,6 +832,18 @@ export const ChatBotModal: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowKeyModal(true)}
+              title="Connect Gemini AI Key (Optional)"
+              className={`px-2 py-1 rounded text-xs transition-colors cursor-pointer flex items-center gap-1.5 ${
+                customApiKey ? 'text-amber-300 bg-amber-950/60 border border-amber-600/40' : 'text-neutral-400 hover:text-amber-200 hover:bg-[#2c261f]'
+              }`}
+            >
+              <Key className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline text-[10px] font-mono">
+                {customApiKey ? 'AI Connected' : 'AI Key'}
+              </span>
+            </button>
+            <button
               onClick={clearChat}
               title="Clear Conversation"
               className="p-1.5 rounded text-neutral-400 hover:text-amber-200 hover:bg-[#2c261f] transition-colors cursor-pointer"
@@ -771,6 +864,13 @@ export const ChatBotModal: React.FC = () => {
           <span className="text-[10px] font-bold text-[#8c7e68] uppercase tracking-wider shrink-0 font-mono">
             Ask:
           </span>
+          <button
+            onClick={() => handleSendMessage("Tell me about Life@FLAME flagship fests and sports")}
+            className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+          >
+            <Compass className="w-3 h-3 text-amber-400" />
+            <span>Life@FLAME info</span>
+          </button>
           <button
             onClick={() => handleSendMessage("I'm free rn what to do?")}
             className="px-2.5 py-1 rounded-full text-xs bg-[#241f19] hover:bg-[#342d24] text-amber-200 border border-[#42372b] whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer shrink-0"
@@ -978,6 +1078,83 @@ export const ChatBotModal: React.FC = () => {
           </div>
         </div>
 
+        {/* Optional Gemini API Key Dialog */}
+        {showKeyModal && (
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+            <div className="bg-[#241f19] border border-[#443a2d] p-5 rounded-lg max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Key className="w-5 h-5 text-amber-400" />
+                  <h4 className="font-editorial text-base font-bold text-amber-100">Connect Google Gemini Key</h4>
+                </div>
+                <button
+                  onClick={() => setShowKeyModal(false)}
+                  className="p-1 rounded text-neutral-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-xs text-neutral-300 leading-relaxed">
+                Enter your free Google Gemini API key to enable live AI responses. If left empty, FOMO Bot runs on the built-in campus intelligence engine.
+              </p>
+
+              <div>
+                <label className="text-[11px] font-mono text-neutral-400 block mb-1">
+                  Gemini API Key (AIzaSy...)
+                </label>
+                <input
+                  type="password"
+                  value={tempKeyInput}
+                  onChange={(e) => setTempKeyInput(e.target.value)}
+                  placeholder="Paste your Gemini API key here..."
+                  className="w-full bg-[#151310] border border-[#443a2d] rounded px-3 py-2 text-xs text-neutral-100 font-mono focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('fomo_gemini_api_key');
+                    setCustomApiKey('');
+                    setTempKeyInput('');
+                    setActiveEngine('local');
+                    setShowKeyModal(false);
+                  }}
+                  className="text-xs text-red-400 hover:text-red-300 cursor-pointer"
+                >
+                  Clear Key
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowKeyModal(false)}
+                    className="px-3 py-1.5 rounded text-xs bg-[#2c2620] hover:bg-[#342d24] text-neutral-300 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      const trimmed = tempKeyInput.trim();
+                      if (trimmed) {
+                        localStorage.setItem('fomo_gemini_api_key', trimmed);
+                        setCustomApiKey(trimmed);
+                        setActiveEngine('gemini');
+                      } else {
+                        localStorage.removeItem('fomo_gemini_api_key');
+                        setCustomApiKey('');
+                        setActiveEngine('local');
+                      }
+                      setShowKeyModal(false);
+                    }}
+                    className="px-3 py-1.5 rounded text-xs bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 font-bold cursor-pointer"
+                  >
+                    Save &amp; Connect
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>

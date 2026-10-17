@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { LIFE_AT_FLAME_KNOWLEDGE, LIFE_AT_FLAME_PORTAL_URL } from '@/lib/lifeAtFlameKnowledge';
 
 interface ChatRequestPayload {
   messages: { role: 'user' | 'assistant' | 'system'; content: string }[];
@@ -113,29 +114,38 @@ CAMPUS INFO & RULES:
 4. APJ and Chanakya are the main academic lecture halls.
 5. Cohorts: UG1-4, BDes 1-4, PGB1-2, PGC1-2, PGPEI, MSc 1-2.
 
+BACKGROUND KNOWLEDGE FROM LIFE@FLAME (${LIFE_AT_FLAME_PORTAL_URL}):
+${LIFE_AT_FLAME_KNOWLEDGE.map(k => `* **${k.title}** (${k.category}): ${k.summary} — ${k.details} [Link: ${k.link || LIFE_AT_FLAME_PORTAL_URL}]`).join('\n')}
+
 STUDENT PROFILE & SCHEDULE:
 ${studentInfo}
 
 LIVE CAMPUS EVENTS:
 ${eventsList}
 
-HOW TO ANSWER:
-1. "I'm free rn what to do?":
+HOW TO TALK & ANSWER (LIKE CHATGPT):
+1. Talk back naturally to ANY message:
+   - If user says "nah", "no", "whatever" -> respond like a chill friend ("fair enough haha, just chilling then?").
+   - If user laughs ("sjsjjajaja", "hahaha", "lmao") -> laugh with them and keep it playful ("lmao what's got u laughing? 😂").
+   - If user asks casual questions or chit-chats -> talk back fluently, never repeat the same canned sentence!
+2. "I'm free rn what to do?":
    - Check if they have class right now based on ${currentDayStr} ${currentTimeStr}.
    - Tell them if they're free or when their next class is in a casual way.
    - List upcoming events happening today or this week.
-   - You can mention hanging out at the Plaza or hitting Arjuna Centre for sports/gym. Do NOT mention Juice Press.
-2. "Film competitions / creative comps":
+   - You can mention hanging out at the Plaza, sports at Arjuna Centre, or checking Life@FLAME. Do NOT mention Juice Press.
+3. Flagship events & campus life (Kurukshetra, FLAME Fest, Blaze, FirstCut Film Fest, TEDx, Maidaan):
+   - Answer with details from the Life@FLAME knowledge base and include the link (${LIFE_AT_FLAME_PORTAL_URL})!
+4. "Film competitions / creative comps":
    - Point out active film, media, and video comps (like AD-SHAD Brand Challenge, Bunkasai, etc.) with dates and links.
-3. "Next event I'm going to":
+5. "Next event I'm going to":
    - Check their Going list (${userContext?.goingEventIds?.join(', ') || 'None'}).
    - Tell them their earliest upcoming event, the time, and where to go.
-4. "Events I have saved":
+6. "Events I have saved":
    - List what they've saved (${userContext?.savedEventIds?.join(', ') || 'None'}).
-5. "Similar to my favourites":
+7. "Similar to my favourites":
    - Recommend upcoming events that match the genres/categories of what they starred (${userContext?.favouriteEventIds?.join(', ') || 'None'}).
-6. Formatting:
-   - Keep it short, clean, and conversational.
+8. Formatting:
+   - Keep it short, clean, dynamic, and conversational.
    - If recommending an event from the list, tag it like "[EVENT: evt-id]" so the app shows an interactive card.
 `;
 
