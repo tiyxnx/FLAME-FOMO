@@ -32,9 +32,8 @@
 }
 
 .font-handwritten {
-  font-family: var(--font-accent), var(--font-playfair), Georgia, serif;
-  font-style: italic;
-  letter-spacing: 0.01em;
+  font-family: var(--font-handwritten), cursive, sans-serif;
+  letter-spacing: 0.02em;
 }
 
 /* Scrapbook Background Textures */

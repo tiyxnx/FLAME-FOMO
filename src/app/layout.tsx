@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Playfair_Display, Inter, Lora } from 'next/font/google';
+import { Playfair_Display, Inter, Patrick_Hand } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
 
@@ -15,11 +15,11 @@ const inter = Inter({
   display: 'swap',
 });
 
-const lora = Lora({
+const patrickHand = Patrick_Hand({
+  weight: '400',
   subsets: ['latin'],
-  variable: '--font-accent',
+  variable: '--font-handwritten',
   display: 'swap',
-  style: ['normal', 'italic'],
 });
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${inter.variable} ${lora.variable} h-full antialiased`}
+      className={`${playfair.variable} ${inter.variable} ${patrickHand.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-scrapbook-board text-neutral-100">
         <AppProvider>{children}</AppProvider>
