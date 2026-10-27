@@ -347,34 +347,43 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           )}
         </div>
 
-        {/* Organizer annotation in handwritten font & clean status indicators */}
+        {/* Organizer annotation in formal nice cute font & clean status indicators */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
           <span 
-            className="font-handwritten text-sm text-rose-300/85 truncate" 
+            className="font-handwritten text-sm text-rose-300/90 truncate" 
             title={event.poc_name ? `POC: ${event.poc_name}` : undefined}
           >
             by {event.organizer}
           </span>
 
-          {/* Clean minimal status chips without clutter */}
+          {/* Clean minimal status chips showing saved count to everyone */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {isAuthor ? (
-              <span className="text-[9px] font-semibold text-rose-300 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+            {/* Public Saved count visible to everyone */}
+            <span 
+              className={`inline-flex items-center gap-1 text-[11px] font-sans-ui font-medium px-2 py-0.5 rounded-full transition-colors ${
+                isSaved 
+                  ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' 
+                  : 'bg-white/5 text-neutral-300 border border-white/10'
+              }`}
+              title={`${savedCount} students saved this event`}
+            >
+              <Bookmark className={`w-3 h-3 ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-[#ff2d55]'}`} />
+              <span>{savedCount} saved</span>
+            </span>
+
+            {/* If author, show Your Post badge */}
+            {isAuthor && (
+              <span className="text-[9px] font-semibold text-rose-300 bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                 Your Post
               </span>
-            ) : isGoing ? (
-              <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+            )}
+
+            {/* If going, show Going badge */}
+            {isGoing && (
+              <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                 <Check className="w-2.5 h-2.5" /> Going
               </span>
-            ) : isSaved ? (
-              <span className="text-[10px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Bookmark className="w-2.5 h-2.5 fill-rose-400" /> Saved
-              </span>
-            ) : savedCount > 0 ? (
-              <span className="text-[10px] text-neutral-400 flex items-center gap-1 font-sans-ui">
-                <Bookmark className="w-2.5 h-2.5 text-neutral-500" /> {savedCount}
-              </span>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
