@@ -68,64 +68,65 @@ export const Header: React.FC = () => {
               <img 
                 src="/brand-logo.png" 
                 alt="FLAME FOMO Logo" 
-                className="h-10 sm:h-12 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(255,45,85,0.4)] group-hover:scale-105 transition-transform duration-300"
+                className="h-11 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
               />
             </div>
 
             <div className="flex flex-col justify-center">
-              <span className="font-editorial text-xl sm:text-2xl font-black tracking-tight text-white group-hover:text-rose-100 transition-colors">
-                FLAME <span className="bg-gradient-to-r from-[#ff2d55] via-[#ff4d6d] to-[#f59e0b] bg-clip-text text-transparent italic font-serif">FOMO</span>
-              </span>
+              <div className="font-editorial text-2xl sm:text-[27px] font-black tracking-tight leading-none text-white flex items-center gap-1.5">
+                <span>FLAME</span>
+                <span className="italic bg-gradient-to-r from-[#ff2453] via-[#ff543c] to-[#ffaa20] bg-clip-text text-transparent">FOMO</span>
+              </div>
             </div>
           </div>
 
-          {/* Navigation Links (Pill Container matching Image 2) */}
-          <nav className="hidden md:flex items-center p-1 bg-[#15121c]/90 border border-white/5 rounded-full shadow-inner">
+          {/* Navigation Links (Pill Container matching screenshot) */}
+          <nav className="hidden md:flex items-center p-1.5 bg-[#120e18]/95 border border-[#2d2438] rounded-full shadow-inner">
             <button
               onClick={() => handleTabClick('home')}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`transition-all flex items-center gap-2 ${
                 currentTab === 'home'
-                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md shadow-rose-950/40'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
               }`}
             >
-              <Home className="w-3.5 h-3.5" />
+              <Home className="w-4 h-4 stroke-[2.2]" />
               <span>Home</span>
             </button>
 
             <button
               onClick={() => handleTabClick('explore')}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`transition-all flex items-center gap-2 ${
                 currentTab === 'explore'
-                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md shadow-rose-950/40'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
               }`}
             >
-              <Compass className="w-3.5 h-3.5" />
+              <Compass className="w-4 h-4 stroke-[2.2]" />
               <span>Explore</span>
             </button>
 
             <button
               onClick={() => handleTabClick('applications')}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`transition-all flex items-center gap-2 ${
                 currentTab === 'applications'
-                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md shadow-rose-950/40'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-4 h-4 stroke-[2.2]" />
               <span>Applications</span>
             </button>
 
             <button
               onClick={() => handleTabClick('my-plan')}
-              className={`relative px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`relative transition-all flex items-center gap-2 ${
                 currentTab === 'my-plan'
-                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md shadow-rose-950/40'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
               }`}
             >
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-4 h-4 stroke-[2.2]" />
               <span>My Plan</span>
               {!isAuthenticated && (
                 <Lock className="w-3 h-3 text-neutral-500 ml-0.5" />
@@ -134,13 +135,13 @@ export const Header: React.FC = () => {
 
             <button
               onClick={() => handleTabClick('campus-map')}
-              className={`relative px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`relative transition-all flex items-center gap-2 ${
                 currentTab === 'campus-map'
-                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md shadow-rose-950/40'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
               }`}
             >
-              <MapPin className="w-3.5 h-3.5" />
+              <MapPin className="w-4 h-4 stroke-[2.2]" />
               <span>Campus Map</span>
             </button>
           </nav>
