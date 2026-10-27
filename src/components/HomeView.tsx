@@ -121,7 +121,7 @@ export const HomeView: React.FC = () => {
             
             {/* Subtitle Quote */}
             <p className="text-sm sm:text-base text-neutral-300 font-serif italic mt-4 tracking-wide">
-              &quot;Don&apos;t just hear about it — experience it live.&quot;
+              &quot;Don&apos;t just hear about it&quot;
             </p>
           </div>
 
