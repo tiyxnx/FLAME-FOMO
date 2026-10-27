@@ -142,12 +142,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
         applyGrayscaleFilter ? 'filter grayscale contrast-90 opacity-70' : ''
       }`}
     >
-      {/* Scrapbook Tape / Pinned Edge Motif */}
+      {/* Scrapbook Tape Motif */}
       <div 
         className={`absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-5 ${tapeBg} shadow-sm backdrop-blur-xs rotate-[-1deg] clip-path-tape z-10 pointer-events-none rounded-2xs`}
         style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
       />
-      <div className="push-pin" />
 
       {/* Cancelled Stamp Overlay */}
       {isCancelled && (
@@ -199,11 +198,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           </div>
         )}
 
-        {/* Registration Deadline Banner / Stamp */}
+        {/* Registration Deadline Banner */}
         {event.registration_deadline && !isCancelled && !isTentative && (
           <div className="absolute bottom-2 right-2 z-10">
             {isPastDeadline ? (
-              <span className="inline-block px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-black/80 text-neutral-400 border border-white/10 backdrop-blur-xs rounded-md transform rotate-[-2deg]">
+              <span className="inline-block px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider bg-black/70 text-neutral-300 border border-white/10 backdrop-blur-md rounded-full shadow-sm">
                 Deadline Passed
               </span>
             ) : (
@@ -306,7 +305,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
       </div>
 
       {/* Polaroid Text & Functional UI Metadata */}
-      <div className="flex flex-col space-y-1.5">
+      <div className="flex flex-col space-y-2">
         
         {/* Title in Editorial Serif */}
         <h3 className="font-editorial text-base sm:text-lg font-bold text-white leading-snug line-clamp-2 group-hover:text-rose-400 transition-colors">
@@ -314,27 +313,32 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
         </h3>
 
         {/* Date & Time line */}
-        <div className="flex items-center gap-3 text-xs text-neutral-300 font-sans-ui pt-0.5">
-          <div className="flex items-center gap-1 text-neutral-200 font-medium">
-            <Calendar className="w-3.5 h-3.5 text-[#ff2d55]" />
+        <div className="flex items-center gap-2 text-xs text-neutral-300 font-sans-ui">
+          <div className="flex items-center gap-1.5 font-medium text-neutral-200">
+            <Calendar className="w-3.5 h-3.5 text-[#ff2d55] shrink-0" />
             <span>{event.date}</span>
             {isTentative && (
-              <span className="text-[10px] bg-amber-950/60 text-amber-300 border border-amber-500/40 px-1.5 rounded-full font-bold">
+              <span className="text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-semibold">
                 TBD
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1 text-neutral-400">
-            <Clock className="w-3.5 h-3.5 text-neutral-500" />
-            <span>{event.time_start_end}</span>
-          </div>
+          {event.time_start_end && (
+            <>
+              <span className="text-neutral-600">·</span>
+              <div className="flex items-center gap-1 text-neutral-400">
+                <Clock className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                <span className="truncate">{event.time_start_end}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Venue Zone & Specific Room */}
         <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-sans-ui truncate">
           <MapPin className="w-3.5 h-3.5 text-[#ff2d55] shrink-0" />
-          <span className="font-medium text-neutral-300">{event.venue_zone}</span>
+          <span className="text-neutral-300 font-medium">{event.venue_zone}</span>
           {event.room_specific && (
             <>
               <span className="text-neutral-600">·</span>
@@ -343,59 +347,35 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           )}
         </div>
 
-        {/* Organizer annotation in handwritten font & student metrics */}
-        <div className="flex flex-col pt-2 border-t border-white/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 truncate">
-              <span className="font-handwritten text-sm text-rose-300/80 truncate" title={event.poc_name ? `POC: ${event.poc_name}` : undefined}>
-                by {event.organizer}{event.poc_name ? ` · POC: ${event.poc_name}` : ''}
+        {/* Organizer annotation in handwritten font & clean status indicators */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+          <span 
+            className="font-handwritten text-sm text-rose-300/85 truncate" 
+            title={event.poc_name ? `POC: ${event.poc_name}` : undefined}
+          >
+            by {event.organizer}
+          </span>
+
+          {/* Clean minimal status chips without clutter */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isAuthor ? (
+              <span className="text-[9px] font-semibold text-rose-300 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                Your Post
               </span>
-              {isAuthor && (
-                <span className="text-[9px] font-bold text-rose-300 bg-rose-950/60 border border-rose-500/40 px-2 py-0.5 rounded-full uppercase tracking-tight">
-                  Your Post
-                </span>
-              )}
-            </div>
-
-            {/* Status indicators and public Saved count */}
-            <div className="flex items-center gap-1 shrink-0">
-              {isGoing && (
-                <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                  <Check className="w-2.5 h-2.5" /> Added
-                </span>
-              )}
-              {isSaved ? (
-                <span className="text-[10px] font-bold text-rose-300 bg-rose-950/60 border border-rose-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                  <Bookmark className="w-2.5 h-2.5 fill-rose-300" /> Saved {savedCount > 0 ? `(${savedCount})` : ''}
-                </span>
-              ) : savedCount > 0 ? (
-                <span className="text-[10px] font-semibold text-neutral-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full flex items-center gap-0.5" title={`${savedCount} students saved this event`}>
-                  <Bookmark className="w-2.5 h-2.5 text-[#ff2d55]" /> {savedCount} saved
-                </span>
-              ) : null}
-            </div>
+            ) : isGoing ? (
+              <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Check className="w-2.5 h-2.5" /> Going
+              </span>
+            ) : isSaved ? (
+              <span className="text-[10px] font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Bookmark className="w-2.5 h-2.5 fill-rose-400" /> Saved
+              </span>
+            ) : savedCount > 0 ? (
+              <span className="text-[10px] text-neutral-400 flex items-center gap-1 font-sans-ui">
+                <Bookmark className="w-2.5 h-2.5 text-neutral-500" /> {savedCount}
+              </span>
+            ) : null}
           </div>
-
-          {/* Author Real-time Engagement Ribbon */}
-          {isAuthor && (
-            <div className="mt-2 pt-1.5 border-t border-dashed border-rose-500/30 flex items-center justify-between text-[10px] font-medium text-rose-200 bg-rose-950/30 px-2.5 py-1 rounded-lg">
-              <span className="font-bold text-[#ff2d55] uppercase text-[9px]">Post Stats:</span>
-              <div className="flex items-center gap-2.5">
-                <span title="Students attending">👥 {goingCount} going</span>
-                <span title="Students saved">🔖 {savedCount} saved</span>
-                <span title="Students favourited">⭐ {favCount}</span>
-                {Boolean(event.feedback && event.feedback.length > 0) && (
-                  <span title="Student feedback reviews" className="font-bold text-[#ff2d55]">💬 {event.feedback!.length}</span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {event.submitted_by && !isAuthor && (
-            <span className="text-[9px] text-neutral-500 font-sans-ui mt-0.5 truncate">
-              Posted by: {event.submitted_by}
-            </span>
-          )}
         </div>
       </div>
     </div>

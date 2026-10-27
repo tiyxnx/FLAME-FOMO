@@ -59,34 +59,26 @@ export const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           
-          {/* Brand Logo & Editorial Header with First Image Logo */}
+          {/* Brand Logo & Editorial Header */}
           <div 
             onClick={() => setCurrentTab('home')}
-            className="flex items-center gap-3 cursor-pointer select-none group"
+            className="flex items-center gap-3 cursor-pointer select-none group py-1"
           >
-            <div className="relative">
-              {/* Dynamic Runner Reaching for Bell Logo */}
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#15121b] border border-rose-500/20 flex items-center justify-center p-1 shadow-lg shadow-rose-950/30 group-hover:scale-105 group-hover:border-rose-500/40 transition-all duration-300 overflow-hidden">
-                <img 
-                  src="/brand-logo.png" 
-                  alt="FLAME FOMO Logo" 
-                  className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,45,85,0.4)]"
-                />
-              </div>
-
-              {/* Scrapbook Tape / Campus Stamp */}
-              <div className="absolute -top-1.5 -right-2 px-1.5 py-0.5 bg-gradient-to-r from-[#ff2d55]/80 to-[#f59e0b]/80 text-white text-[8px] font-bold uppercase tracking-widest rounded-xs shadow-xs transform rotate-6 font-mono backdrop-blur-xs">
-                campus
-              </div>
+            <div className="relative flex items-center justify-center">
+              <img 
+                src="/brand-logo.png" 
+                alt="FLAME FOMO Logo" 
+                className="h-10 sm:h-12 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(255,45,85,0.4)] group-hover:scale-105 transition-transform duration-300"
+              />
             </div>
 
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-widest uppercase font-semibold text-rose-500/90 font-mono -mb-0.5">
-                CAMPUS •
-              </span>
-              <div className="flex items-center gap-1.5">
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center gap-2">
                 <span className="font-editorial text-xl sm:text-2xl font-black tracking-tight text-white group-hover:text-rose-100 transition-colors">
-                  FLAME <span className="bg-gradient-to-r from-[#ff2d55] to-[#f43f5e] bg-clip-text text-transparent italic font-serif">FOMO</span>
+                  FLAME <span className="bg-gradient-to-r from-[#ff2d55] via-[#ff4d6d] to-[#f59e0b] bg-clip-text text-transparent italic font-serif">FOMO</span>
+                </span>
+                <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded">
+                  Campus
                 </span>
               </div>
             </div>

@@ -65,11 +65,11 @@ export const AuthModal: React.FC = () => {
 
         {/* Brand Stamp with New Runner Bell Logo */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#1f1a29] border border-rose-500/30 p-2 shadow-lg shadow-rose-950/50 mb-3 group-hover:scale-105 transition-transform">
+          <div className="inline-flex items-center justify-center h-14 w-auto mb-3">
             <img 
               src="/brand-logo.png" 
               alt="FLAME FOMO Logo" 
-              className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(255,45,85,0.4)]"
+              className="h-14 w-auto object-contain filter drop-shadow-[0_2px_12px_rgba(255,45,85,0.45)]"
             />
           </div>
           <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-white">

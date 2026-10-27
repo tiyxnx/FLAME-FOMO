@@ -59,9 +59,9 @@ export default function App() {
       <footer className="border-t border-white/5 bg-[#09080c] py-8 text-neutral-400 text-xs select-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <img src="/brand-logo.png" alt="FLAME FOMO Logo" className="w-6 h-6 object-contain rounded-md filter drop-shadow-[0_0_6px_rgba(255,45,85,0.4)]" />
+            <img src="/brand-logo.png" alt="FLAME FOMO Logo" className="h-7 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(255,45,85,0.4)]" />
             <span className="font-editorial text-sm font-bold text-white">
-              FLAME <span className="bg-gradient-to-r from-[#ff2d55] to-[#f43f5e] bg-clip-text text-transparent italic">FOMO</span>
+              FLAME <span className="bg-gradient-to-r from-[#ff2d55] via-[#ff4d6d] to-[#f59e0b] bg-clip-text text-transparent italic font-serif">FOMO</span>
             </span>
             <span className="text-neutral-600">·</span>
             <span className="font-medium text-neutral-400">Made by Tiyana</span>
