@@ -27,12 +27,13 @@ export const metadata: Metadata = {
   description: 'A tactile, scrapbook-inspired mobile-first campus discovery and scheduling planner for FLAME University.',
   icons: {
     icon: [
-      { url: '/favicon.ico' },
-      { url: '/icon.png', type: 'image/png' },
+      { url: '/icon.png?v=4', type: 'image/png', sizes: '128x128' },
+      { url: '/favicon.ico?v=4', sizes: '32x32' },
     ],
     apple: [
-      { url: '/apple-icon.png' },
+      { url: '/apple-icon.png?v=4', sizes: '128x128', type: 'image/png' },
     ],
+    shortcut: ['/icon.png?v=4'],
   },
 };
 
@@ -46,6 +47,11 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${inter.variable} ${patrickHand.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=4" />
+        <link rel="shortcut icon" href="/icon.png?v=4" />
+        <link rel="apple-touch-icon" href="/apple-icon.png?v=4" />
+      </head>
       <body className="min-h-full flex flex-col bg-scrapbook-board text-neutral-100">
         <AppProvider>{children}</AppProvider>
       </body>
