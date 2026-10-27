@@ -105,23 +105,25 @@ export const HomeView: React.FC = () => {
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div>
-            {/* Date Pill with Calendar Icon */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono tracking-wider uppercase text-neutral-300 mb-4">
+            {/* Date Pill with Calendar Icon matching Picture 2 */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#181119] border border-[#ff2d55]/35 text-xs font-mono tracking-wider uppercase text-[#ff6b81] mb-4 shadow-sm">
               <CalendarIcon className="w-3.5 h-3.5 text-[#ff2d55]" />
               <span>{dateFormatted.toUpperCase()}</span>
             </div>
 
-            {/* Bold Expanded Typography matching Image 2 */}
-            <h1 className="font-sans font-black text-4xl sm:text-6xl text-white tracking-wider uppercase leading-none">
-              FLAME
-            </h1>
-            <h1 className="font-sans font-black text-4xl sm:text-6xl bg-gradient-to-r from-[#ff2d55] via-[#f43f5e] to-[#fb7185] bg-clip-text text-transparent tracking-wider uppercase leading-none mt-2 pr-2">
-              FOMO
-            </h1>
+            {/* Bold Expanded Italic Typography matching Picture 2 */}
+            <div className="space-y-1">
+              <h1 className="font-display-hero text-5xl sm:text-7xl text-white tracking-wider leading-none select-none">
+                FLAME
+              </h1>
+              <h1 className="font-display-hero text-5xl sm:text-7xl bg-gradient-to-r from-[#ff2252] via-[#ff436b] to-[#ff758f] bg-clip-text text-transparent tracking-wider leading-none pr-4 inline-block select-none">
+                FOMO
+              </h1>
+            </div>
             
             {/* Subtitle Quote */}
             <p className="text-sm sm:text-base text-neutral-300 font-serif italic mt-4 tracking-wide">
-              &quot;Don&apos;t just hear about it&quot;
+              &quot;Don&apos;t just hear about it — experience it live.&quot;
             </p>
           </div>
 

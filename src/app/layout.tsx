@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Playfair_Display, Inter, Patrick_Hand } from 'next/font/google';
+import { Playfair_Display, Inter, Patrick_Hand, Exo_2 } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
 
@@ -19,6 +19,14 @@ const patrickHand = Patrick_Hand({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-handwritten',
+  display: 'swap',
+});
+
+const exo2 = Exo_2({
+  weight: ['800', '900'],
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  variable: '--font-exo2',
   display: 'swap',
 });
 
@@ -46,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${inter.variable} ${patrickHand.variable} h-full antialiased`}
+      className={`${playfair.variable} ${inter.variable} ${patrickHand.variable} ${exo2.variable} h-full antialiased`}
     >
       <head>
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=5" />

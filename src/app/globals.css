@@ -36,6 +36,13 @@
   letter-spacing: 0.02em;
 }
 
+.font-display-hero {
+  font-family: var(--font-exo2), 'Eurostile', -apple-system, sans-serif;
+  font-style: italic;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 /* Scrapbook Background Textures */
 .bg-scrapbook-board {
   background-color: #0c0a0e;
