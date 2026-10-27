@@ -27,13 +27,14 @@ export const metadata: Metadata = {
   description: 'A tactile, scrapbook-inspired mobile-first campus discovery and scheduling planner for FLAME University.',
   icons: {
     icon: [
-      { url: '/icon.png?v=4', type: 'image/png', sizes: '128x128' },
-      { url: '/favicon.ico?v=4', sizes: '32x32' },
+      { url: '/favicon-32x32.png?v=5', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png?v=5', sizes: '16x16', type: 'image/png' },
+      { url: '/flame-favicon.ico?v=5' },
     ],
     apple: [
-      { url: '/apple-icon.png?v=4', sizes: '128x128', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=5', sizes: '180x180', type: 'image/png' },
     ],
-    shortcut: ['/icon.png?v=4'],
+    shortcut: ['/flame-favicon.ico?v=5'],
   },
 };
 
@@ -48,9 +49,10 @@ export default function RootLayout({
       className={`${playfair.variable} ${inter.variable} ${patrickHand.variable} h-full antialiased`}
     >
       <head>
-        <link rel="icon" type="image/png" sizes="128x128" href="/icon.png?v=4" />
-        <link rel="shortcut icon" href="/icon.png?v=4" />
-        <link rel="apple-touch-icon" href="/apple-icon.png?v=4" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=5" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=5" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=5" />
+        <link rel="shortcut icon" href="/flame-favicon.ico?v=5" />
       </head>
       <body className="min-h-full flex flex-col bg-scrapbook-board text-neutral-100">
         <AppProvider>{children}</AppProvider>
