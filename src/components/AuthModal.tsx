@@ -13,7 +13,6 @@ export const AuthModal: React.FC = () => {
     isAuthModalOpen, 
     authModalReason, 
     closeAuthModal, 
-    loginAsGuest,
     loginWithGoogle
   } = useApp();
 
@@ -136,15 +135,12 @@ export const AuthModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Continue as guest */}
+        {/* Security verification footer */}
         <div className="mt-6 pt-4 border-t border-white/5 text-center">
-          <button
-            type="button"
-            onClick={loginAsGuest}
-            className="text-xs text-neutral-400 hover:text-white hover:underline font-sans-ui"
-          >
-            Browse in Guest Mode without saving
-          </button>
+          <p className="text-[11px] text-neutral-500 font-sans-ui flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Closed FLAME University network. Strangers &amp; non-students cannot access campus events.</span>
+          </p>
         </div>
 
       </div>

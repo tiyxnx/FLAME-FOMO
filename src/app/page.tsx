@@ -22,8 +22,10 @@ import { InAppReminder } from '@/components/InAppReminder';
 import { FloatingPlanWidget } from '@/components/FloatingPlanWidget';
 import { EventFeedbackModal } from '@/components/EventFeedbackModal';
 
+import { LoginGate } from '@/components/LoginGate';
+
 export default function App() {
-  const { currentTab, isAuthenticated, openAuthModal } = useApp();
+  const { currentTab, isAuthenticated } = useApp();
 
   return (
     <div className="min-h-screen flex flex-col bg-scrapbook-board text-neutral-100">
@@ -31,29 +33,39 @@ export default function App() {
       {/* Persistent Top Header */}
       <Header />
 
-      {/* Main Content Area */}
+      {/* Main Content Area: Enforce Student Login before viewing campus activities */}
       <main className="flex-1 pb-24">
-        {currentTab === 'home' && <HomeView />}
-        {currentTab === 'explore' && <ExploreView />}
-        {currentTab === 'applications' && <ApplicationsView />}
-        {currentTab === 'my-plan' && <MyPlanView />}
-        {currentTab === 'campus-map' && <CampusMap />}
-        {currentTab === 'profile' && <ProfileView />}
+        {isAuthenticated ? (
+          <>
+            {currentTab === 'home' && <HomeView />}
+            {currentTab === 'explore' && <ExploreView />}
+            {currentTab === 'applications' && <ApplicationsView />}
+            {currentTab === 'my-plan' && <MyPlanView />}
+            {currentTab === 'campus-map' && <CampusMap />}
+            {currentTab === 'profile' && <ProfileView />}
+          </>
+        ) : (
+          <LoginGate />
+        )}
       </main>
 
-      {/* Persistent Floating Action Button for Event Creation (Hidden for Guests) */}
-      <FloatingActionButton />
+      {/* Persistent Floating Action Button for Event Creation (Only for Authenticated Students) */}
+      {isAuthenticated && <FloatingActionButton />}
 
       {/* System Modals */}
       <AuthModal />
       <OnboardingModal />
-      <CreateEventModal />
-      <EventDetailModal />
-      <EventFeedbackModal />
-      <ClashModal />
-      <ExternalRegModal />
-      <InAppReminder />
-      <FloatingPlanWidget />
+      {isAuthenticated && (
+        <>
+          <CreateEventModal />
+          <EventDetailModal />
+          <EventFeedbackModal />
+          <ClashModal />
+          <ExternalRegModal />
+          <InAppReminder />
+          <FloatingPlanWidget />
+        </>
+      )}
 
       {/* Editorial Footer */}
       <footer className="border-t border-white/5 bg-[#09080c] py-8 text-neutral-400 text-xs select-none">

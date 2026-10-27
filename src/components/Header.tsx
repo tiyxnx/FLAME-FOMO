@@ -80,89 +80,89 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Navigation Links (Pill Container matching screenshot) */}
-          <nav className="hidden md:flex items-center p-1.5 bg-[#120e18]/95 border border-[#2d2438] rounded-full shadow-inner">
-            <button
-              onClick={() => handleTabClick('home')}
-              className={`transition-all flex items-center gap-2 ${
-                currentTab === 'home'
-                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
-                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
-              }`}
-            >
-              <Home className="w-4 h-4 stroke-[2.2]" />
-              <span>Home</span>
-            </button>
+          {/* Navigation Links: Only visible to logged-in students */}
+          {isAuthenticated && (
+            <nav className="hidden md:flex items-center p-1.5 bg-[#120e18]/95 border border-[#2d2438] rounded-full shadow-inner">
+              <button
+                onClick={() => handleTabClick('home')}
+                className={`transition-all flex items-center gap-2 ${
+                  currentTab === 'home'
+                    ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                    : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
+                }`}
+              >
+                <Home className="w-4 h-4 stroke-[2.2]" />
+                <span>Home</span>
+              </button>
 
-            <button
-              onClick={() => handleTabClick('explore')}
-              className={`transition-all flex items-center gap-2 ${
-                currentTab === 'explore'
-                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
-                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
-              }`}
-            >
-              <Compass className="w-4 h-4 stroke-[2.2]" />
-              <span>Explore</span>
-            </button>
+              <button
+                onClick={() => handleTabClick('explore')}
+                className={`transition-all flex items-center gap-2 ${
+                  currentTab === 'explore'
+                    ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                    : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
+                }`}
+              >
+                <Compass className="w-4 h-4 stroke-[2.2]" />
+                <span>Explore</span>
+              </button>
 
-            <button
-              onClick={() => handleTabClick('applications')}
-              className={`transition-all flex items-center gap-2 ${
-                currentTab === 'applications'
-                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
-                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
-              }`}
-            >
-              <FileText className="w-4 h-4 stroke-[2.2]" />
-              <span>Applications</span>
-            </button>
+              <button
+                onClick={() => handleTabClick('applications')}
+                className={`transition-all flex items-center gap-2 ${
+                  currentTab === 'applications'
+                    ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                    : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
+                }`}
+              >
+                <FileText className="w-4 h-4 stroke-[2.2]" />
+                <span>Applications</span>
+              </button>
 
-            <button
-              onClick={() => handleTabClick('my-plan')}
-              className={`relative transition-all flex items-center gap-2 ${
-                currentTab === 'my-plan'
-                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
-                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
-              }`}
-            >
-              <Calendar className="w-4 h-4 stroke-[2.2]" />
-              <span>My Plan</span>
-              {!isAuthenticated && (
-                <Lock className="w-3 h-3 text-neutral-500 ml-0.5" />
-              )}
-            </button>
+              <button
+                onClick={() => handleTabClick('my-plan')}
+                className={`relative transition-all flex items-center gap-2 ${
+                  currentTab === 'my-plan'
+                    ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                    : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
+                }`}
+              >
+                <Calendar className="w-4 h-4 stroke-[2.2]" />
+                <span>My Plan</span>
+              </button>
 
-            <button
-              onClick={() => handleTabClick('campus-map')}
-              className={`relative transition-all flex items-center gap-2 ${
-                currentTab === 'campus-map'
-                  ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
-                  : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
-              }`}
-            >
-              <MapPin className="w-4 h-4 stroke-[2.2]" />
-              <span>Campus Map</span>
-            </button>
-          </nav>
+              <button
+                onClick={() => handleTabClick('campus-map')}
+                className={`relative transition-all flex items-center gap-2 ${
+                  currentTab === 'campus-map'
+                    ? 'bg-[#ff2453] text-white font-bold px-5 py-2 rounded-full shadow-[0_2px_14px_rgba(255,36,83,0.35)] text-sm sm:text-[15px]'
+                    : 'text-neutral-400 hover:text-white px-4 sm:px-5 py-2 rounded-full text-sm font-medium hover:bg-white/5'
+                }`}
+              >
+                <MapPin className="w-4 h-4 stroke-[2.2]" />
+                <span>Campus Map</span>
+              </button>
+            </nav>
+          )}
 
           {/* Right Header Controls: Notification Bell, Guest Mode & Auth CTA */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* Notification Bell */}
-            <div className="relative">
-              <button
-                onClick={handleBellClick}
-                title="Upcoming Deadlines & Notifications"
-                className="relative p-2.5 rounded-full bg-[#15121b] border border-white/5 hover:border-white/10 text-neutral-300 hover:text-white transition-all focus:outline-none"
-              >
-                <Bell className="w-4 h-4" />
-                {unreadNotificationsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#ff2d55] text-[10px] font-black text-white shadow-sm ring-2 ring-[#0d0a11] animate-pulse">
-                    {unreadNotificationsCount}
-                  </span>
-                )}
-              </button>
+            {/* Notification Bell (Only for logged in students) */}
+            {isAuthenticated && (
+              <div className="relative">
+                <button
+                  onClick={handleBellClick}
+                  title="Upcoming Deadlines & Notifications"
+                  className="relative p-2.5 rounded-full bg-[#15121b] border border-white/5 hover:border-white/10 text-neutral-300 hover:text-white transition-all focus:outline-none"
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadNotificationsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#ff2d55] text-[10px] font-black text-white shadow-sm ring-2 ring-[#0d0a11] animate-pulse">
+                      {unreadNotificationsCount}
+                    </span>
+                  )}
+                </button>
 
               {/* Notification Dropdown */}
               {isNotifOpen && (
@@ -218,6 +218,7 @@ export const Header: React.FC = () => {
                 </div>
               )}
             </div>
+          )}
 
             {/* Profile Avatar / Authentication Toggle */}
             {isAuthenticated && user ? (
@@ -295,16 +296,9 @@ export const Header: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 sm:gap-2.5">
-                {/* Guest Mode indicator badge matching Image 2 */}
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#15121b] border border-white/5 rounded-full text-xs font-medium text-neutral-300">
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
-                  <span>Guest Mode</span>
-                </div>
-
-                {/* Student Sign In Button matching Image 2 */}
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => openAuthModal('Sign in with your FLAME email to save events and build your schedule.')}
+                  onClick={() => openAuthModal('Sign in with your FLAME email (@flame.edu.in) to access campus events and schedule.')}
                   className="px-4 py-2 bg-gradient-to-r from-[#e11d48] to-[#ff2d55] hover:opacity-95 text-white text-xs sm:text-sm font-semibold rounded-full shadow-lg shadow-rose-950/40 transition-all flex items-center gap-1.5"
                 >
                   <span>Student Sign In</span>
@@ -314,64 +308,59 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation Bar */}
-        <div className="md:hidden flex items-center justify-around py-2.5 border-t border-white/5 text-xs">
-          <button
-            onClick={() => handleTabClick('home')}
-            className={`flex flex-col items-center py-1 px-3 rounded-full transition-colors ${
-              currentTab === 'home' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
-            }`}
-          >
-            <Home className="w-4 h-4 mb-0.5" />
-            <span>Home</span>
-          </button>
+        {/* Mobile Navigation Bar (Only for logged-in students) */}
+        {isAuthenticated && (
+          <div className="md:hidden flex items-center justify-around py-2.5 border-t border-white/5 text-xs">
+            <button
+              onClick={() => handleTabClick('home')}
+              className={`flex flex-col items-center py-1 px-3 rounded-full transition-colors ${
+                currentTab === 'home' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
+              }`}
+            >
+              <Home className="w-4 h-4 mb-0.5" />
+              <span>Home</span>
+            </button>
 
-          <button
-            onClick={() => handleTabClick('explore')}
-            className={`flex flex-col items-center py-1 px-3 rounded-full transition-colors ${
-              currentTab === 'explore' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
-            }`}
-          >
-            <Compass className="w-4 h-4 mb-0.5" />
-            <span>Explore</span>
-          </button>
+            <button
+              onClick={() => handleTabClick('explore')}
+              className={`flex flex-col items-center py-1 px-3 rounded-full transition-colors ${
+                currentTab === 'explore' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
+              }`}
+            >
+              <Compass className="w-4 h-4 mb-0.5" />
+              <span>Explore</span>
+            </button>
 
-          <button
-            onClick={() => handleTabClick('applications')}
-            className={`flex flex-col items-center py-1 px-3 rounded-full transition-colors ${
-              currentTab === 'applications' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
-            }`}
-          >
-            <FileText className="w-4 h-4 mb-0.5" />
-            <span>Apply</span>
-          </button>
+            <button
+              onClick={() => handleTabClick('applications')}
+              className={`flex flex-col items-center py-1 px-3 rounded-full transition-colors ${
+                currentTab === 'applications' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
+              }`}
+            >
+              <FileText className="w-4 h-4 mb-0.5" />
+              <span>Apply</span>
+            </button>
 
-          <button
-            onClick={() => handleTabClick('my-plan')}
-            className={`flex flex-col items-center py-1 px-3 rounded-full relative transition-colors ${
-              currentTab === 'my-plan' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
-            }`}
-          >
-            <div className="relative">
+            <button
+              onClick={() => handleTabClick('my-plan')}
+              className={`flex flex-col items-center py-1 px-3 rounded-full relative transition-colors ${
+                currentTab === 'my-plan' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
+              }`}
+            >
               <Calendar className="w-4 h-4 mb-0.5" />
-              {!isAuthenticated && (
-                <Lock className="w-2.5 h-2.5 text-neutral-500 absolute -top-1 -right-2" />
-              )}
-            </div>
-            <span>Plan</span>
-          </button>
+              <span>Plan</span>
+            </button>
 
-          <button
-            onClick={() => handleTabClick('campus-map')}
-            className={`flex flex-col items-center py-1 px-3 rounded-full relative transition-colors ${
-              currentTab === 'campus-map' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
-            }`}
-          >
-            <MapPin className="w-4 h-4 mb-0.5" />
-            <span>Map</span>
-          </button>
+            <button
+              onClick={() => handleTabClick('campus-map')}
+              className={`flex flex-col items-center py-1 px-3 rounded-full relative transition-colors ${
+                currentTab === 'campus-map' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
+              }`}
+            >
+              <MapPin className="w-4 h-4 mb-0.5" />
+              <span>Map</span>
+            </button>
 
-          {isAuthenticated && (
             <button
               onClick={() => handleTabClick('profile')}
               className={`flex flex-col items-center py-1 px-3 rounded-full transition-colors ${
@@ -381,8 +370,8 @@ export const Header: React.FC = () => {
               <User className="w-4 h-4 mb-0.5" />
               <span>Profile</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
       </div>
     </header>
