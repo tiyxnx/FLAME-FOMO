@@ -25,6 +25,15 @@ const patrickHand = Patrick_Hand({
 export const metadata: Metadata = {
   title: 'FLAME FOMO | Campus Event Discovery & Planner',
   description: 'A tactile, scrapbook-inspired mobile-first campus discovery and scheduling planner for FLAME University.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png' },
+    ],
+  },
 };
 
 export default function RootLayout({
