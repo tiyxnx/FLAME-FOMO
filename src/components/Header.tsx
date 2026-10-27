@@ -40,8 +40,8 @@ export const Header: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const handleTabClick = (tab: 'home' | 'explore' | 'applications' | 'my-plan' | 'campus-map' | 'profile') => {
-    if ((tab === 'my-plan' || tab === 'campus-map' || tab === 'profile') && !isAuthenticated) {
-      openAuthModal(`Sign in with your FLAME email to access ${tab === 'my-plan' ? 'My Plan' : tab === 'campus-map' ? 'the Campus Map' : 'your Profile'}.`);
+    if ((tab === 'my-plan' || tab === 'profile') && !isAuthenticated) {
+      openAuthModal(`Sign in with your FLAME email to access ${tab === 'my-plan' ? 'My Plan' : 'your Profile'}.`);
       return;
     }
     setCurrentTab(tab);
@@ -142,9 +142,6 @@ export const Header: React.FC = () => {
             >
               <MapPin className="w-3.5 h-3.5" />
               <span>Campus Map</span>
-              {!isAuthenticated && (
-                <Lock className="w-3 h-3 text-neutral-500 ml-0.5" />
-              )}
             </button>
           </nav>
 
@@ -369,12 +366,7 @@ export const Header: React.FC = () => {
               currentTab === 'campus-map' ? 'text-[#ff2d55] font-bold bg-[#ff2d55]/10' : 'text-neutral-400'
             }`}
           >
-            <div className="relative">
-              <MapPin className="w-4 h-4 mb-0.5" />
-              {!isAuthenticated && (
-                <Lock className="w-2.5 h-2.5 text-neutral-500 absolute -top-1 -right-2" />
-              )}
-            </div>
+            <MapPin className="w-4 h-4 mb-0.5" />
             <span>Map</span>
           </button>
 
