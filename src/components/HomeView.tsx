@@ -115,7 +115,7 @@ export const HomeView: React.FC = () => {
             <h1 className="font-sans font-black text-4xl sm:text-6xl text-white tracking-wider uppercase leading-none">
               FLAME
             </h1>
-            <h1 className="font-sans font-black text-4xl sm:text-6xl bg-gradient-to-r from-[#ff2d55] via-[#f43f5e] to-[#fb7185] bg-clip-text text-transparent tracking-wider uppercase leading-none mt-2">
+            <h1 className="font-sans font-black text-4xl sm:text-6xl bg-gradient-to-r from-[#ff2d55] via-[#f43f5e] to-[#fb7185] bg-clip-text text-transparent tracking-wider uppercase leading-none mt-2 pr-2">
               FOMO
             </h1>
             

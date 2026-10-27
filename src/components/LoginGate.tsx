@@ -44,7 +44,7 @@ export const LoginGate: React.FC = () => {
 
           <div className="font-editorial text-4xl sm:text-5xl font-black tracking-tight leading-none text-white flex items-center justify-center gap-2">
             <span>FLAME</span>
-            <span className="italic bg-gradient-to-r from-[#ff2453] via-[#ff543c] to-[#ffaa20] bg-clip-text text-transparent">FOMO</span>
+            <span className="inline-block italic bg-gradient-to-r from-[#ff2453] via-[#ff543c] to-[#ffaa20] bg-clip-text text-transparent pr-3.5 sm:pr-4">FOMO</span>
           </div>
           
           <p className="font-handwritten text-lg sm:text-xl text-neutral-300 mt-2">

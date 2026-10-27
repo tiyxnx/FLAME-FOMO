@@ -75,7 +75,7 @@ export const Header: React.FC = () => {
             <div className="flex flex-col justify-center">
               <div className="font-editorial text-2xl sm:text-[27px] font-black tracking-tight leading-none text-white flex items-center gap-1.5">
                 <span>FLAME</span>
-                <span className="italic bg-gradient-to-r from-[#ff2453] via-[#ff543c] to-[#ffaa20] bg-clip-text text-transparent">FOMO</span>
+                <span className="inline-block italic bg-gradient-to-r from-[#ff2453] via-[#ff543c] to-[#ffaa20] bg-clip-text text-transparent pr-2.5 sm:pr-3">FOMO</span>
               </div>
             </div>
           </div>

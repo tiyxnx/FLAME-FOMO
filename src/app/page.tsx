@@ -73,7 +73,7 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <img src="/brand-logo.png" alt="FLAME FOMO Logo" className="h-7 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(255,45,85,0.4)]" />
             <span className="font-editorial text-sm font-bold text-white">
-              FLAME <span className="bg-gradient-to-r from-[#ff2d55] via-[#ff4d6d] to-[#f59e0b] bg-clip-text text-transparent italic font-serif">FOMO</span>
+              FLAME <span className="inline-block bg-gradient-to-r from-[#ff2d55] via-[#ff4d6d] to-[#f59e0b] bg-clip-text text-transparent italic font-serif pr-2">FOMO</span>
             </span>
             <span className="text-neutral-600">·</span>
             <span className="font-medium text-neutral-400">Made by Tiyana</span>
