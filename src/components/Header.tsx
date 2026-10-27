@@ -73,14 +73,9 @@ export const Header: React.FC = () => {
             </div>
 
             <div className="flex flex-col justify-center">
-              <div className="flex items-center gap-2">
-                <span className="font-editorial text-xl sm:text-2xl font-black tracking-tight text-white group-hover:text-rose-100 transition-colors">
-                  FLAME <span className="bg-gradient-to-r from-[#ff2d55] via-[#ff4d6d] to-[#f59e0b] bg-clip-text text-transparent italic font-serif">FOMO</span>
-                </span>
-                <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded">
-                  Campus
-                </span>
-              </div>
+              <span className="font-editorial text-xl sm:text-2xl font-black tracking-tight text-white group-hover:text-rose-100 transition-colors">
+                FLAME <span className="bg-gradient-to-r from-[#ff2d55] via-[#ff4d6d] to-[#f59e0b] bg-clip-text text-transparent italic font-serif">FOMO</span>
+              </span>
             </div>
           </div>
 
