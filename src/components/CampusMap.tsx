@@ -7,7 +7,6 @@ import {
   OFFICIAL_CAMPUS_BUILDINGS,
   OFFICIAL_ZONE_COLORS,
   calculateCampusRoute, 
-  FLAME_CAMPUS_CENTER,
   OfficialBuilding
 } from '@/lib/campusLocations';
 import { 
@@ -20,7 +19,6 @@ import {
   Navigation, 
   Search, 
   ArrowLeftRight, 
-  ExternalLink, 
   LocateFixed, 
   X,
   ZoomIn, 
@@ -34,7 +32,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-type MapRenderType = 'illustrated' | 'google-satellite';
+type MapRenderType = 'illustrated' | 'satellite';
 
 /**
  * Helper to determine if an event has already ended.
@@ -297,9 +295,9 @@ export const CampusMap: React.FC = () => {
               <span>Illustrated</span>
             </button>
             <button
-              onClick={() => setMapRenderType('google-satellite')}
+              onClick={() => setMapRenderType('satellite')}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-                mapRenderType === 'google-satellite'
+                mapRenderType === 'satellite'
                   ? 'bg-blue-600 text-white font-bold shadow-sm'
                   : 'text-neutral-400 hover:text-white'
               }`}
@@ -308,17 +306,6 @@ export const CampusMap: React.FC = () => {
               <span>Satellite</span>
             </button>
           </div>
-
-          <a
-            href={FLAME_CAMPUS_CENTER.googleMapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2.5 bg-neutral-900/90 hover:bg-neutral-800 border border-white/10 text-neutral-300 hover:text-white rounded-xl transition-colors flex items-center gap-1.5 text-xs backdrop-blur-md"
-            title="Open FLAME University in Google Maps"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span className="hidden md:inline text-[11px] font-medium">Google Maps</span>
-          </a>
         </div>
       </div>
 
@@ -543,7 +530,7 @@ export const CampusMap: React.FC = () => {
           
           {/* Walking Time Stat Pill */}
           {activeRoute && (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <div className="px-3 py-1.5 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center gap-2">
                 <Footprints className="w-4 h-4 text-amber-400" />
                 <span className="text-xs sm:text-sm font-bold text-amber-300">
@@ -553,17 +540,6 @@ export const CampusMap: React.FC = () => {
                   ({activeRoute.distanceMeters}m · ~{activeRoute.stepsCount} steps)
                 </span>
               </div>
-
-              <a
-                href={activeRoute.googleMapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-2.5 py-1.5 bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 hover:text-white rounded-xl text-xs font-medium border border-white/5 flex items-center gap-1 transition-colors"
-                title="Open in Google Maps for live GPS"
-              >
-                <span>GPS Walk</span>
-                <ExternalLink className="w-3 h-3 text-neutral-400" />
-              </a>
             </div>
           )}
 
