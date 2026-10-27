@@ -112,18 +112,22 @@ export const HomeView: React.FC = () => {
             </div>
 
             {/* Bold Expanded Italic Typography matching Picture 2 */}
-            <div className="space-y-1">
-              <h1 className="font-display-hero text-5xl sm:text-7xl text-white tracking-wider leading-none select-none">
-                FLAME
-              </h1>
-              <h1 className="font-display-hero text-5xl sm:text-7xl bg-gradient-to-r from-[#ff2252] via-[#ff436b] to-[#ff758f] bg-clip-text text-transparent tracking-wider leading-none pr-4 inline-block select-none">
-                FOMO
-              </h1>
+            <div className="space-y-1.5 sm:space-y-2 select-none py-1 overflow-visible">
+              <div className="overflow-visible">
+                <h1 className="font-display-hero text-4xl sm:text-6xl text-white leading-none">
+                  FLAME
+                </h1>
+              </div>
+              <div className="overflow-visible">
+                <h1 className="font-display-hero text-4xl sm:text-6xl bg-gradient-to-r from-[#ff2252] via-[#ff436b] to-[#ff758f] bg-clip-text text-transparent leading-none pr-4">
+                  FOMO
+                </h1>
+              </div>
             </div>
             
             {/* Subtitle Quote */}
             <p className="text-sm sm:text-base text-neutral-300 font-serif italic mt-4 tracking-wide">
-              &quot;Don&apos;t just hear about it — experience it live.&quot;
+              &quot;Don&apos;t just hear about it&quot;
             </p>
           </div>
 
