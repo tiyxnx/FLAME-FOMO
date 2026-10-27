@@ -274,17 +274,17 @@ export const ExploreView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="stamp-urgent text-xs bg-amber-950/60 border-amber-500 text-amber-200">
+            <span className="px-2.5 py-0.5 bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-md shadow-rose-950/40">
               {viewMyEventsOnly ? 'My Events' : 'All Events'}
             </span>
-            <span className="text-xs text-[#a89b87] font-handwritten text-base">
+            <span className="text-xs text-rose-300/80 font-handwritten text-base">
               {viewMyEventsOnly ? 'events you created & manage' : 'everything in one place'}
             </span>
           </div>
-          <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#f5ebd7] mt-1">
+          <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-white mt-1">
             {viewMyEventsOnly ? 'My Events' : 'Explore All Events'}
           </h2>
-          <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5">
+          <p className="text-xs sm:text-sm text-neutral-400 font-sans-ui mt-0.5">
             {viewMyEventsOnly
               ? `You have posted ${userSubmittedEvents.length} ${userSubmittedEvents.length === 1 ? 'event' : 'events'} on FLAME FOMO. Edit or delete them anytime.`
               : 'Browse and filter all events happening at FLAME.'}
@@ -293,29 +293,29 @@ export const ExploreView: React.FC = () => {
 
         {/* "My Events" Tab Toggle (Only shown if user has posted on website and can create events) */}
         {hasPostedEvents && canCreateEvents && (
-          <div className="flex items-center gap-1.5 bg-[#1b1814] p-1.5 rounded-sm border border-[#3e3428] shrink-0 self-start sm:self-center shadow-lg">
+          <div className="flex items-center gap-1.5 bg-[#15121b] p-1.5 rounded-full border border-white/5 shrink-0 self-start sm:self-center shadow-lg">
             <button
               onClick={() => setViewMyEventsOnly(false)}
-              className={`px-3.5 py-1.5 rounded-xs text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
                 !viewMyEventsOnly
-                  ? 'bg-amber-300 text-neutral-950 shadow-sm'
-                  : 'text-[#c4b59d] hover:text-white'
+                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               All Events
             </button>
             <button
               onClick={() => setViewMyEventsOnly(true)}
-              className={`px-3.5 py-1.5 rounded-xs text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
                 viewMyEventsOnly
-                  ? 'bg-[#c93b2b] text-white shadow-sm ring-1 ring-red-400'
-                  : 'text-[#c4b59d] hover:text-white'
+                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
               <span>My Events</span>
               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                viewMyEventsOnly ? 'bg-red-950/80 text-amber-200' : 'bg-neutral-800 text-neutral-300'
+                viewMyEventsOnly ? 'bg-rose-950/80 text-rose-200' : 'bg-neutral-800 text-neutral-300'
               }`}>
                 {userSubmittedEvents.length}
               </span>
@@ -325,18 +325,18 @@ export const ExploreView: React.FC = () => {
       </div>
 
       {/* Top-Anchored Filter Bar */}
-      <div className="bg-[#221e19] border border-[#3e3428] rounded-sm p-4 shadow-xl mb-8 space-y-3">
+      <div className="bg-[#131017] border border-white/5 rounded-3xl p-5 shadow-2xl mb-8 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           
           {/* Search Input */}
           <div className="relative">
-            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search events, clubs, venues..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 bg-[#171512] border border-[#42392d] rounded-sm text-xs text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:border-amber-400"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-[#181422] border border-white/10 rounded-xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-rose-500/60 transition-all shadow-inner"
             />
             {searchQuery && (
               <button
@@ -353,7 +353,7 @@ export const ExploreView: React.FC = () => {
             <select
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value as any)}
-              className="w-full px-3 py-2 bg-[#171512] border border-[#42392d] rounded-sm text-xs font-semibold text-neutral-200 focus:outline-none focus:border-amber-400"
+              className="w-full px-3.5 py-2.5 bg-[#181422] border border-white/10 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-rose-500/60"
             >
               <option value="All">Time: All Upcoming Dates</option>
               <option value="Today">Time: Happening Today</option>
@@ -374,7 +374,7 @@ export const ExploreView: React.FC = () => {
                   setSelectedCategory(e.target.value);
                 }
               }}
-              className="w-full px-3 py-2 bg-[#171512] border border-[#42392d] rounded-sm text-xs font-semibold text-neutral-200 focus:outline-none focus:border-amber-400"
+              className="w-full px-3.5 py-2.5 bg-[#181422] border border-white/10 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-rose-500/60"
             >
               <option value="All">Category: All Categories</option>
               {hasPostedEvents && (
@@ -389,16 +389,16 @@ export const ExploreView: React.FC = () => {
           {/* "Fits My Schedule" Toggle Button */}
           <button
             onClick={handleFitsScheduleToggle}
-            className={`px-3 py-2 rounded-sm border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               fitsMyScheduleOnly
-                ? 'bg-amber-300 text-neutral-950 border-amber-400 shadow-md ring-2 ring-amber-300/40'
-                : 'bg-[#171512] text-[#d6cbaf] border-[#42392d] hover:border-neutral-400'
+                ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white border-rose-400 shadow-md ring-2 ring-rose-500/30'
+                : 'bg-[#181422] text-neutral-300 border-white/10 hover:border-white/20'
             }`}
           >
             <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border ${
-              fitsMyScheduleOnly ? 'bg-neutral-900 border-black' : 'border-neutral-500'
+              fitsMyScheduleOnly ? 'bg-white border-white text-rose-600' : 'border-neutral-500'
             }`}>
-              {fitsMyScheduleOnly && <Check className="w-2.5 h-2.5 text-amber-300" />}
+              {fitsMyScheduleOnly && <Check className="w-2.5 h-2.5 text-[#ff2d55]" />}
             </div>
             <span>Fits My Schedule</span>
           </button>
@@ -406,7 +406,7 @@ export const ExploreView: React.FC = () => {
         </div>
 
         {/* Quick pill count summary & My Events toolbar button */}
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#a89b87] pt-2 border-t border-[#312a20]">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-400 pt-3 border-t border-white/5">
           <div className="flex flex-wrap items-center gap-2">
             <span>
               Showing <strong className="text-amber-200 font-mono">{filteredEvents.length}</strong> {filteredEvents.length === 1 ? 'event' : 'events'}

@@ -75,20 +75,20 @@ export const MyPlanView: React.FC = () => {
     <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 select-none">
       
       {/* Editorial Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 pb-4 border-b border-[#3b3429]">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 pb-4 border-b border-white/5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="stamp-urgent text-xs bg-emerald-950/60 border-emerald-500 text-emerald-200">
+            <span className="px-2.5 py-0.5 bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-md shadow-rose-950/40">
               Personalized Timetable
             </span>
-            <span className="text-xs text-[#a89b87] font-handwritten text-base">
+            <span className="text-xs text-rose-300/80 font-handwritten text-base">
               tactile weekly planner
             </span>
           </div>
-          <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-[#f5ebd7] mt-1">
+          <h2 className="font-editorial text-3xl sm:text-4xl font-bold text-white mt-1">
             My Campus Plan
           </h2>
-          <p className="text-xs sm:text-sm text-[#b8ab96] font-sans-ui mt-0.5">
+          <p className="text-xs sm:text-sm text-neutral-400 font-sans-ui mt-0.5">
             Your combined schedule of academic lectures and committed campus events.
           </p>
         </div>
@@ -97,18 +97,18 @@ export const MyPlanView: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={handleExportToCalendar}
-            className="px-3.5 py-2 bg-[#1b253b] hover:bg-[#253350] text-blue-200 border border-blue-500/40 rounded-xs text-xs font-bold flex items-center gap-1.5 shadow transition-colors cursor-pointer"
+            className="px-4 py-2 bg-[#171422] hover:bg-[#201a30] text-rose-200 border border-rose-500/30 rounded-full text-xs font-semibold flex items-center gap-2 shadow transition-all cursor-pointer"
             title="Export all going events & lectures as .ics for Google Calendar"
           >
-            <CalendarPlus className="w-4 h-4 text-[#4285F4]" />
+            <CalendarPlus className="w-4 h-4 text-rose-400" />
             <span>Sync to Google Calendar</span>
           </button>
 
           <button
             onClick={() => setCurrentTab('campus-map')}
-            className="px-4 py-2 bg-[#2a241b] hover:bg-[#383126] text-amber-200 border border-[#4d402f] rounded-xs text-xs font-bold flex items-center gap-1.5 shadow"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-neutral-200 border border-white/10 rounded-full text-xs font-semibold flex items-center gap-2 shadow transition-all"
           >
-            <Map className="w-4 h-4 text-[#e25845]" />
+            <Map className="w-4 h-4 text-[#ff2d55]" />
             <span>Plot Stops on Campus Map</span>
           </button>
         </div>
@@ -116,16 +116,16 @@ export const MyPlanView: React.FC = () => {
 
       {/* Sync feedback notification banner */}
       {syncMessage && (
-        <div className="p-3.5 mb-6 bg-blue-950/70 border border-blue-500/50 rounded-sm text-xs text-blue-200 flex items-center justify-between gap-3 animate-fade-in">
+        <div className="p-4 mb-6 bg-rose-950/40 border border-rose-500/40 rounded-2xl text-xs text-rose-200 flex items-center justify-between gap-3 animate-fade-in">
           <div className="flex items-center gap-2">
-            <CalendarPlus className="w-4 h-4 text-blue-400 shrink-0" />
+            <CalendarPlus className="w-4 h-4 text-rose-400 shrink-0" />
             <span>{syncMessage}</span>
           </div>
           <a
             href="https://calendar.google.com/calendar/u/0/r/settings/export"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[11px] font-bold flex items-center gap-1 whitespace-nowrap shadow-xs"
+            className="px-3 py-1 bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white rounded-full text-xs font-bold flex items-center gap-1 whitespace-nowrap shadow-xs"
           >
             <span>Open Google Calendar</span>
             <ExternalLink className="w-3 h-3" />
@@ -134,13 +134,13 @@ export const MyPlanView: React.FC = () => {
       )}
 
       {/* Day Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 custom-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 custom-scrollbar">
         <button
           onClick={() => setSelectedDayFilter('All')}
-          className={`px-3 py-1.5 rounded-xs text-xs font-bold whitespace-nowrap transition-colors ${
+          className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
             selectedDayFilter === 'All'
-              ? 'bg-[#c93b2b] text-amber-100 shadow'
-              : 'bg-[#221e1a] text-[#b8ab96] hover:bg-[#2e2822]'
+              ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md shadow-rose-950/40'
+              : 'bg-[#15121b] text-neutral-400 hover:text-white border border-white/5'
           }`}
         >
           All Week (Mon-Sun)
@@ -149,10 +149,10 @@ export const MyPlanView: React.FC = () => {
           <button
             key={d}
             onClick={() => setSelectedDayFilter(d)}
-            className={`px-3 py-1.5 rounded-xs text-xs font-bold whitespace-nowrap transition-colors ${
+            className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
               selectedDayFilter === d
-                ? 'bg-[#c93b2b] text-amber-100 shadow'
-                : 'bg-[#221e1a] text-[#b8ab96] hover:bg-[#2e2822]'
+                ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-md shadow-rose-950/40'
+                : 'bg-[#15121b] text-neutral-400 hover:text-white border border-white/5'
             }`}
           >
             {d}
@@ -170,26 +170,26 @@ export const MyPlanView: React.FC = () => {
           }}
         />
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {displayedDays.map((plan) => (
             <div
               key={plan.day}
-              className="relative bg-[#201c18] border border-[#3b3429] rounded-sm p-5 sm:p-6 shadow-xl"
+              className="relative bg-[#131017] border border-white/5 rounded-3xl p-5 sm:p-7 shadow-2xl"
             >
               {/* Day Badge */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#383025] mb-4">
+              <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-editorial text-xl sm:text-2xl font-bold text-amber-100">
+                  <h3 className="font-editorial text-xl sm:text-2xl font-bold text-white">
                     {plan.day}
                   </h3>
-                  <span className="text-xs text-[#a89b87] font-mono">
+                  <span className="text-xs text-neutral-400 font-mono">
                     ({plan.totalCount} {plan.totalCount === 1 ? 'item' : 'items'})
                   </span>
                 </div>
               </div>
 
               {plan.totalCount === 0 ? (
-                <div className="py-4 text-center text-xs text-[#8c806f] font-sans-ui">
+                <div className="py-6 text-center text-xs text-neutral-500 font-sans-ui italic">
                   No lectures or committed events on {plan.day}. A great day to relax or visit the library!
                 </div>
               ) : (
@@ -198,26 +198,26 @@ export const MyPlanView: React.FC = () => {
                   {plan.classes.map((cls) => (
                     <div
                       key={cls.id}
-                      className="p-3 bg-[#191714] border border-[#3a3227] rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                      className="p-3.5 bg-[#171422] border border-white/5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 bg-blue-950/80 text-blue-300 border border-blue-800/60 font-mono text-xs rounded-xs">
+                        <span className="px-2.5 py-1 bg-white/5 text-rose-300 border border-white/10 font-mono text-xs rounded-xl">
                           {cls.timeStart} - {cls.timeEnd}
                         </span>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-blue-300 font-bold uppercase tracking-wider">
+                            <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">
                               Class Lecture
                             </span>
                           </div>
-                          <h4 className="font-editorial text-sm font-bold text-neutral-100">
+                          <h4 className="font-editorial text-sm font-bold text-white">
                             {cls.courseName}
                           </h4>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-                        <MapPin className="w-3.5 h-3.5 text-blue-400" />
+                        <MapPin className="w-3.5 h-3.5 text-rose-400" />
                         <span>{cls.room || cls.venueZone}</span>
                       </div>
                     </div>
@@ -228,22 +228,22 @@ export const MyPlanView: React.FC = () => {
                     <div
                       key={evt.id}
                       onClick={() => openEventDetail(evt)}
-                      className="p-3.5 bg-[#2c241c] border border-amber-500/50 hover:border-amber-400 rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md cursor-pointer transition-all"
+                      className="p-3.5 bg-[#1a1523] border border-rose-500/25 hover:border-rose-500/50 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md cursor-pointer transition-all"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 bg-[#c93b2b] text-amber-100 font-mono text-xs font-bold rounded-xs shadow-xs">
+                        <span className="px-2.5 py-1 bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white font-mono text-xs font-bold rounded-xl shadow-xs">
                           {evt.time_start_end}
                         </span>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] bg-amber-400/20 text-amber-300 font-bold px-1.5 py-0.2 rounded uppercase">
+                            <span className="text-[10px] bg-rose-500/20 text-rose-300 font-bold px-2 py-0.5 rounded-full uppercase">
                               {evt.category}
                             </span>
                             <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-0.5">
                               <CheckCircle2 className="w-3 h-3" /> Going
                             </span>
                           </div>
-                          <h4 className="font-editorial text-base font-bold text-neutral-100 mt-0.5 hover:text-amber-200">
+                          <h4 className="font-editorial text-base font-bold text-white mt-0.5 hover:text-rose-300 transition-colors">
                             {evt.event_name}
                           </h4>
                         </div>
@@ -251,7 +251,7 @@ export const MyPlanView: React.FC = () => {
 
                       <div className="flex items-center gap-2.5 text-xs text-neutral-300">
                         <div className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-[#e25845]" />
+                          <MapPin className="w-3.5 h-3.5 text-[#ff2d55]" />
                           <span>{evt.venue_zone} {evt.room_specific ? `(${evt.room_specific})` : ''}</span>
                         </div>
                         <a
@@ -259,13 +259,13 @@ export const MyPlanView: React.FC = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="px-2 py-1 bg-[#1d1915] hover:bg-[#332b22] border border-[#544533] rounded text-amber-200 text-[11px] font-semibold flex items-center gap-1 shadow-xs transition-colors"
+                          className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-rose-300 text-[11px] font-semibold flex items-center gap-1 shadow-xs transition-colors"
                           title="Add this event to Google Calendar"
                         >
-                          <CalendarPlus className="w-3 h-3 text-[#4285F4]" />
+                          <CalendarPlus className="w-3 h-3 text-rose-400" />
                           <span className="hidden sm:inline">Add to Cal</span>
                         </a>
-                        <span className="text-[#f3da90] hover:underline text-[11px] font-semibold">
+                        <span className="text-rose-400 hover:text-rose-300 text-xs font-semibold">
                           View &rarr;
                         </span>
                       </div>

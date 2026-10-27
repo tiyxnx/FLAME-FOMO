@@ -71,16 +71,16 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
       <div className="flex items-center justify-between mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-[#e25845] text-white text-[10px] font-black uppercase tracking-wider rounded-xs">
+            <span className="px-2.5 py-0.5 bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-md shadow-rose-950/40">
               Next 7 Days
             </span>
-            <span className="text-xs text-[#a89b87] font-handwritten text-base">
-              swipe to see more
+            <span className="text-xs text-rose-300/80 font-handwritten text-base">
+              swipe to explore
             </span>
           </div>
-          <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-[#f5ebd7] mt-0.5 flex items-center gap-2">
+          <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-white mt-1 flex items-center gap-2">
             <span>Happening Soon</span>
-            <Flame className="w-5 h-5 text-[#e25845]" />
+            <Flame className="w-5 h-5 text-[#ff2d55]" />
           </h3>
         </div>
 
@@ -89,14 +89,14 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
           <div className="flex items-center gap-2">
             <button
               onClick={() => scroll('left')}
-              className="p-2 rounded-full bg-[#2a251e] border border-[#443a2e] text-neutral-300 hover:text-white hover:bg-[#383126] transition-colors"
+              className="p-2 rounded-full bg-[#15121b] border border-white/5 hover:border-white/10 text-neutral-300 hover:text-white transition-all shadow-md"
               title="Scroll Left"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => scroll('right')}
-              className="p-2 rounded-full bg-[#2a251e] border border-[#443a2e] text-neutral-300 hover:text-white hover:bg-[#383126] transition-colors"
+              className="p-2 rounded-full bg-[#15121b] border border-white/5 hover:border-white/10 text-neutral-300 hover:text-white transition-all shadow-md"
               title="Scroll Right"
             >
               <ChevronRight className="w-4 h-4" />
@@ -107,11 +107,11 @@ export const HappeningSoon: React.FC<{ eventsProp?: import('@/types').EventItem[
 
       {/* Horizontally Scrollable Row or Empty State */}
       {upcomingEvents.length === 0 ? (
-        <div className="py-8 px-6 text-center bg-[#1d1914] border border-dashed border-[#443a2e] rounded-lg">
-          <p className="font-handwritten text-xl text-[#f3da90] mb-1">
+        <div className="py-8 px-6 text-center bg-[#131017] border border-dashed border-white/10 rounded-2xl">
+          <p className="font-handwritten text-xl text-rose-300 mb-1">
             Nothing scheduled in the next 7 days ☕
           </p>
-          <p className="text-xs text-[#a89b87]">
+          <p className="text-xs text-neutral-400">
             Check out the Campus Discovery Board below or post an event using the + button!
           </p>
         </div>

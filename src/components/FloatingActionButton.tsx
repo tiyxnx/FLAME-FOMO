@@ -20,16 +20,16 @@ export const FloatingActionButton: React.FC = () => {
       <button
         onClick={() => openCreateEvent(isApplicationsTab ? 'application' : 'event')}
         title={isApplicationsTab ? "Post Application" : "Post New Campus Event"}
-        className="group relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 rounded-full shadow-2xl border-2 border-amber-200/40 hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none"
+        className="group relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white rounded-full shadow-2xl shadow-rose-950/60 border border-rose-400/40 hover:scale-105 active:scale-95 transition-all duration-200 focus:outline-none"
       >
         {/* Washi tape accent on FAB */}
-        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-3 bg-[#f3da90]/80 rounded-xs rotate-[-8deg] shadow-xs pointer-events-none" />
+        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-3 bg-amber-400/30 border border-amber-400/40 rounded-xs rotate-[-8deg] shadow-xs pointer-events-none" />
         
-        <Plus className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-200 group-hover:rotate-90 text-amber-100" />
+        <Plus className="w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-200 group-hover:rotate-90 text-white" />
 
         {/* Hover speech bubble tooltip */}
-        <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 bg-[#25211c] text-amber-200 text-xs font-semibold rounded-md shadow-xl border border-[#4a4033] whitespace-nowrap pointer-events-none">
-          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+        <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 bg-[#181420] text-rose-200 text-xs font-semibold rounded-xl shadow-xl border border-rose-500/30 whitespace-nowrap pointer-events-none">
+          <Sparkles className="w-3.5 h-3.5 text-rose-400" />
           <span>{isApplicationsTab ? 'Post Application' : 'Post an Event'}</span>
         </div>
       </button>

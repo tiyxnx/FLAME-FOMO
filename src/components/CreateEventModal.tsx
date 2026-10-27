@@ -627,23 +627,23 @@ export const CreateEventModal: React.FC = () => {
   const rateLimit = checkUserPostLimit(user?.flame_email);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in select-none">
       <div 
-        className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-[#fcfbf7] text-neutral-900 rounded-sm shadow-2xl border-4 border-[#e8dfc9] p-5 sm:p-8"
+        className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-[#131017] text-[#f4f3f6] rounded-xl shadow-2xl border border-[#2b2438] p-5 sm:p-8"
         style={{
-          boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.06)',
         }}
       >
-        {/* Washi tape header motif */}
+        {/* Scrapbook washi tape header motif */}
         <div 
-          className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-40 h-6 bg-[#f3da90]/90 shadow-md backdrop-blur-xs rotate-[-1deg] pointer-events-none"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 w-40 h-5 bg-[#ff2d55]/80 shadow-[0_0_12px_rgba(255,45,85,0.4)] rotate-[-1deg] pointer-events-none"
           style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
         />
 
         {/* Close Button */}
         <button
           onClick={closeCreateEvent}
-          className="absolute top-4 right-4 p-2 rounded-full bg-neutral-200/80 hover:bg-neutral-300 text-neutral-700 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full bg-[#1e1926] hover:bg-[#2b2336] text-[#9d93a8] hover:text-white transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -651,12 +651,12 @@ export const CreateEventModal: React.FC = () => {
         {/* Header */}
         <div className="mb-4">
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-xs ${
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
               isEditing 
-                ? 'bg-amber-200 text-amber-900' 
+                ? 'bg-amber-400 text-neutral-950 font-bold' 
                 : itemType === 'application' 
-                  ? 'bg-purple-200 text-purple-900 font-bold' 
-                  : 'stamp-urgent'
+                  ? 'bg-purple-950/80 border border-purple-500/40 text-purple-200' 
+                  : 'bg-[#ff2d55]/15 border border-[#ff2d55]/30 text-[#ff758f]'
             }`}>
               {isEditing 
                 ? '✏️ Edit Mode' 
@@ -664,7 +664,7 @@ export const CreateEventModal: React.FC = () => {
                   ? '📋 Club Recruitment' 
                   : 'Student Bulletin'}
             </span>
-            <span className="text-xs text-neutral-500 font-handwritten text-base">
+            <span className="text-xs text-[#9d93a8] font-handwritten text-base">
               {isEditing 
                 ? 'update listing details' 
                 : itemType === 'application' 
@@ -672,12 +672,12 @@ export const CreateEventModal: React.FC = () => {
                   : 'post to campus'}
             </span>
           </div>
-          <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-900 mt-1">
+          <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-white mt-1">
             {isEditing 
               ? (itemType === 'application' ? 'Edit Application' : 'Edit Campus Event') 
               : (itemType === 'application' ? 'Post Member / Committee Application' : 'Submit a Campus Event')}
           </h2>
-          <p className="text-xs text-neutral-600 font-sans-ui mt-0.5">
+          <p className="text-xs text-[#9d93a8] font-sans-ui mt-0.5">
             {itemType === 'application'
               ? 'Recruiting new members, core committee, or auditioning? Applications appear in the Applications tab with strict deadlines.'
               : 'Published events instantly appear on the discovery collage, planner, and interactive campus map.'}
@@ -685,14 +685,14 @@ export const CreateEventModal: React.FC = () => {
 
           {/* Type Toggle: Campus Event vs Member / Core Committee Application */}
           {!isEditing && (
-            <div className="mt-3 grid grid-cols-2 gap-2 p-1 bg-[#ede6d3] rounded-md border border-[#d6cbb0]">
+            <div className="mt-3 grid grid-cols-2 gap-2 p-1 bg-[#181420] rounded-full border border-[#26202e]">
               <button
                 type="button"
                 onClick={() => setItemType('event')}
-                className={`py-2 px-3 text-xs font-bold rounded-sm flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-3 text-xs font-bold rounded-full flex items-center justify-center gap-1.5 transition-all ${
                   itemType === 'event'
-                    ? 'bg-[#c93b2b] text-white shadow-sm ring-1 ring-[#b02e20]'
-                    : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/50'
+                    ? 'bg-gradient-to-r from-[#ff2d55] to-[#e11d48] text-white shadow-[0_0_12px_rgba(255,45,85,0.4)]'
+                    : 'text-neutral-400 hover:text-white'
                 }`}
               >
                 <span>🎟️ Campus Event</span>
@@ -700,10 +700,10 @@ export const CreateEventModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setItemType('application')}
-                className={`py-2 px-3 text-xs font-bold rounded-sm flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-3 text-xs font-bold rounded-full flex items-center justify-center gap-1.5 transition-all ${
                   itemType === 'application'
-                    ? 'bg-[#1e1b17] text-amber-200 shadow-sm ring-1 ring-amber-400/40'
-                    : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/50'
+                    ? 'bg-purple-900 text-purple-100 shadow-sm border border-purple-500/40'
+                    : 'text-neutral-400 hover:text-white'
                 }`}
               >
                 <span>📋 Member / Committee App</span>
@@ -713,12 +713,12 @@ export const CreateEventModal: React.FC = () => {
 
           {/* Rate Limit Banner */}
           {!isEditing && (
-            <div className={`mt-3 px-3 py-2 rounded-xs border text-xs flex items-center justify-between ${
+            <div className={`mt-3 px-3 py-2 rounded-xl border text-xs flex items-center justify-between ${
               rateLimit.isExempt
-                ? 'bg-amber-50/80 border-amber-300 text-amber-900'
+                ? 'bg-[#181420] border-[#2b2438] text-neutral-300'
                 : !rateLimit.allowed
-                  ? 'bg-rose-50 border-rose-300 text-rose-900 font-semibold'
-                  : 'bg-emerald-50/70 border-emerald-200 text-emerald-800'
+                  ? 'bg-rose-950/40 border-rose-500/30 text-rose-200 font-semibold'
+                  : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
             }`}>
               <div className="flex items-center gap-2">
                 <span className="text-sm">

@@ -141,44 +141,44 @@ export const ProfileView: React.FC = () => {
     <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 select-none">
       
       {/* Profile Header Banner */}
-      <div className="relative bg-[#201c18] border border-[#3d3429] rounded-sm p-6 shadow-xl mb-6">
+      <div className="relative bg-[#131017] border border-[#26202e] rounded-2xl p-6 shadow-xl mb-6">
         <div 
-          className="absolute -top-3 left-6 w-24 h-5 bg-[#f3da90]/80 shadow-xs rotate-[-2deg] pointer-events-none"
+          className="absolute -top-3 left-6 w-24 h-5 bg-[#ff2d55]/80 shadow-[0_0_12px_rgba(255,45,85,0.4)] rotate-[-2deg] pointer-events-none"
           style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
         />
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[#c93b2b] text-amber-100 font-bold font-editorial text-2xl flex items-center justify-center border-2 border-amber-300/40 shadow-lg">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#ff2d55] to-[#ff758f] text-white font-bold font-editorial text-2xl flex items-center justify-center border-2 border-white/20 shadow-lg">
               {user.name.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-100">
+                <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-white">
                   {user.name}
                 </h2>
                 {userRole === 'admin' && (
-                  <span className="px-2 py-0.5 bg-red-950/90 text-red-200 border border-red-500/50 font-mono text-xs rounded font-bold">
+                  <span className="px-2.5 py-0.5 bg-red-950/90 text-red-200 border border-red-500/50 font-mono text-xs rounded-full font-bold">
                     🛡️ Admin
                   </span>
                 )}
                 {userRole === 'club' && (
-                  <span className="px-2 py-0.5 bg-purple-950/90 text-purple-200 border border-purple-500/50 font-mono text-xs rounded font-bold">
+                  <span className="px-2.5 py-0.5 bg-purple-950/90 text-purple-200 border border-purple-500/50 font-mono text-xs rounded-full font-bold">
                     🏛️ {clubName || 'Verified Club'}
                   </span>
                 )}
                 {userRole === 'student' && (
-                  <span className="px-2 py-0.5 bg-amber-400/20 text-amber-300 font-mono text-xs rounded border border-amber-400/30">
+                  <span className="px-2.5 py-0.5 bg-[#ff2d55]/15 text-[#ff758f] font-mono text-xs rounded-full border border-[#ff2d55]/30">
                     {user.academic_year}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#a89b87] font-mono mt-0.5">{user.flame_email}</p>
+              <p className="text-xs text-[#9d93a8] font-mono mt-0.5">{user.flame_email}</p>
               
               {/* Quick stats chips */}
               <div className="flex items-center gap-3 mt-2 text-xs text-neutral-300 font-sans-ui">
                 <span className="flex items-center gap-1">
-                  <Bookmark className="w-3.5 h-3.5 text-amber-400" />
+                  <Bookmark className="w-3.5 h-3.5 text-[#ff2d55]" />
                   <strong>{bookmarkedEvents.length}</strong> Saved
                 </span>
                 {canCreateEvents && (
@@ -186,7 +186,7 @@ export const ProfileView: React.FC = () => {
                     <span>·</span>
                     <button
                       onClick={() => setActiveTab('submitted')}
-                      className="flex items-center gap-1 text-amber-200 hover:text-amber-100 hover:underline transition-colors"
+                      className="flex items-center gap-1 text-neutral-300 hover:text-white hover:underline transition-colors"
                     >
                       <FileEdit className="w-3.5 h-3.5 text-amber-400" />
                       <strong>{submittedEvents.length}</strong> {isAdmin ? 'Total Events' : 'Posted Events'}
@@ -200,15 +200,15 @@ export const ProfileView: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={openOnboarding}
-              className="px-3.5 py-2 bg-[#2c261e] hover:bg-[#383127] text-amber-200 border border-amber-400/30 text-xs font-bold rounded-xs shadow flex items-center gap-1.5 transition-all"
+              className="px-4 py-2 bg-[#181420] hover:bg-[#221c2b] text-neutral-200 border border-[#2b2438] text-xs font-bold rounded-full shadow flex items-center gap-1.5 transition-all"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <Sparkles className="w-3.5 h-3.5 text-[#ff2d55]" />
               <span>Edit Quiz Answers</span>
             </button>
             {canCreateEvents && (
               <button
                 onClick={() => openCreateEvent()}
-                className="px-4 py-2 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs font-bold rounded-xs shadow flex items-center gap-1.5"
+                className="px-4 py-2 bg-gradient-to-r from-[#ff2d55] to-[#e11d48] hover:brightness-110 text-white text-xs font-bold rounded-full shadow-[0_0_15px_rgba(255,45,85,0.4)] flex items-center gap-1.5 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>Post Event</span>
@@ -219,13 +219,13 @@ export const ProfileView: React.FC = () => {
       </div>
 
       {/* The Tabs */}
-      <div className="flex border-b border-[#3d3429] mb-6">
+      <div className="flex border-b border-[#26202e] mb-6">
         <button
           onClick={() => setActiveTab('preferences')}
           className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'preferences'
-              ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
+              ? 'border-[#ff2d55] text-white bg-[#1a1422] rounded-t-lg'
+              : 'border-transparent text-[#9d93a8] hover:text-white'
           }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -236,8 +236,8 @@ export const ProfileView: React.FC = () => {
           onClick={() => setActiveTab('saved')}
           className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'saved'
-              ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
+              ? 'border-[#ff2d55] text-white bg-[#1a1422] rounded-t-lg'
+              : 'border-transparent text-[#9d93a8] hover:text-white'
           }`}
         >
           <Bookmark className="w-4 h-4" />
@@ -249,8 +249,8 @@ export const ProfileView: React.FC = () => {
             onClick={() => setActiveTab('submitted')}
             className={`px-4 sm:px-6 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'submitted'
-                ? 'border-[#c93b2b] text-amber-300 bg-[#26201a]'
-                : 'border-transparent text-neutral-400 hover:text-neutral-200'
+                ? 'border-[#ff2d55] text-white bg-[#1a1422] rounded-t-lg'
+                : 'border-transparent text-[#9d93a8] hover:text-white'
             }`}
           >
             <FileEdit className="w-4 h-4" />
@@ -263,20 +263,20 @@ export const ProfileView: React.FC = () => {
       {activeTab === 'preferences' && (
         <div className="space-y-6">
           {savedSuccessMsg && (
-            <div className="p-3 bg-emerald-950/80 border border-emerald-500 text-emerald-200 rounded-sm text-xs flex items-center gap-2">
+            <div className="p-3 bg-emerald-950/80 border border-emerald-500 text-emerald-200 rounded-xl text-xs flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-400" />
               <span>{savedSuccessMsg}</span>
             </div>
           )}
 
           {/* Cohort Selector */}
-          <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg space-y-4">
+          <div className="bg-[#131017] border border-[#26202e] rounded-xl p-5 shadow-lg space-y-4">
             <div>
-              <h3 className="font-editorial text-lg font-bold text-amber-100 mb-1">
+              <h3 className="font-editorial text-lg font-bold text-white mb-1">
                 Your Cohort &amp; Program
               </h3>
-              <p className="text-xs text-[#a89b87]">
-                Active cohort: <strong className="text-amber-300 font-mono">{academicYear}</strong>
+              <p className="text-xs text-[#9d93a8]">
+                Active cohort: <strong className="text-[#ff758f] font-mono">{academicYear}</strong>
               </p>
             </div>
 
@@ -292,10 +292,10 @@ export const ProfileView: React.FC = () => {
                       key={yr}
                       type="button"
                       onClick={() => setAcademicYear(yr as AcademicYear)}
-                      className={`py-2 px-1 rounded-sm border text-center transition-all ${
+                      className={`py-2 px-1 rounded-lg border text-center transition-all ${
                         academicYear === yr
-                          ? 'bg-[#c93b2b] text-white border-red-700 shadow-md font-bold scale-[1.02]'
-                          : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:border-neutral-500'
+                          ? 'bg-[#ff2d55] text-white border-[#ff2d55] shadow-[0_0_12px_rgba(255,45,85,0.4)] font-bold scale-[1.02]'
+                          : 'bg-[#181420] text-neutral-200 border-[#2b2438] hover:border-[#ff2d55]/40'
                       }`}
                     >
                       <div className="font-editorial text-sm font-bold">{yr}</div>
@@ -315,10 +315,10 @@ export const ProfileView: React.FC = () => {
                       key={yr}
                       type="button"
                       onClick={() => setAcademicYear(yr as AcademicYear)}
-                      className={`py-2 px-1 rounded-sm border text-center transition-all ${
+                      className={`py-2 px-1 rounded-lg border text-center transition-all ${
                         academicYear === yr
-                          ? 'bg-[#c93b2b] text-white border-red-700 shadow-md font-bold scale-[1.02]'
-                          : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:border-neutral-500'
+                          ? 'bg-[#ff2d55] text-white border-[#ff2d55] shadow-[0_0_12px_rgba(255,45,85,0.4)] font-bold scale-[1.02]'
+                          : 'bg-[#181420] text-neutral-200 border-[#2b2438] hover:border-[#ff2d55]/40'
                       }`}
                     >
                       <div className="font-editorial text-sm font-bold">{yr}</div>
@@ -338,10 +338,10 @@ export const ProfileView: React.FC = () => {
                       key={yr}
                       type="button"
                       onClick={() => setAcademicYear(yr as AcademicYear)}
-                      className={`py-2 px-1 rounded-sm border text-center transition-all ${
+                      className={`py-2 px-1 rounded-lg border text-center transition-all ${
                         academicYear === yr
-                          ? 'bg-[#c93b2b] text-white border-red-700 shadow-md font-bold scale-[1.02]'
-                          : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:border-neutral-500'
+                          ? 'bg-[#ff2d55] text-white border-[#ff2d55] shadow-[0_0_12px_rgba(255,45,85,0.4)] font-bold scale-[1.02]'
+                          : 'bg-[#181420] text-neutral-200 border-[#2b2438] hover:border-[#ff2d55]/40'
                       }`}
                     >
                       <div className="font-editorial text-xs font-bold truncate">{yr}</div>
@@ -361,10 +361,10 @@ export const ProfileView: React.FC = () => {
                       key={yr}
                       type="button"
                       onClick={() => setAcademicYear(yr as AcademicYear)}
-                      className={`py-2 px-1 rounded-sm border text-center transition-all ${
+                      className={`py-2 px-1 rounded-lg border text-center transition-all ${
                         academicYear === yr
-                          ? 'bg-[#c93b2b] text-white border-red-700 shadow-md font-bold scale-[1.02]'
-                          : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:border-neutral-500'
+                          ? 'bg-[#ff2d55] text-white border-[#ff2d55] shadow-[0_0_12px_rgba(255,45,85,0.4)] font-bold scale-[1.02]'
+                          : 'bg-[#181420] text-neutral-200 border-[#2b2438] hover:border-[#ff2d55]/40'
                       }`}
                     >
                       <div className="font-editorial text-sm font-bold">{yr}</div>
@@ -376,8 +376,8 @@ export const ProfileView: React.FC = () => {
           </div>
 
           {/* Category Preferences */}
-          <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
-            <h3 className="font-editorial text-lg font-bold text-amber-100 mb-3">
+          <div className="bg-[#131017] border border-[#26202e] rounded-xl p-5 shadow-lg">
+            <h3 className="font-editorial text-lg font-bold text-white mb-3">
               Your Interests
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -388,14 +388,14 @@ export const ProfileView: React.FC = () => {
                     key={cat}
                     type="button"
                     onClick={() => toggleCategory(cat)}
-                    className={`p-2.5 rounded-sm border text-left flex items-center justify-between text-xs font-semibold transition-all ${
+                    className={`p-3 rounded-lg border text-left flex items-center justify-between text-xs font-semibold transition-all ${
                       isSelected
-                        ? 'bg-amber-300 text-neutral-950 border-amber-400 font-bold'
-                        : 'bg-[#181613] text-neutral-300 border-[#3d352b] hover:bg-[#25201a]'
+                        ? 'bg-[#ff2d55] text-white border-[#ff2d55] font-bold shadow-[0_0_12px_rgba(255,45,85,0.35)]'
+                        : 'bg-[#181420] text-neutral-200 border-[#2b2438] hover:border-[#ff2d55]/40'
                     }`}
                   >
                     <span>{cat}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-neutral-950" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                   </button>
                 );
               })}
@@ -403,43 +403,43 @@ export const ProfileView: React.FC = () => {
           </div>
 
           {/* Add class or weekly commitments */}
-          <div className="bg-[#201c18] border border-[#3b3327] rounded-sm p-5 shadow-lg">
+          <div className="bg-[#131017] border border-[#26202e] rounded-xl p-5 shadow-lg">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
               <div>
-                <h3 className="font-editorial text-lg font-bold text-amber-100">
+                <h3 className="font-editorial text-lg font-bold text-white">
                   Add class or any other weekly commitments
                 </h3>
-                <p className="text-xs text-neutral-400 mt-0.5">
+                <p className="text-xs text-[#9d93a8] mt-0.5">
                   Add classes or weekly commitments to check for clashes.
                 </p>
               </div>
-              <span className="text-xs text-[#a89b87] font-mono">{timetable.length} added</span>
+              <span className="text-xs text-[#8a7f96] font-mono">{timetable.length} added</span>
             </div>
 
             {/* List */}
             <div className="space-y-2 mb-4">
               {timetable.map((cls) => (
                 editingClassId === cls.id ? (
-                  <div key={cls.id} className="flex flex-col gap-2 p-3 bg-[#2a241c] border border-amber-500/50 rounded shadow-md w-full animate-fade-in">
+                  <div key={cls.id} className="flex flex-col gap-2 p-3 bg-[#181420] border border-[#ff2d55]/40 rounded-lg shadow-md w-full animate-fade-in">
                     <div className="flex gap-2">
                       <input 
                          value={cls.courseName} 
                          onChange={e => handleEditChange(cls.id, 'courseName', e.target.value)}
                          placeholder="Class or commitment name"
-                         className="flex-1 p-1.5 text-xs bg-[#181613] border border-[#383025] rounded text-white" 
+                         className="flex-1 p-1.5 text-xs bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white" 
                       />
                       <input 
                          value={cls.room || ''} 
                          onChange={e => handleEditChange(cls.id, 'room', e.target.value)}
                          placeholder="Location"
-                         className="w-1/3 p-1.5 text-xs bg-[#181613] border border-[#383025] rounded text-white" 
+                         className="w-1/3 p-1.5 text-xs bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white" 
                       />
                     </div>
                     <div className="flex items-center gap-2">
                       <select 
                          value={cls.day} 
                          onChange={e => handleEditChange(cls.id, 'day', e.target.value as any)}
-                         className="p-1.5 text-xs bg-[#181613] border border-[#383025] rounded text-white flex-1" 
+                         className="p-1.5 text-xs bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white flex-1" 
                       >
                         {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => (
                           <option key={d} value={d}>{d}</option>
@@ -448,16 +448,16 @@ export const ProfileView: React.FC = () => {
                       <input 
                          type="time" value={cls.timeStart} 
                          onChange={e => handleEditChange(cls.id, 'timeStart', e.target.value)}
-                         className="p-1.5 text-xs bg-[#181613] border border-[#383025] rounded text-white" 
+                         className="p-1.5 text-xs bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white" 
                       />
                       <input 
                          type="time" value={cls.timeEnd} 
                          onChange={e => handleEditChange(cls.id, 'timeEnd', e.target.value)}
-                         className="p-1.5 text-xs bg-[#181613] border border-[#383025] rounded text-white" 
+                         className="p-1.5 text-xs bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white" 
                       />
                       <button 
                         onClick={() => setEditingClassId(null)} 
-                        className="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded flex items-center justify-center transition-colors"
+                        className="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg flex items-center justify-center transition-colors"
                       >
                         <Check className="w-3.5 h-3.5" />
                       </button>
@@ -466,23 +466,23 @@ export const ProfileView: React.FC = () => {
                 ) : (
                   <div
                     key={cls.id}
-                    className="flex items-center justify-between p-2.5 bg-[#181613] border border-[#383025] rounded text-xs"
+                    className="flex items-center justify-between p-2.5 bg-[#181420] border border-[#2b2438] rounded-lg text-xs"
                   >
                     <div className="flex items-center gap-2">
-                      <BookOpen className="w-3.5 h-3.5 text-[#e25845]" />
-                      <span className="font-bold text-neutral-100">{cls.courseName}</span>
-                      <span className="text-neutral-400">({cls.room || 'No location'})</span>
+                      <BookOpen className="w-3.5 h-3.5 text-[#ff2d55]" />
+                      <span className="font-bold text-white">{cls.courseName}</span>
+                      <span className="text-[#8a7f96]">({cls.room || 'No location'})</span>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-amber-300/90">
+                      <span className="font-mono text-[#ff758f]">
                         {cls.day.substring(0, 3).toUpperCase()} {cls.timeStart}-{cls.timeEnd}
                       </span>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => setEditingClassId(cls.id)}
-                          className="text-amber-400 hover:text-amber-300 p-1 bg-[#25201a] rounded transition-colors"
+                          className="text-amber-400 hover:text-amber-300 p-1 bg-[#221c2b] rounded transition-colors"
                           title="Edit"
                         >
                           <Edit3 className="w-3 h-3" />
@@ -490,7 +490,7 @@ export const ProfileView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => removeClass(cls.id)}
-                          className="text-red-400 hover:text-red-300 p-1 bg-[#25201a] rounded transition-colors"
+                          className="text-red-400 hover:text-red-300 p-1 bg-[#221c2b] rounded transition-colors"
                           title="Remove"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -503,8 +503,8 @@ export const ProfileView: React.FC = () => {
             </div>
 
             {/* Add commitment form */}
-            <div className="p-3 bg-[#181613] border border-[#383025] rounded space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+            <div className="p-3 bg-[#181420] border border-[#2b2438] rounded-xl space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#9d93a8]">
                 Add class or commitment
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -513,14 +513,14 @@ export const ProfileView: React.FC = () => {
                   placeholder="Class or commitment name"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
-                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                  className="p-2 bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white placeholder-[#6d6379] focus:outline-none focus:border-[#ff2d55]"
                 />
                 <input
                   type="text"
                   placeholder="Location (e.g. Chanakya 2)"
                   value={newRoom}
                   onChange={(e) => setNewRoom(e.target.value)}
-                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                  className="p-2 bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white placeholder-[#6d6379] focus:outline-none focus:border-[#ff2d55]"
                 />
               </div>
 
@@ -538,10 +538,10 @@ export const ProfileView: React.FC = () => {
                           setNewDays([...newDays, d]);
                         }
                       }}
-                      className={`px-2 py-1 rounded text-[10px] font-bold uppercase transition-all ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all ${
                         newDays.includes(d) 
-                          ? 'bg-amber-300 text-neutral-900 border border-amber-400' 
-                          : 'bg-[#201c18] text-neutral-400 border border-[#42392d] hover:bg-[#2a2520]'
+                          ? 'bg-[#ff2d55] text-white border border-[#ff2d55]' 
+                          : 'bg-[#1e1926] text-neutral-300 border border-[#2b2438] hover:border-[#ff2d55]/40'
                       }`}
                     >
                       {d.substring(0, 3)}
@@ -555,18 +555,18 @@ export const ProfileView: React.FC = () => {
                   type="time"
                   value={newTimeStart}
                   onChange={(e) => setNewTimeStart(e.target.value)}
-                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                  className="p-2 bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white"
                 />
                 <input
                   type="time"
                   value={newTimeEnd}
                   onChange={(e) => setNewTimeEnd(e.target.value)}
-                  className="p-2 bg-[#201c18] border border-[#42392d] rounded text-neutral-100"
+                  className="p-2 bg-[#0e0c12] border border-[#2b2438] rounded-lg text-white"
                 />
                 <button
                   type="button"
                   onClick={addClass}
-                  className="p-2 bg-neutral-800 hover:bg-neutral-700 text-amber-200 font-bold rounded flex items-center justify-center gap-1 col-span-2 sm:col-span-1"
+                  className="p-2 bg-gradient-to-r from-[#ff2d55] to-[#e11d48] text-white font-bold rounded-lg flex items-center justify-center gap-1 col-span-2 sm:col-span-1 shadow-md hover:brightness-110"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add</span>
@@ -578,7 +578,7 @@ export const ProfileView: React.FC = () => {
               <button
                 type="button"
                 onClick={savePreferences}
-                className="px-6 py-2.5 bg-[#c93b2b] hover:bg-[#b02e20] text-amber-100 text-xs sm:text-sm font-bold rounded shadow flex items-center gap-2 ml-auto"
+                className="px-6 py-2.5 bg-gradient-to-r from-[#ff2d55] to-[#e11d48] hover:brightness-110 text-white text-xs sm:text-sm font-bold rounded-full shadow-[0_0_15px_rgba(255,45,85,0.4)] flex items-center gap-2 ml-auto"
               >
                 <Save className="w-4 h-4" />
                 <span>Save</span>
@@ -626,18 +626,18 @@ export const ProfileView: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
                 <span>{isAdmin ? 'Manage all campus events' : 'Manage the events you have posted'}</span>
-                <span className="text-amber-300 font-bold">{submittedEvents.length} {isAdmin ? 'Total Events' : 'Posted'}</span>
+                <span className="text-[#ff758f] font-bold">{submittedEvents.length} {isAdmin ? 'Total Events' : 'Posted'}</span>
               </div>
 
               {submittedEvents.map((evt) => (
                 <div
                   key={evt.id}
-                  className="p-4 bg-[#201c18] border border-[#3d3429] rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-amber-400/40 transition-colors shadow-sm"
+                  className="p-4 bg-[#131017] border border-[#26202e] rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-[#ff2d55]/40 transition-colors shadow-sm"
                 >
                   <div className="flex items-start gap-3.5">
                     {/* Thumbnail */}
                     {evt.event_image ? (
-                      <div className="w-16 h-16 rounded-xs overflow-hidden shrink-0 border border-neutral-700 bg-neutral-900">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-[#2b2438] bg-[#0e0c12]">
                         <img
                           src={evt.event_image}
                           alt={evt.event_name}
@@ -645,27 +645,27 @@ export const ProfileView: React.FC = () => {
                         />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-xs bg-[#2e261f] border border-neutral-700 flex items-center justify-center shrink-0 text-neutral-500">
+                      <div className="w-16 h-16 rounded-lg bg-[#181420] border border-[#2b2438] flex items-center justify-center shrink-0 text-[#8a7f96]">
                         <Calendar className="w-6 h-6" />
                       </div>
                     )}
 
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 bg-neutral-800 text-amber-200 text-[10px] font-bold rounded uppercase">
+                        <span className="px-2 py-0.5 bg-[#ff2d55]/15 border border-[#ff2d55]/30 text-[#ff758f] text-[10px] font-bold rounded-full uppercase">
                           {evt.category}
                         </span>
-                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
+                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${
                           evt.status === 'Cancelled'
-                            ? 'bg-red-900/60 text-red-300 border border-red-700/50'
+                            ? 'bg-red-950/80 text-red-200 border border-red-500/50'
                             : evt.status === 'Registration Closed'
-                            ? 'bg-neutral-800 text-neutral-400'
-                            : 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/50'
+                            ? 'bg-[#181420] text-neutral-400 border border-[#2b2438]'
+                            : 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/50'
                         }`}>
                           {evt.status}
                         </span>
                         {evt.registration_fee && (
-                          <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-950/90 text-emerald-300 border border-emerald-800">
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-800">
                             🎟️ {evt.registration_fee}
                           </span>
                         )}
@@ -673,26 +673,26 @@ export const ProfileView: React.FC = () => {
 
                       <h4 
                         onClick={() => openEventDetail(evt)}
-                        className="font-editorial text-lg font-bold text-neutral-100 hover:text-amber-300 cursor-pointer transition-colors"
+                        className="font-editorial text-lg font-bold text-white hover:text-[#ff758f] cursor-pointer transition-colors"
                       >
                         {evt.event_name}
                       </h4>
 
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#a89b87] mt-1 font-sans-ui">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#9d93a8] mt-1 font-sans-ui">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-[#c93b2b]" />
+                          <Calendar className="w-3 h-3 text-[#ff2d55]" />
                           {evt.date} · {evt.time_start_end}
                         </span>
                         <span>·</span>
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#c93b2b]" />
+                          <MapPin className="w-3 h-3 text-[#ff2d55]" />
                           {evt.venue_zone} {evt.room_specific ? `(${evt.room_specific})` : ''}
                         </span>
                       </div>
 
                       {/* Engagement Metrics for Creator */}
-                      <div className="flex flex-wrap items-center gap-2 mt-2.5 pt-2 border-t border-[#342c22]">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/90">Engagement:</span>
+                      <div className="flex flex-wrap items-center gap-2 mt-2.5 pt-2 border-t border-[#26202e]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#ff758f]">Engagement:</span>
                         <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-800/60" title="Students attending">
                           👥 {getEventGoingCount(evt, goingEventIds)} Going
                         </span>
@@ -705,10 +705,10 @@ export const ProfileView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openEventFeedback(evt)}
-                          className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 border border-amber-500 transition-colors flex items-center gap-1 cursor-pointer ml-auto shadow-2xs"
+                          className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#181420] hover:bg-[#221c2b] text-neutral-200 border border-[#2b2438] transition-colors flex items-center gap-1 cursor-pointer ml-auto shadow-2xs"
                           title="View all student feedback and reviews"
                         >
-                          <MessageSquare className="w-3 h-3 text-amber-950" />
+                          <MessageSquare className="w-3 h-3 text-[#ff2d55]" />
                           <span>{evt.feedback?.length || 0} Feedback Reviews &rarr;</span>
                         </button>
                       </div>
@@ -716,11 +716,11 @@ export const ProfileView: React.FC = () => {
                   </div>
 
                   {/* Actions Bar */}
-                  <div className="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#3d3429]">
+                  <div className="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#26202e]">
                     <select
                       value={evt.status}
                       onChange={(e) => updateEvent(evt.id, { status: e.target.value as any })}
-                      className="px-2.5 py-1.5 bg-[#181613] border border-[#42392d] text-xs text-neutral-200 rounded focus:outline-none"
+                      className="px-2.5 py-1.5 bg-[#0e0c12] border border-[#2b2438] text-xs text-neutral-200 rounded-lg focus:outline-none"
                     >
                       <option value="Upcoming">Upcoming</option>
                       <option value="Registration Closed">Registration Closed</option>
@@ -730,28 +730,28 @@ export const ProfileView: React.FC = () => {
 
                     <button
                       onClick={() => openEventDetail(evt)}
-                      className="px-3 py-1.5 bg-[#2c2620] hover:bg-[#383028] text-amber-200 border border-[#4a3e30] rounded text-xs font-bold transition-colors"
+                      className="px-3 py-1.5 bg-[#181420] hover:bg-[#221c2b] text-neutral-200 border border-[#2b2438] rounded-full text-xs font-bold transition-colors"
                     >
                       Preview
                     </button>
 
                     <button
                       onClick={() => openEditEvent(evt)}
-                      className="px-3 py-1.5 bg-[#f3da90] hover:bg-[#e4cb80] text-neutral-900 rounded text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
+                      className="px-3 py-1.5 bg-gradient-to-r from-[#ff2d55] to-[#e11d48] text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-[0_0_12px_rgba(255,45,85,0.3)] transition-colors hover:brightness-110"
                     >
-                      <Edit3 className="w-3.5 h-3.5 text-neutral-900" />
+                      <Edit3 className="w-3.5 h-3.5 text-white" />
                       <span>Edit Details</span>
                     </button>
 
                     {deletingId === evt.id ? (
-                      <div className="flex items-center gap-1.5 bg-red-950/80 p-1 rounded border border-red-800">
+                      <div className="flex items-center gap-1.5 bg-red-950/80 p-1 rounded-lg border border-red-800">
                         <span className="text-[11px] text-red-200 font-bold px-1">Delete?</span>
                         <button
                           onClick={() => {
                             deleteEvent(evt.id);
                             setDeletingId(null);
                           }}
-                          className="px-2 py-0.5 bg-red-700 hover:bg-red-800 text-white rounded text-xs font-bold"
+                          className="px-2.5 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded font-bold text-xs"
                         >
                           Yes
                         </button>
@@ -765,7 +765,7 @@ export const ProfileView: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => setDeletingId(evt.id)}
-                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors"
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-lg transition-colors"
                         title="Delete Event"
                       >
                         <Trash2 className="w-4 h-4" />

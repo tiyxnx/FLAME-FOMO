@@ -21,7 +21,6 @@ import { ExternalRegModal } from '@/components/ExternalRegModal';
 import { InAppReminder } from '@/components/InAppReminder';
 import { FloatingPlanWidget } from '@/components/FloatingPlanWidget';
 import { EventFeedbackModal } from '@/components/EventFeedbackModal';
-import { SiteFeedbackWidget } from '@/components/SiteFeedbackWidget';
 
 export default function App() {
   const { currentTab, isAuthenticated, openAuthModal } = useApp();
@@ -45,9 +44,6 @@ export default function App() {
       {/* Persistent Floating Action Button for Event Creation (Hidden for Guests) */}
       <FloatingActionButton />
 
-      {/* Persistent Floating Feedback Widget (Site Suggestions & Bug Reports) */}
-      <SiteFeedbackWidget />
-
       {/* System Modals */}
       <AuthModal />
       <OnboardingModal />
@@ -60,17 +56,18 @@ export default function App() {
       <FloatingPlanWidget />
 
       {/* Editorial Footer */}
-      <footer className="border-t border-[#312b23] bg-[#141210] py-8 text-neutral-400 text-xs select-none">
+      <footer className="border-t border-white/5 bg-[#09080c] py-8 text-neutral-400 text-xs select-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-editorial text-sm font-bold text-amber-100">
-              FLAME <span className="text-[#e25845] italic">FOMO</span>
+          <div className="flex items-center gap-2.5">
+            <img src="/brand-logo.png" alt="FLAME FOMO Logo" className="w-6 h-6 object-contain rounded-md filter drop-shadow-[0_0_6px_rgba(255,45,85,0.4)]" />
+            <span className="font-editorial text-sm font-bold text-white">
+              FLAME <span className="bg-gradient-to-r from-[#ff2d55] to-[#f43f5e] bg-clip-text text-transparent italic">FOMO</span>
             </span>
-            <span>·</span>
-            <span className="font-medium text-[#d6cbaf]">Made by Tiyana</span>
+            <span className="text-neutral-600">·</span>
+            <span className="font-medium text-neutral-400">Made by Tiyana</span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px] text-[#9b8d74]">
+          <div className="flex items-center gap-4 text-[11px] text-neutral-500 font-mono">
             <span>Pune, Maharashtra</span>
           </div>
         </div>

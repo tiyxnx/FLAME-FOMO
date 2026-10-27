@@ -2,18 +2,19 @@
 
 @layer base {
   :root {
-    --background: #fbf7ee; /* Warm cream scrapbook parchment */
-    --foreground: #22201d; /* Deep archival graphite */
-    --c-kraft: #e8dec8;
-    --c-tape: rgba(246, 219, 137, 0.75);
-    --c-tape-pink: rgba(244, 169, 163, 0.7);
-    --c-tape-cyan: rgba(162, 217, 206, 0.7);
-    --c-flame-red: #c93b2b;
-    --c-corkboard: #1c1a17;
+    --background: #0c0a0e; /* Deep obsidian midnight */
+    --foreground: #f4f3f6; /* Crisp archival off-white */
+    --c-kraft: #1d1722;
+    --c-tape: rgba(255, 45, 85, 0.35);
+    --c-tape-gold: rgba(245, 158, 11, 0.4);
+    --c-tape-cyan: rgba(56, 189, 248, 0.3);
+    --c-flame-red: #ff2d55;
+    --c-flame-crimson: #e11d48;
+    --c-corkboard: #0c0a0e;
   }
 
   body {
-    background-color: #171513;
+    background-color: #0c0a0e;
     color: var(--foreground);
     font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh;
@@ -36,45 +37,46 @@
 
 /* Scrapbook Background Textures */
 .bg-scrapbook-board {
-  background-color: #1a1714;
+  background-color: #0c0a0e;
   background-image: 
-    radial-gradient(rgba(246, 237, 216, 0.08) 1.5px, transparent 1.5px),
-    radial-gradient(rgba(246, 237, 216, 0.04) 1.5px, #1a1714 1.5px);
-  background-size: 28px 28px;
-  background-position: 0 0, 14px 14px;
+    radial-gradient(rgba(244, 63, 94, 0.08) 1.2px, transparent 1.2px),
+    radial-gradient(rgba(255, 255, 255, 0.03) 1px, #0c0a0e 1px);
+  background-size: 26px 26px;
+  background-position: 0 0, 13px 13px;
 }
 
 .bg-paper-texture {
-  background-color: #fbf8ef;
-  background-image: radial-gradient(#d6cbaf 0.75px, #fbf8ef 0.75px);
+  background-color: #15121b;
+  background-image: radial-gradient(rgba(255, 45, 85, 0.08) 0.8px, #15121b 0.8px);
   background-size: 16px 16px;
 }
 
 .bg-ruled-paper {
-  background-color: #fffef9;
+  background-color: #141118;
   background-image: repeating-linear-gradient(
     transparent,
     transparent 27px,
-    #e9e2cb 28px
+    rgba(255, 255, 255, 0.05) 28px
   );
 }
 
-/* Tactile Polaroid styling */
+/* Tactile Midnight Polaroid styling */
 .polaroid-card {
-  background-color: #fcfbf7;
-  border-radius: 2px;
+  background-color: #15121b;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.25),
-    0 6px 16px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+    0 4px 20px -2px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(225, 29, 72, 0.1);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .polaroid-card:hover {
   transform: translateY(-4px) scale(1.015);
+  border-color: rgba(255, 45, 85, 0.35);
   box-shadow: 
-    0 4px 8px rgba(0, 0, 0, 0.3),
-    0 14px 28px rgba(0, 0, 0, 0.35);
+    0 12px 30px -4px rgba(0, 0, 0, 0.7),
+    0 0 24px -2px rgba(225, 29, 72, 0.25);
   z-index: 10;
 }
 
@@ -95,17 +97,18 @@
   transform: rotate(-2.6deg);
 }
 
-/* Scrapbook Tape Motifs */
+/* Scrapbook Washi Tape Motifs (Translucent Midnight Tapes) */
 .tape-top {
   position: absolute;
-  top: -12px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%) rotate(-1deg);
   width: 90px;
-  height: 24px;
-  background-color: rgba(243, 218, 144, 0.75);
-  backdrop-filter: blur(1px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  height: 22px;
+  background-color: rgba(255, 45, 85, 0.32);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 45, 85, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   clip-path: polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%);
   z-index: 5;
 }
@@ -117,8 +120,10 @@
   transform: rotate(-35deg);
   width: 65px;
   height: 20px;
-  background-color: rgba(245, 175, 168, 0.72);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background-color: rgba(245, 158, 11, 0.35);
+  backdrop-filter: blur(3px);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   clip-path: polygon(0% 4%, 100% 0%, 96% 96%, 4% 100%);
   z-index: 5;
 }
@@ -130,8 +135,10 @@
   transform: rotate(38deg);
   width: 65px;
   height: 20px;
-  background-color: rgba(162, 217, 206, 0.72);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  background-color: rgba(255, 45, 85, 0.32);
+  backdrop-filter: blur(3px);
+  border: 1px solid rgba(255, 45, 85, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   clip-path: polygon(4% 0%, 96% 4%, 100% 100%, 0% 96%);
   z-index: 5;
 }
@@ -141,10 +148,11 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #e65c5c, #991b1b 75%);
+  background: radial-gradient(circle at 35% 35%, #ff4d6d, #be123c 75%);
   box-shadow: 
-    0 3px 5px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+    0 3px 6px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    0 0 8px rgba(244, 63, 94, 0.4);
   position: absolute;
   top: 6px;
   left: 50%;
@@ -152,22 +160,22 @@
   z-index: 6;
 }
 
-/* Red Deadline Urgent Rubber Stamp */
+/* Glowing Crimson Deadline Rubber Stamp */
 .stamp-urgent {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  border: 2px dashed #b91c1c;
-  color: #b91c1c;
-  background-color: rgba(254, 242, 242, 0.95);
+  border: 1.5px dashed #ff2d55;
+  color: #ff6b8b;
+  background-color: rgba(225, 29, 72, 0.15);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.72rem;
-  border-radius: 3px;
+  border-radius: 4px;
   transform: rotate(-2deg);
-  box-shadow: 0 1px 2px rgba(185, 28, 28, 0.15);
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.2);
 }
 
 /* Red Cancelled Stamp */
@@ -177,65 +185,49 @@
   left: 50%;
   transform: translate(-50%, -50%) rotate(-18deg);
   padding: 8px 24px;
-  border: 4px solid #dc2626;
-  color: #dc2626;
-  background-color: rgba(254, 226, 226, 0.92);
+  border: 3px solid #ff2d55;
+  color: #ff4d6d;
+  background-color: rgba(26, 11, 16, 0.92);
   font-family: var(--font-playfair), Georgia, serif;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 1.4rem;
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+  font-size: 1.3rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(255, 45, 85, 0.4);
   pointer-events: none;
   z-index: 15;
 }
 
-/* Yellow Disclaimer Sign (for schedule clash warnings) */
+/* Disclaimer Sign (for schedule clash warnings) */
 .clash-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #fef08a;
-  color: #854d0e;
-  border: 1.5px solid #eab308;
-  border-radius: 4px;
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #fde047;
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  border-radius: 6px;
   padding: 4px 10px;
   font-size: 0.78rem;
   font-weight: 700;
 }
 
-/* Torn paper edge simulation */
-.torn-edge-bottom {
-  position: relative;
-}
-.torn-edge-bottom::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(135deg, transparent 4px, #fcfbf7 4px),
-              linear-gradient(-135deg, transparent 4px, #fcfbf7 4px);
-  background-size: 12px 6px;
-}
-
-/* Custom horizontal scroll bar for happening soon */
+/* Custom scroll bar */
 .custom-scrollbar::-webkit-scrollbar {
-  height: 8px;
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(217, 186, 137, 0.3);
-  border-radius: 4px;
+  background: rgba(244, 63, 94, 0.3);
+  border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(217, 186, 137, 0.6);
+  background: rgba(244, 63, 94, 0.6);
 }

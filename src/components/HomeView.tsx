@@ -14,7 +14,9 @@ import {
   Sparkles, 
   Compass, 
   Filter, 
-  ChevronRight 
+  ChevronRight,
+  SlidersHorizontal,
+  X
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
@@ -95,45 +97,79 @@ export const HomeView: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 select-none">
       
-      {/* Hero Section */}
-      <div className="relative mb-6 sm:mb-8 pt-2">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#3b3327]">
+      {/* Hero Section matching Image 2 with Enclosed Dark Container & Crimson Ambient Glow */}
+      <div className="relative mb-8 rounded-3xl bg-[#131017] border border-white/5 p-6 sm:p-10 overflow-hidden shadow-2xl">
+        {/* Ambient Wine/Crimson Glow on Right Side */}
+        <div className="absolute right-0 top-0 bottom-0 w-2/3 bg-gradient-to-l from-rose-950/25 via-rose-900/10 to-transparent pointer-events-none" />
+        <div className="absolute -right-16 -top-16 w-72 h-72 bg-[#ff2d55]/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs text-[#a89b87] font-mono tracking-wider uppercase">
-                {dateFormatted}
-              </span>
+            {/* Date Pill with Calendar Icon */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono tracking-wider uppercase text-neutral-300 mb-4">
+              <CalendarIcon className="w-3.5 h-3.5 text-[#ff2d55]" />
+              <span>{dateFormatted.toUpperCase()}</span>
             </div>
 
-            <h1 className="font-editorial text-3xl sm:text-5xl font-black text-[#fbf7ee] tracking-tight leading-[1.15]">
-              FLAME <span className="text-[#e25845] italic font-serif">FOMO</span>
+            {/* Bold Expanded Typography matching Image 2 */}
+            <h1 className="font-sans font-black text-4xl sm:text-6xl text-white tracking-wider uppercase leading-none">
+              FLAME
             </h1>
-            <p className="text-sm sm:text-base text-[#f5d688] font-sans-ui font-medium tracking-wide mt-1.5 italic">
-              Don’t just hear about it
+            <h1 className="font-sans font-black text-4xl sm:text-6xl bg-gradient-to-r from-[#ff2d55] via-[#f43f5e] to-[#fb7185] bg-clip-text text-transparent tracking-wider uppercase leading-none mt-2">
+              FOMO
+            </h1>
+            
+            {/* Subtitle Quote */}
+            <p className="text-sm sm:text-base text-neutral-300 font-serif italic mt-4 tracking-wide">
+              &quot;Don&apos;t just hear about it — experience it live.&quot;
             </p>
           </div>
 
-          {/* Compact Search Bar */}
-          <div className="w-full md:w-80 relative">
-            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search events, clubs, sports..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-[#1b1915] border border-[#3f3528] rounded-sm text-xs text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:border-amber-400"
-            />
+          {/* Right Column: Find Opportunities Search Input matching Image 2 */}
+          <div className="w-full lg:w-96 flex flex-col">
+            <span className="text-[11px] font-bold tracking-widest uppercase text-neutral-400 font-mono mb-2">
+              FIND OPPORTUNITIES
+            </span>
+            <div className="relative">
+              <Search className="w-4 h-4 text-neutral-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search events, clubs, sports..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-9 py-3 bg-[#191522]/90 border border-white/10 rounded-full text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-rose-500/60 focus:ring-1 focus:ring-rose-500/30 transition-all shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Horizontal Quick-Filter Pills for Categories */}
-        <div className="flex items-center gap-2 overflow-x-auto py-3 custom-scrollbar">
+      {/* Explore Categories Section matching Image 2 */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-300">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#ff2d55]" />
+            <span>EXPLORE CATEGORIES</span>
+          </div>
+          <span className="text-[11px] text-neutral-500 hidden sm:inline-block">Horizontal scroll</span>
+        </div>
+
+        {/* Horizontal Quick-Filter Pills */}
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-2 custom-scrollbar">
           <button
             onClick={() => setSelectedQuickCategory('All')}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
               selectedQuickCategory === 'All'
-                ? 'bg-[#c93b2b] text-amber-100 shadow-md ring-1 ring-red-400'
-                : 'bg-[#221e19] text-[#cfc2a9] hover:bg-[#2c2620] border border-[#3b3226]'
+                ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-lg shadow-rose-950/40'
+                : 'bg-[#15121b] text-neutral-300 hover:text-white hover:bg-white/5 border border-white/5'
             }`}
           >
             All Categories
@@ -143,10 +179,10 @@ export const HomeView: React.FC = () => {
             <button
               key={cat}
               onClick={() => setSelectedQuickCategory(cat)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 selectedQuickCategory === cat
-                  ? 'bg-amber-300 text-neutral-950 font-bold shadow-md'
-                  : 'bg-[#221e19] text-[#cfc2a9] hover:bg-[#2c2620] border border-[#3b3226]'
+                  ? 'bg-gradient-to-r from-[#e11d48] to-[#ff2d55] text-white shadow-lg shadow-rose-950/40'
+                  : 'bg-[#15121b] text-neutral-400 hover:text-white hover:bg-white/5 border border-white/5'
               }`}
             >
               {cat}
@@ -165,20 +201,20 @@ export const HomeView: React.FC = () => {
       <YourWeek eventsProp={events} />
 
       {/* Here's everything that's happening */}
-      <div className="pt-4 border-t border-[#3b3327]">
+      <div className="pt-6 border-t border-white/5">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-neutral-100">
+            <h3 className="font-editorial text-2xl sm:text-3xl font-bold text-white">
               Here&apos;s everything that&apos;s happening
             </h3>
-            <p className="text-xs text-[#a89b87] font-sans-ui mt-0.5">
+            <p className="text-xs text-neutral-400 font-sans-ui mt-0.5">
               All upcoming events at FLAME.
             </p>
           </div>
 
           <button
             onClick={() => setCurrentTab('explore')}
-            className="text-xs font-semibold text-amber-200 hover:text-amber-100 flex items-center gap-1"
+            className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors"
           >
             <span>View all</span>
             <ChevronRight className="w-4 h-4" />
@@ -195,3 +231,4 @@ export const HomeView: React.FC = () => {
     </div>
   );
 };
+
