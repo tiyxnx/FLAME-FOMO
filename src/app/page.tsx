@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/context/AppContext';
+import { getUserRole } from '@/lib/permissions';
 import { Header } from '@/components/Header';
 import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { HomeView } from '@/components/HomeView';
@@ -25,7 +26,10 @@ import { EventFeedbackModal } from '@/components/EventFeedbackModal';
 import { LoginGate } from '@/components/LoginGate';
 
 export default function App() {
-  const { currentTab, isAuthenticated } = useApp();
+  const { currentTab, isAuthenticated, user } = useApp();
+
+  const isStudent = Boolean(user && getUserRole(user.flame_email) === 'student');
+  const needsQuiz = Boolean(isStudent && !user?.quiz_completed);
 
   return (
     <div className="min-h-screen flex flex-col bg-scrapbook-board text-neutral-100">
@@ -36,26 +40,39 @@ export default function App() {
       {/* Main Content Area: Enforce Student Login before viewing campus activities */}
       <main className="flex-1 pb-24">
         {isAuthenticated ? (
-          <>
-            {currentTab === 'home' && <HomeView />}
-            {currentTab === 'explore' && <ExploreView />}
-            {currentTab === 'applications' && <ApplicationsView />}
-            {currentTab === 'my-plan' && <MyPlanView />}
-            {currentTab === 'campus-map' && <CampusMap />}
-            {currentTab === 'profile' && <ProfileView />}
-          </>
+          needsQuiz ? (
+            /* Mandatory Onboarding: student must complete setup quiz before viewing the site */
+            <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-12 text-center select-none">
+              <div className="max-w-md mx-auto space-y-4">
+                <div className="w-12 h-12 rounded-full border-3 border-[#ff2d55] border-t-transparent animate-spin mx-auto" />
+                <h2 className="font-editorial text-2xl font-bold text-white">Setting up your FLAME student experience...</h2>
+                <p className="text-xs text-neutral-400 font-sans leading-relaxed">
+                  Please complete the 4-step setup quiz to unlock campus events, personalized timetable clash radar, and club applications.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {currentTab === 'home' && <HomeView />}
+              {currentTab === 'explore' && <ExploreView />}
+              {currentTab === 'applications' && <ApplicationsView />}
+              {currentTab === 'my-plan' && <MyPlanView />}
+              {currentTab === 'campus-map' && <CampusMap />}
+              {currentTab === 'profile' && <ProfileView />}
+            </>
+          )
         ) : (
           <LoginGate />
         )}
       </main>
 
-      {/* Persistent Floating Action Button for Event Creation (Only for Authenticated Students) */}
-      {isAuthenticated && <FloatingActionButton />}
+      {/* Persistent Floating Action Button for Event Creation (Only for Authenticated Users who completed setup) */}
+      {isAuthenticated && !needsQuiz && <FloatingActionButton />}
 
       {/* System Modals */}
       <AuthModal />
-      <OnboardingModal />
-      {isAuthenticated && (
+      <OnboardingModal isMandatory={needsQuiz} />
+      {isAuthenticated && !needsQuiz && (
         <>
           <CreateEventModal />
           <EventDetailModal />

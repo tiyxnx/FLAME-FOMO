@@ -32,7 +32,11 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export const OnboardingModal: React.FC = () => {
+interface OnboardingModalProps {
+  isMandatory?: boolean;
+}
+
+export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isMandatory = false }) => {
   const { user, isOnboardingOpen, closeOnboarding, updateProfile } = useApp();
 
   const [step, setStep] = useState<number>(1);
@@ -55,24 +59,27 @@ export const OnboardingModal: React.FC = () => {
   
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
 
-  if (!isOnboardingOpen || !user) return null;
-
-  // Clubs, fests, and admin accounts don't need the student onboarding quiz.
-  // Auto-mark them as quiz_completed and close immediately.
-  const userRole = getUserRole(user.flame_email);
-  if (userRole === 'club' || userRole === 'admin') {
-    // Mark completed so we never ask again, then close without rendering any UI.
-    if (!user.quiz_completed) {
-      updateProfile({ quiz_completed: true });
-      if (user.flame_email) {
-        try {
-          localStorage.setItem(`flame_fomo_quiz_completed_${user.flame_email.toLowerCase()}`, 'true');
-        } catch { /* ignore */ }
-      }
+  // Keep state synced if user changes
+  useEffect(() => {
+    if (user?.academic_year) setAcademicYear(user.academic_year);
+    if (user?.category_preferences && user.category_preferences.length > 0) {
+      setPreferences(user.category_preferences);
     }
-    closeOnboarding();
-    return null;
-  }
+    if (user?.academic_timetable && user.academic_timetable.length > 0) {
+      setTimetable(user.academic_timetable);
+    }
+  }, [user]);
+
+  // Clubs and admins never need to take the student onboarding quiz
+  const userRole = user ? getUserRole(user.flame_email) : 'student';
+  useEffect(() => {
+    if (user && (userRole === 'club' || userRole === 'admin') && isOnboardingOpen) {
+      closeOnboarding();
+    }
+  }, [user, userRole, isOnboardingOpen, closeOnboarding]);
+
+  const shouldShow = (isOnboardingOpen || isMandatory) && user && userRole === 'student';
+  if (!shouldShow) return null;
 
   const toggleCategory = (cat: EventCategory) => {
     if (preferences.includes(cat)) {
@@ -108,18 +115,6 @@ export const OnboardingModal: React.FC = () => {
     setTimetable(timetable.map(c => c.id === id ? { ...c, [field]: value } : c));
   };
 
-  const handleDismiss = () => {
-    updateProfile({
-      quiz_completed: true,
-    });
-
-    if (user?.flame_email) {
-      localStorage.setItem(`flame_fomo_quiz_completed_${user.flame_email.toLowerCase()}`, 'true');
-    }
-
-    closeOnboarding();
-  };
-
   const handleFinish = () => {
     updateProfile({
       academic_year: academicYear,
@@ -129,7 +124,9 @@ export const OnboardingModal: React.FC = () => {
     });
 
     if (user?.flame_email) {
-      localStorage.setItem(`flame_fomo_quiz_completed_${user.flame_email.toLowerCase()}`, 'true');
+      try {
+        localStorage.setItem(`flame_fomo_quiz_completed_${user.flame_email.toLowerCase()}`, 'true');
+      } catch {}
     }
 
     try {
@@ -159,16 +156,18 @@ export const OnboardingModal: React.FC = () => {
           style={{ clipPath: 'polygon(3% 0%, 97% 2%, 100% 98%, 0% 96%)' }}
         />
 
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={handleDismiss}
-          className="absolute top-4 right-4 p-2 rounded-full bg-[#1e1926] hover:bg-[#2b2336] text-[#9d93a8] hover:text-white transition-colors z-30"
-          title="Close Quiz"
-          aria-label="Close Quiz"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Close Button - only shown if quiz is opened voluntarily (e.g. editing from profile) */}
+        {!isMandatory && (
+          <button
+            type="button"
+            onClick={closeOnboarding}
+            className="absolute top-4 right-4 p-2 rounded-full bg-[#1e1926] hover:bg-[#2b2336] text-[#9d93a8] hover:text-white transition-colors z-30 cursor-pointer"
+            title="Close Quiz"
+            aria-label="Close Quiz"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
         {/* Step Indicator Progress Bar */}
         <div className="mb-6">
@@ -553,38 +552,35 @@ export const OnboardingModal: React.FC = () => {
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="px-4 py-2 text-xs font-bold text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2 text-xs font-bold text-neutral-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleDismiss}
-              className="px-3 py-2 text-xs font-semibold text-[#8a7f96] hover:text-white transition-colors"
-            >
-              Skip for now
-            </button>
+            isMandatory ? (
+              <span className="text-xs text-neutral-500 font-sans">
+                Quick 4-step setup
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={closeOnboarding}
+                className="px-3 py-2 text-xs font-semibold text-[#8a7f96] hover:text-white transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            )
           )}
 
           {step < 4 ? (
             <div className="flex items-center gap-2">
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={handleDismiss}
-                  className="px-3 py-2 text-xs font-semibold text-[#8a7f96] hover:text-white transition-colors"
-                >
-                  Skip for now
-                </button>
-              )}
               <button
                 type="button"
                 onClick={() => setStep(step + 1)}
-                className="px-5 py-2.5 bg-gradient-to-r from-[#ff2d55] to-[#e11d48] text-white text-xs sm:text-sm font-bold rounded-full shadow-[0_0_15px_rgba(255,45,85,0.4)] flex items-center gap-1.5 hover:brightness-110"
+                className="px-5 py-2.5 bg-gradient-to-r from-[#ff2d55] to-[#e11d48] text-white text-xs sm:text-sm font-bold rounded-full shadow-[0_0_15px_rgba(255,45,85,0.4)] flex items-center gap-1.5 hover:brightness-110 cursor-pointer"
               >
-                <span>Next</span>
+                <span>{step === 1 ? "Let's Get Started" : "Next"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -592,7 +588,7 @@ export const OnboardingModal: React.FC = () => {
             <button
               type="button"
               onClick={handleFinish}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center gap-1.5"
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center gap-1.5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <Check className="w-4 h-4" />
               <span>Complete Setup &amp; Explore</span>

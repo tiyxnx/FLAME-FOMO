@@ -210,8 +210,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           parsedUser.going_events = (parsedUser.going_events || []).filter(
             (id: string) => !id.startsWith('lifeatflame-') && !dummyIds.includes(id)
           );
+
+          const isStudent = getUserRole(parsedUser.flame_email) === 'student';
+          if (!isStudent) {
+            parsedUser.quiz_completed = true;
+          }
+
           setUser(parsedUser);
           localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(parsedUser));
+
+          if (isStudent && !parsedUser.quiz_completed) {
+            setIsOnboardingOpen(true);
+          }
         }
       }
 
@@ -317,6 +327,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
 
             try {
+              const userRole = getUserRole(confirmedEmail);
+              const isStudent = userRole === 'student';
+
               const { data: existingProfile } = await supabase
                 .from('profiles')
                 .select('*')
@@ -325,11 +338,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
               if (existingProfile) {
                 const profileObj = existingProfile as UserProfile;
+                if (!isStudent) {
+                  profileObj.quiz_completed = true;
+                }
                 setUser(profileObj);
                 localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(profileObj));
                 setIsAuthModalOpen(false);
-                // Quiz should ONLY show up during a fresh sign in, never on reload
-                if (isFreshSignIn) {
+
+                if (isStudent && !profileObj.quiz_completed) {
                   setIsOnboardingOpen(true);
                 } else {
                   setIsOnboardingOpen(false);
@@ -356,15 +372,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   going_events: parsedStored?.going_events || [],
                   favourite_events: parsedStored?.favourite_events || [],
                   favourite_categories: parsedStored?.favourite_categories || ['Performances', 'Competition'],
-                  quiz_completed: true,
+                  quiz_completed: !isStudent,
                   created_at: parsedStored?.created_at || new Date().toISOString(),
                 };
                 setUser(newProfile);
                 localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(newProfile));
                 await supabase.from('profiles').upsert([newProfile]);
                 setIsAuthModalOpen(false);
-                // Quiz should ONLY show up during a fresh sign in, never on reload
-                if (isFreshSignIn) {
+
+                if (isStudent) {
                   setIsOnboardingOpen(true);
                 } else {
                   setIsOnboardingOpen(false);
@@ -648,6 +664,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     }
 
+    const userRole = getUserRole(trimmed);
+    const isStudent = userRole === 'student';
+
     const newUser: UserProfile = {
       flame_email: trimmed,
       name: name || trimmed.split('@')[0].replace('.', ' ').toUpperCase(),
@@ -658,13 +677,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       going_events: [],
       favourite_events: [],
       favourite_categories: ['Performances', 'Competition'],
+      quiz_completed: !isStudent,
       created_at: new Date().toISOString(),
     };
 
     saveUserToStorage(newUser);
     closeAuthModal();
-    // Only open quiz on explicit sign-in
-    setIsOnboardingOpen(true);
+    if (isStudent) {
+      setIsOnboardingOpen(true);
+    } else {
+      setIsOnboardingOpen(false);
+    }
     return { success: true };
   };
 
@@ -760,6 +783,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
+    const userRole = getUserRole(trimmed);
+    const isStudent = userRole === 'student';
+
     // Check if profile exists in Supabase
     if (isSupabaseConfigured()) {
       try {
@@ -770,10 +796,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .single();
 
         if (existingProfile) {
-          saveUserToStorage(existingProfile as UserProfile);
+          const profileObj = existingProfile as UserProfile;
+          if (!isStudent) {
+            profileObj.quiz_completed = true;
+          }
+          saveUserToStorage(profileObj);
           closeAuthModal();
-          // Only open quiz on explicit sign-in
-          setIsOnboardingOpen(true);
+          if (isStudent && !profileObj.quiz_completed) {
+            setIsOnboardingOpen(true);
+          } else {
+            setIsOnboardingOpen(false);
+          }
           return { success: true };
         }
       } catch (e) {
@@ -792,6 +825,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       going_events: [],
       favourite_events: [],
       favourite_categories: ['Performances', 'Competition'],
+      quiz_completed: !isStudent,
       created_at: new Date().toISOString(),
     };
 
@@ -800,8 +834,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       supabase.from('profiles').upsert([newUser]).then();
     }
     closeAuthModal();
-    // Only open quiz on explicit sign-in
-    setIsOnboardingOpen(true);
+    if (isStudent) {
+      setIsOnboardingOpen(true);
+    } else {
+      setIsOnboardingOpen(false);
+    }
     return { success: true };
   };
 
