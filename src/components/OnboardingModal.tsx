@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
+import { getUserRole } from '@/lib/permissions';
 import { 
   AcademicYear, 
   EventCategory, 
@@ -55,6 +56,23 @@ export const OnboardingModal: React.FC = () => {
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
 
   if (!isOnboardingOpen || !user) return null;
+
+  // Clubs, fests, and admin accounts don't need the student onboarding quiz.
+  // Auto-mark them as quiz_completed and close immediately.
+  const userRole = getUserRole(user.flame_email);
+  if (userRole === 'club' || userRole === 'admin') {
+    // Mark completed so we never ask again, then close without rendering any UI.
+    if (!user.quiz_completed) {
+      updateProfile({ quiz_completed: true });
+      if (user.flame_email) {
+        try {
+          localStorage.setItem(`flame_fomo_quiz_completed_${user.flame_email.toLowerCase()}`, 'true');
+        } catch { /* ignore */ }
+      }
+    }
+    closeOnboarding();
+    return null;
+  }
 
   const toggleCategory = (cat: EventCategory) => {
     if (preferences.includes(cat)) {

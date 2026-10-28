@@ -22,6 +22,7 @@ import {
   getEventGoingCount, 
   getEventFavouriteCount 
 } from '@/lib/constants';
+import { formatEventDateRange, isMultiDayEvent } from '@/lib/dateUtils';
 
 interface EventCardProps {
   event: EventItem;
@@ -312,11 +313,16 @@ export const EventCard: React.FC<EventCardProps> = ({ event, rotationIndex = 0 }
           {event.event_name}
         </h3>
 
-        {/* Date & Time line */}
+        {/* Date & Time line (supports multi-day range) */}
         <div className="flex items-center gap-2 text-xs text-neutral-300 font-sans-ui">
           <div className="flex items-center gap-1.5 font-medium text-neutral-200">
             <Calendar className="w-3.5 h-3.5 text-[#ff2d55] shrink-0" />
-            <span>{event.date}</span>
+            <span>{formatEventDateRange(event)}</span>
+            {isMultiDayEvent(event) && (
+              <span className="text-[9px] bg-rose-500/15 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded-full font-semibold">
+                Multi-day
+              </span>
+            )}
             {isTentative && (
               <span className="text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded-full font-semibold">
                 TBD

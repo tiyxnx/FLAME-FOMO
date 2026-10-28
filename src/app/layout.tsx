@@ -35,14 +35,15 @@ export const metadata: Metadata = {
   description: 'A tactile, scrapbook-inspired mobile-first campus discovery and scheduling planner for FLAME University.',
   icons: {
     icon: [
-      { url: '/favicon-32x32.png?v=5', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png?v=5', sizes: '16x16', type: 'image/png' },
-      { url: '/flame-favicon.ico?v=5' },
+      { url: '/icon.png?v=20261028b', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon-32x32.png?v=20261028b', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png?v=20261028b', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.ico?v=20261028b' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png?v=5', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=20261028b', sizes: '180x180', type: 'image/png' },
     ],
-    shortcut: ['/flame-favicon.ico?v=5'],
+    shortcut: ['/icon.png?v=20261028b'],
   },
 };
 
@@ -57,10 +58,11 @@ export default function RootLayout({
       className={`${playfair.variable} ${inter.variable} ${patrickHand.variable} ${exo2.variable} h-full antialiased`}
     >
       <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=5" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=5" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=5" />
-        <link rel="shortcut icon" href="/flame-favicon.ico?v=5" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon.png?v=20261028b" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=20261028b" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=20261028b" />
+        <link rel="shortcut icon" href="/favicon.ico?v=20261028b" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261028b" />
       </head>
       <body className="min-h-full flex flex-col bg-scrapbook-board text-neutral-100">
         <AppProvider>{children}</AppProvider>

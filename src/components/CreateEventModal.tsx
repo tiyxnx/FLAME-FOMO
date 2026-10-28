@@ -64,7 +64,8 @@ export const CreateEventModal: React.FC = () => {
   const [itemType, setItemType] = useState<'event' | 'application'>('event');
   const [eventName, setEventName] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>(['Workshop']);
-  const [date, setDate] = useState('2026-10-08');
+  const [startDate, setStartDate] = useState('2026-10-08');
+  const [endDate, setEndDate] = useState('2026-10-08');
   const [isTentative, setIsTentative] = useState(false);
   const [tentativeNote, setTentativeNote] = useState('');
   const [timeStart, setTimeStart] = useState('17:00');
@@ -298,7 +299,8 @@ export const CreateEventModal: React.FC = () => {
         const parts = eventToEdit.category.split(',').map((c) => c.trim()).filter(Boolean) as EventCategory[];
         setSelectedCategories(parts.length > 0 ? parts : ['Workshop']);
       }
-      setDate(eventToEdit.date);
+      setStartDate(eventToEdit.startDate || eventToEdit.date || '');
+      setEndDate(eventToEdit.endDate || eventToEdit.startDate || eventToEdit.date || '');
       setTimeStart(eventToEdit.time_start || '17:00');
       setTimeEnd(eventToEdit.time_end || '18:30');
       setVenueZone(eventToEdit.venue_zone);
@@ -404,7 +406,9 @@ export const CreateEventModal: React.FC = () => {
       setSelectedCategories(['Workshop']);
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      setDate(tomorrow.toISOString().split('T')[0]);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      setStartDate(tomorrowStr);
+      setEndDate(tomorrowStr);
       setIsTentative(false);
       setTentativeNote('');
       setTimeStart('17:00');
@@ -549,7 +553,9 @@ export const CreateEventModal: React.FC = () => {
         event_name: eventName.trim(),
         category: categoryString,
         categories: selectedCategories,
-        date,
+        date: startDate,
+        startDate: startDate,
+        endDate: endDate !== startDate ? endDate : undefined,
         time_start_end: timeStartEnd,
         time_start: timeStart,
         time_end: timeEnd,
@@ -584,7 +590,9 @@ export const CreateEventModal: React.FC = () => {
         event_name: eventName.trim(),
         category: categoryString,
         categories: selectedCategories,
-        date,
+        date: startDate,
+        startDate: startDate,
+        endDate: endDate !== startDate ? endDate : undefined,
         time_start_end: timeStartEnd,
         time_start: timeStart,
         time_end: timeEnd,
@@ -796,44 +804,73 @@ export const CreateEventModal: React.FC = () => {
           </div>
 
           {/* 2. Date & Time */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Date <span className="text-[#c93b2b]">*</span>
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-                required
-              />
+          <div className="space-y-2">
+            {/* Start Date / End Date row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
+                  Start Date <span className="text-[#c93b2b]">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    // Keep endDate ≥ startDate
+                    if (!endDate || e.target.value > endDate) {
+                      setEndDate(e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1 flex items-center gap-1.5">
+                  <span>End Date</span>
+                  {startDate !== endDate && endDate && (
+                    <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded-full font-semibold normal-case">
+                      Multi-day
+                    </span>
+                  )}
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
+                />
+                <p className="text-[10px] text-neutral-500 mt-0.5">Leave same as start for single-day</p>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                Start Time
-              </label>
-              <input
-                type="time"
-                value={timeStart}
-                onChange={(e) => setTimeStart(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
-                End Time
-              </label>
-              <input
-                type="time"
-                value={timeEnd}
-                onChange={(e) => setTimeEnd(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
-                required
-              />
+            {/* Time row */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  value={timeStart}
+                  onChange={(e) => setTimeStart(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1">
+                  End Time
+                </label>
+                <input
+                  type="time"
+                  value={timeEnd}
+                  onChange={(e) => setTimeEnd(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-[#d6cbb0] rounded-sm text-xs text-neutral-900"
+                  required
+                />
+              </div>
             </div>
           </div>
 

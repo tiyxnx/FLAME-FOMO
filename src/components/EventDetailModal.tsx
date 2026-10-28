@@ -8,6 +8,7 @@ import {
   getEventGoingCount,
   getEventFavouriteCount
 } from '@/lib/constants';
+import { formatEventDateRange, isMultiDayEvent } from '@/lib/dateUtils';
 import { 
   X, 
   Calendar, 
@@ -359,9 +360,16 @@ export const EventDetailModal: React.FC = () => {
           <div className="flex items-center gap-2.5 text-neutral-200">
             <Calendar className="w-4 h-4 text-[#ff2d55] shrink-0" />
             <div>
-              <span className="text-[#8a7f96] text-[10px] uppercase font-bold block">Date</span>
+              <span className="text-[#8a7f96] text-[10px] uppercase font-bold flex items-center gap-1.5">
+                <span>{isMultiDayEvent(event) ? 'Dates (Multi-Day)' : 'Date'}</span>
+                {isMultiDayEvent(event) && (
+                  <span className="text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.2 rounded-full font-semibold normal-case">
+                    Range
+                  </span>
+                )}
+              </span>
               <span className="font-semibold text-sm text-white">
-                {event.date} {isTentative ? '(Tentative)' : ''}
+                {formatEventDateRange(event)} {isTentative ? '(Tentative)' : ''}
               </span>
             </div>
           </div>

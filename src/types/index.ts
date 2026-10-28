@@ -57,7 +57,11 @@ export interface EventItem {
   event_name: string;
   category: EventCategory | string;
   categories?: string[];
-  date: string; // YYYY-MM-DD
+  date: string; // YYYY-MM-DD (start date / single date)
+  startDate?: string; // YYYY-MM-DD
+  endDate?: string;   // YYYY-MM-DD
+  start_date?: string; // DB compatibility alias
+  end_date?: string;   // DB compatibility alias
   time_start_end: string; // e.g. "17:00 - 18:30"
   time_start?: string; // "17:00"
   time_end?: string;   // "18:30"

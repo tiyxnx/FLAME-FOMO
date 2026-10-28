@@ -29,7 +29,11 @@ CREATE TABLE IF NOT EXISTS public.events (
   id TEXT PRIMARY KEY,                                -- Unique Event ID (e.g. evt-1)
   event_name TEXT NOT NULL,                           -- Prominent card title
   category TEXT NOT NULL,                             -- Academic, Clubs, Sports, Performances, etc.
-  date DATE NOT NULL,                                 -- YYYY-MM-DD
+  date DATE NOT NULL,                                 -- YYYY-MM-DD (Start date / single date)
+  "startDate" DATE,                                   -- YYYY-MM-DD (Multi-day start)
+  "endDate" DATE,                                     -- YYYY-MM-DD (Multi-day end)
+  start_date DATE,                                    -- Alias for snake_case compatibility
+  end_date DATE,                                      -- Alias for snake_case compatibility
   time_start_end TEXT NOT NULL,                       -- e.g. "18:00 - 20:00"
   time_start TEXT,                                    -- e.g. "18:00"
   time_end TEXT,                                      -- e.g. "20:00"
@@ -45,6 +49,16 @@ CREATE TABLE IF NOT EXISTS public.events (
   submitted_by TEXT,                                  -- Student email who published the event
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Schema Migrations for Multi-day events (already applied via CREATE TABLE above):
+-- startDate / endDate are camelCase columns for camelCase-first clients
+-- start_date / end_date are snake_case aliases for supabase-js / REST clients
+-- The app always stores startDate = date (start) and endDate = last day of event.
+-- When startDate === endDate (or endDate is NULL), it is treated as a single-day event.
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS "startDate" DATE;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS "endDate" DATE;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS start_date DATE;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS end_date DATE;
 
 -- 3. Enable Row Level Security (RLS) & Allow Public Read/Write for Student Community
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
